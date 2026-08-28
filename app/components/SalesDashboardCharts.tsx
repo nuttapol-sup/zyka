@@ -376,9 +376,9 @@ export default function SalesDashboardCharts() {
                       key={idx}
                       className="flex-1 flex flex-col items-center gap-1 group relative z-10 h-full justify-end"
                     >
-                      {/* Tooltip on Hover */}
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 bg-[#98c9a3] text-[#0f1712] text-[10px] font-mono py-0.5 px-1.5 rounded-lg shadow-lg pointer-events-none whitespace-nowrap z-20 font-bold">
-                        ฿{m.total.toLocaleString()}
+                      {/* Permanent Sales Amount Badge on top of Bar (No hover needed) */}
+                      <div className="absolute -top-7 bg-[#1e3425] text-[#98c9a3] text-[9px] sm:text-[11px] font-mono py-0.5 px-1.5 rounded-lg shadow-md border border-[#98c9a3]/40 z-20 font-extrabold whitespace-nowrap group-hover:bg-[#98c9a3] group-hover:text-[#0f1712] transition-colors">
+                        ฿{m.total.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                       </div>
 
                       {/* Bar Point Line */}
@@ -433,9 +433,9 @@ export default function SalesDashboardCharts() {
                       key={idx}
                       className="flex-1 flex flex-col items-center gap-1 group relative h-full justify-end"
                     >
-                      {/* Amount Badge */}
-                      <span className="text-[10px] font-mono font-bold text-[#e6dfd3] opacity-80 group-hover:opacity-100 transition-opacity mb-1">
-                        ฿{sub.total >= 1000 ? `${(sub.total / 1000).toFixed(0)}k` : sub.total}
+                      {/* Permanent Amount Badge (No hover needed) */}
+                      <span className="text-[10px] font-mono font-extrabold text-[#98c9a3] bg-[#1e3425] border border-[#98c9a3]/30 px-1.5 py-0.5 rounded-md shadow-sm mb-1 whitespace-nowrap">
+                        ฿{sub.total.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                       </span>
 
                       {/* Colored Vertical Bar */}
