@@ -12,6 +12,7 @@ export interface ISetting extends Document {
   reportsSubOrder?: string[];
   dataRecordsSubOrder?: string[];
   manageSubOrder?: string[];
+  menuCustomLabels?: Record<string, string>;
   updatedAt: Date;
 }
 
@@ -49,7 +50,7 @@ const SettingSchema: Schema<ISetting> = new Schema(
     },
     menuOrder: {
       type: [String],
-      default: ["dashboard", "reports", "analytics", "datarecords", "manage"],
+      default: ["dashboard", "reports", "datarecords", "manage"],
     },
     reportsSubOrder: {
       type: [String],
@@ -62,6 +63,10 @@ const SettingSchema: Schema<ISetting> = new Schema(
     manageSubOrder: {
       type: [String],
       default: ["create-user", "manage-permissions", "manage-menu-order", "manage-logo", "user-logs"],
+    },
+    menuCustomLabels: {
+      type: Schema.Types.Mixed,
+      default: {},
     },
   },
   {

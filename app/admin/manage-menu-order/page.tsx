@@ -1,37 +1,37 @@
 "use client";
 
-import { getApiPath } from "@/app/utils/apiPath";
-
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
+  ListOrdered,
   ArrowUp,
   ArrowDown,
-  Save,
   RotateCcw,
+  Save,
+  CheckCircle2,
+  RefreshCw,
   LayoutDashboard,
   FileText,
   BarChart3,
   FolderKanban,
   Shield,
-  CheckCircle2,
-  ListOrdered,
-  RefreshCw,
-  Sparkles,
-  ShoppingBag,
-  Package,
-  Boxes,
-  Tags,
-  FolderTree,
+  UserPlus,
+  Sliders,
+  ImageIcon,
+  Activity,
   Warehouse,
   Users,
   Contact,
+  Tags,
+  FolderTree,
+  Package,
+  Boxes,
+  ShoppingBag,
   TrendingUp,
-  UserPlus,
-  Sliders,
-  Activity,
-  Image as ImageIcon,
+  Sparkles,
+  Edit3,
 } from "lucide-react";
-import Link from "next/link";
+import { getApiPath } from "@/app/utils/apiPath";
 
 interface MenuItem {
   key: string;
@@ -85,19 +85,19 @@ const REPORTS_ITEMS: Record<string, MenuItem> = {
   customer: {
     key: "customer",
     label: "👥 สรุปตามลูกค้า (Sales by Customer)",
-    description: "รายงานสรุปยอดซื้อและยอดค้างชำระของลูกค้าแต่ละราย",
+    description: "รายงานสรุปยอดซื้อและยอดค้างชำระลูกค้า",
     icon: <Users className="w-5 h-5 text-[#98c9a3]" />,
   },
   product: {
     key: "product",
     label: "📦 สรุปตามสินค้า (Sales by Product)",
-    description: "รายงานสรุปจำนวนยอดขายและมูลค่าขายของสินค้าแต่ละชนิด",
+    description: "รายงานสรุปยอดขายตามรายการสินค้า",
     icon: <Package className="w-5 h-5 text-[#98c9a3]" />,
   },
   user: {
     key: "user",
     label: "👤 ประวัติผู้ใช้งาน (User Logs)",
-    description: "รายงานบันทึกประวัติการเข้าใช้งานระบบของผู้ใช้",
+    description: "รายงานบันทึกประวัติการล็อกอินและการใช้งานของผู้ใช้",
     icon: <Activity className="w-5 h-5 text-[#98c9a3]" />,
   },
 };
@@ -106,51 +106,51 @@ const REPORTS_ITEMS: Record<string, MenuItem> = {
 const DATA_RECORDS_ITEMS: Record<string, MenuItem> = {
   orders: {
     key: "orders",
-    label: "Orders (บันทึกสั่งซื้อ & ใบเสร็จ)",
-    description: "หน้าบันทึกรายการสั่งซื้อ ติดตามสถานะจัดส่ง และพิมพ์ใบเสร็จ",
+    label: "Orders (สั่งซื้อ & ใบเสร็จ)",
+    description: "หน้าบันทึกคำสั่งซื้อ ติดตามสถานะ และออกใบเสร็จ",
     icon: <ShoppingBag className="w-5 h-5 text-[#98c9a3]" />,
   },
   products: {
     key: "products",
     label: "Products (บันทึกสินค้า)",
-    description: "หน้าบันทึกรายการสินค้า รหัสสินค้า ราคา และรูปภาพ",
+    description: "หน้าบันทึกและจัดการรายการสินค้าและรหัสสินค้า",
     icon: <Package className="w-5 h-5 text-[#98c9a3]" />,
   },
   inventory: {
     key: "inventory",
     label: "Inventory (จัดการสต็อกสินค้า)",
-    description: "หน้าจัดการยอดคงเหลือสต็อกสินค้า การเบิกออกและการเติมเข้า",
+    description: "หน้าควบคุมสต็อกสินค้า รับเข้า เบิกออก และเตือนสต็อกต่ำ",
     icon: <Boxes className="w-5 h-5 text-[#98c9a3]" />,
   },
   categories: {
     key: "categories",
     label: "Categories (ประเภทหมวดสินค้า)",
-    description: "หน้าจัดการประเภทหลักของสินค้า",
+    description: "หน้าบันทึกประเภทหลักของหมวดสินค้า",
     icon: <Tags className="w-5 h-5 text-[#98c9a3]" />,
   },
   "sub-categories": {
     key: "sub-categories",
     label: "Sub-Categories (หมวดสินค้า)",
-    description: "หน้าจัดการหมวดย่อยของสินค้า",
+    description: "หน้าบันทึกและจัดการหมวดย่อยของสินค้า",
     icon: <FolderTree className="w-5 h-5 text-[#98c9a3]" />,
   },
   locations: {
     key: "locations",
-    label: "Locations (สถานที่เก็บสินค้า)",
-    description: "หน้าจัดการคลังและสถานที่จัดเก็บสินค้า",
+    label: "Locations (คลังสินค้า)",
+    description: "หน้าบันทึกและจัดการสถานที่จัดเก็บสินค้า",
     icon: <Warehouse className="w-5 h-5 text-[#98c9a3]" />,
   },
   personnel: {
     key: "personnel",
-    label: "Personnel (พนักงาน)",
-    description: "หน้าจัดการข้อมูลรายชื่อและรายละเอียดพนักงาน",
-    icon: <Contact className="w-5 h-5 text-[#98c9a3]" />,
+    label: "Personnel (บุคลากร)",
+    description: "หน้าบันทึกข้อมูลรายชื่อและตำแหน่งพนักงาน",
+    icon: <Users className="w-5 h-5 text-[#98c9a3]" />,
   },
   customers: {
     key: "customers",
     label: "Customers (ลูกค้า)",
-    description: "หน้าจัดการข้อมูลรายชื่อและที่อยู่ออกใบเสร็จลูกค้า",
-    icon: <Users className="w-5 h-5 text-[#98c9a3]" />,
+    description: "หน้าบันทึกข้อมูลรายชื่อและที่อยู่ลูกค้า",
+    icon: <Contact className="w-5 h-5 text-[#98c9a3]" />,
   },
 };
 
@@ -158,26 +158,26 @@ const DATA_RECORDS_ITEMS: Record<string, MenuItem> = {
 const MANAGE_ITEMS: Record<string, MenuItem> = {
   "create-user": {
     key: "create-user",
-    label: "Create User (สร้างผู้ใช้)",
-    description: "หน้าลงทะเบียนสร้างบัญชีผู้ใช้งานใหม่ในระบบ",
+    label: "Create User (สร้างผู้ใช้งาน)",
+    description: "หน้าสร้างบัญชีผู้ใช้งานใหม่ในระบบ",
     icon: <UserPlus className="w-5 h-5 text-[#98c9a3]" />,
   },
   "manage-permissions": {
     key: "manage-permissions",
-    label: "Permissions (จัดการสิทธิ์)",
-    description: "หน้ากำหนดสิทธิ์การเข้าถึงเมนูต่างๆ ของผู้ใช้แต่ละราย",
+    label: "Manage Permissions (จัดการสิทธิ์)",
+    description: "หน้ากำหนดสิทธิ์การเข้าถึงเมนูและหน้าต่างๆ ของ User",
     icon: <Sliders className="w-5 h-5 text-[#98c9a3]" />,
   },
   "manage-menu-order": {
     key: "manage-menu-order",
-    label: "Menu Order (จัดลำดับเมนู)",
-    description: "หน้าจัดเรียงลำดับการแสดงผลเมนูบน Navigation Bar",
+    label: "Manage Menu Order (จัดลำดับเมนู)",
+    description: "หน้าจัดลำดับการแสดงผลเมนูหลักและเมนูย่อย",
     icon: <ListOrdered className="w-5 h-5 text-[#98c9a3]" />,
   },
   "manage-logo": {
     key: "manage-logo",
-    label: "Logo & Branding (จัดการโลโก้)",
-    description: "หน้าตั้งค่าโลโก้และชื่อหัวข้อระบบ",
+    label: "Manage Logo (ตั้งค่าโลโก้)",
+    description: "หน้าอัปโหลดโลโก้และตั้งชื่อระบบ ZYKA",
     icon: <ImageIcon className="w-5 h-5 text-[#98c9a3]" />,
   },
   "user-logs": {
@@ -200,6 +200,7 @@ export default function ManageMenuOrderPage() {
   const [reportsSubOrder, setReportsSubOrder] = useState<string[]>(DEFAULT_REPORTS);
   const [dataRecordsSubOrder, setDataRecordsSubOrder] = useState<string[]>(DEFAULT_DATA_RECORDS);
   const [manageSubOrder, setManageSubOrder] = useState<string[]>(DEFAULT_MANAGE);
+  const [menuCustomLabels, setMenuCustomLabels] = useState<Record<string, string>>({});
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -216,6 +217,7 @@ export default function ManageMenuOrderPage() {
         if (data.reportsSubOrder && Array.isArray(data.reportsSubOrder)) setReportsSubOrder(data.reportsSubOrder);
         if (data.dataRecordsSubOrder && Array.isArray(data.dataRecordsSubOrder)) setDataRecordsSubOrder(data.dataRecordsSubOrder);
         if (data.manageSubOrder && Array.isArray(data.manageSubOrder)) setManageSubOrder(data.manageSubOrder);
+        if (data.menuCustomLabels && typeof data.menuCustomLabels === "object") setMenuCustomLabels(data.menuCustomLabels);
       }
     } catch (err) {
       console.error(err);
@@ -228,7 +230,6 @@ export default function ManageMenuOrderPage() {
     fetchMenuOrders();
   }, []);
 
-  // Helper getters for currently active target order & item dictionary
   const getActiveState = () => {
     if (activeTab === "main") return { order: menuOrder, setOrder: setMenuOrder, dict: MAIN_ITEMS, defaultOrder: DEFAULT_MAIN };
     if (activeTab === "reports") return { order: reportsSubOrder, setOrder: setReportsSubOrder, dict: REPORTS_ITEMS, defaultOrder: DEFAULT_REPORTS };
@@ -260,6 +261,18 @@ export default function ManageMenuOrderPage() {
     setOrder(defaultOrder);
   };
 
+  const handleCustomLabelChange = (key: string, value: string) => {
+    setMenuCustomLabels((prev) => {
+      const next = { ...prev };
+      if (value.trim() === "") {
+        delete next[key];
+      } else {
+        next[key] = value;
+      }
+      return next;
+    });
+  };
+
   const handleSaveAllOrders = async () => {
     setSaving(true);
     setSuccessMsg("");
@@ -274,15 +287,16 @@ export default function ManageMenuOrderPage() {
           reportsSubOrder,
           dataRecordsSubOrder,
           manageSubOrder,
+          menuCustomLabels,
         }),
       });
 
       if (res.ok) {
-        setSuccessMsg("บันทึกการจัดลำดับเมนูและเมนูย่อยเรียบร้อยแล้ว!");
+        setSuccessMsg("บันทึกการจัดลำดับและตั้งชื่อเมนูเรียบร้อยแล้ว!");
         window.dispatchEvent(new Event("zyka-menu-updated"));
       } else {
         const data = await res.json();
-        setErrorMsg(data.error || "เกิดข้อผิดพลาดในการบันทึกลำดับเมนู");
+        setErrorMsg(data.error || "เกิดข้อผิดพลาดในการบันทึก");
       }
     } catch (err: any) {
       setErrorMsg(err.message || "เกิดข้อผิดพลาดในการบันทึก");
@@ -292,16 +306,16 @@ export default function ManageMenuOrderPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6 max-w-4xl mx-auto text-[#f3efe6]">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[#f3efe6] flex items-center gap-3">
             <ListOrdered className="w-8 h-8 text-[#98c9a3]" />
-            จัดลำดับเมนูระบบและเมนูย่อย (Menu & Submenu Reordering)
+            จัดลำดับและเปลี่ยนชื่อเมนู (Menu Ordering & Custom Labels)
           </h1>
           <p className="text-xs sm:text-sm text-[#a39b8b] mt-1">
-            ปรับเลื่อนตำแหน่งการแสดงผลของเมนูหลักและรายการเมนูย่อย (Submenu Dropdown) ได้อย่างอิสระ
+            ปรับเลื่อนตำแหน่งและเปลี่ยนชื่อแสดงผลของเมนูหลักและรายการเมนูย่อยตามความต้องการได้อิสระ
           </p>
         </div>
 
@@ -383,7 +397,7 @@ export default function ManageMenuOrderPage() {
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold text-[#e6dfd3] flex items-center gap-1.5 uppercase tracking-wider">
             <Sparkles className="w-4 h-4 text-[#98c9a3]" />
-            ตัวอย่างการแสดงผลลำดับ ({activeTab === "main" ? "เมนูหลัก บน Navbar" : `รายการย่อย Submenu ในกลุ่ม ${activeTab}`})
+            ตัวอย่างการแสดงผลลำดับและชื่อเมนู ({activeTab === "main" ? "เมนูหลัก บน Navbar" : `รายการย่อย Submenu ในกลุ่ม ${activeTab}`})
           </span>
           <span className="text-[11px] text-[#a39b8b]">เรียงตามลำดับจากแรกไปหลัง</span>
         </div>
@@ -392,6 +406,7 @@ export default function ManageMenuOrderPage() {
           {order.map((key, idx) => {
             const item = dict[key];
             if (!item) return null;
+            const displayLabel = menuCustomLabels[key] || item.label;
 
             return (
               <div
@@ -401,7 +416,7 @@ export default function ManageMenuOrderPage() {
                 <span className="w-4 h-4 font-mono text-[10px] rounded-full bg-[#121c15] text-[#a39b8b] flex items-center justify-center">
                   {idx + 1}
                 </span>
-                <span>{item.label}</span>
+                <span>{displayLabel}</span>
               </div>
             );
           })}
@@ -413,10 +428,10 @@ export default function ManageMenuOrderPage() {
         <div className="flex items-center justify-between border-b border-[#2d4734] pb-4">
           <div>
             <h3 className="text-lg font-bold text-[#f3efe6]">
-              จัดลำดับรายการ ({activeTab === "main" ? "เมนูหลัก" : `เมนูย่อย Submenu: ${activeTab}`})
+              จัดลำดับและแก้ไขชื่อเมนู ({activeTab === "main" ? "เมนูหลัก" : `เมนูย่อย Submenu: ${activeTab}`})
             </h3>
             <p className="text-xs text-[#a39b8b]">
-              ใช้ปุ่มขยับขึ้น (⬆️) หรือ ขยับลง (⬇️) เพื่อสลับตำแหน่งการแสดงผล
+              คุณสามารถพิมพ์เปลี่ยนชื่อเมนูในช่องป้อนข้อมูล และขยับขึ้น/ลงได้อย่างอิสระ
             </p>
           </div>
 
@@ -433,7 +448,7 @@ export default function ManageMenuOrderPage() {
         {loading ? (
           <div className="p-12 text-center text-[#a39b8b]">
             <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-[#98c9a3]" />
-            กำลังโหลดข้อมูลลำดับเมนู...
+            กำลังโหลดข้อมูลลำดับและชื่อเมนู...
           </div>
         ) : (
           <div className="space-y-3">
@@ -443,31 +458,67 @@ export default function ManageMenuOrderPage() {
 
               const isFirst = index === 0;
               const isLast = index === order.length - 1;
+              const customVal = menuCustomLabels[key] || "";
 
               return (
                 <div
                   key={key}
                   className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-[#121c15] border border-[#2d4734] hover:border-[#98c9a3]/40 transition-all gap-4 shadow-sm"
                 >
-                  <div className="flex items-center gap-3.5">
+                  <div className="flex items-start sm:items-center gap-3.5 flex-1">
                     {/* Index Badge */}
-                    <span className="w-8 h-8 rounded-xl bg-[#1e3425] border border-[#98c9a3]/30 font-mono font-bold text-xs text-[#98c9a3] flex items-center justify-center shrink-0">
+                    <span className="w-8 h-8 rounded-xl bg-[#1e3425] border border-[#98c9a3]/30 font-mono font-bold text-xs text-[#98c9a3] flex items-center justify-center shrink-0 mt-1 sm:mt-0">
                       #{index + 1}
                     </span>
 
                     {/* Icon */}
-                    <div className="w-10 h-10 rounded-xl bg-[#18241c] border border-[#2d4734] flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-[#18241c] border border-[#2d4734] flex items-center justify-center shrink-0 mt-1 sm:mt-0">
                       {item.icon}
                     </div>
 
-                    <div>
-                      <h4 className="font-bold text-[#f3efe6] text-sm">{item.label}</h4>
-                      <p className="text-xs text-[#a39b8b] mt-0.5">{item.description}</p>
+                    <div className="space-y-2 flex-1">
+                      <div>
+                        <h4 className="font-bold text-[#f3efe6] text-sm flex items-center gap-2">
+                          <span>{item.label}</span>
+                          {customVal && (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#1e3425] text-[#98c9a3] border border-[#98c9a3]/30 font-medium">
+                              กำหนดชื่อเอง
+                            </span>
+                          )}
+                        </h4>
+                        <p className="text-xs text-[#a39b8b] mt-0.5">{item.description}</p>
+                      </div>
+
+                      {/* Custom Label Input Box */}
+                      <div className="flex items-center gap-2 pt-1">
+                        <div className="relative flex-1 max-w-sm">
+                          <Edit3 className="w-3.5 h-3.5 text-[#98c9a3] absolute left-3 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="text"
+                            placeholder={`เปลี่ยนชื่อเมนู (ชื่อเดิม: ${item.label})`}
+                            value={customVal}
+                            onChange={(e) => handleCustomLabelChange(key, e.target.value)}
+                            className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-[#18241c] text-[#f3efe6] border border-[#2d4734] focus:border-[#98c9a3] text-xs font-semibold placeholder:text-[#a39b8b]/40 focus:outline-none transition-colors"
+                          />
+                        </div>
+
+                        {customVal && (
+                          <button
+                            type="button"
+                            onClick={() => handleCustomLabelChange(key, "")}
+                            className="text-xs text-[#a39b8b] hover:text-[#98c9a3] flex items-center gap-1 transition-colors px-2 py-1 rounded-lg bg-[#18241c] border border-[#2d4734]"
+                            title="คืนชื่อมาตรฐานเดิม"
+                          >
+                            <RotateCcw className="w-3 h-3" />
+                            <span>ใช้ชื่อเดิม</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
 
                   {/* Position Up / Down Control Buttons */}
-                  <div className="flex items-center gap-2 self-end sm:self-auto">
+                  <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
                     <button
                       type="button"
                       disabled={isFirst}
@@ -512,7 +563,7 @@ export default function ManageMenuOrderPage() {
             className="btn-earth-primary px-6 py-3 rounded-2xl text-xs font-bold flex items-center gap-2 shadow-lg"
           >
             <Save className="w-4 h-4" />
-            <span>{saving ? "กำลังบันทึก..." : "บันทึกการจัดลำดับทั้งหมด"}</span>
+            <span>{saving ? "กำลังบันทึก..." : "บันทึกการจัดลำดับและชื่อเมนูทั้งหมด"}</span>
           </button>
         </div>
       </div>

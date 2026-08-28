@@ -47,7 +47,7 @@ export default function Navbar() {
   const [appName, setAppName] = useState("ZYKA");
   const [appSubtitle, setAppSubtitle] = useState("Access Control");
 
-  // Menu & Submenu Ordering State
+  // Menu & Submenu Ordering & Custom Labels State
   const [menuOrder, setMenuOrder] = useState<string[]>([
     "dashboard",
     "reports",
@@ -78,6 +78,7 @@ export default function Navbar() {
     "manage-logo",
     "user-logs",
   ]);
+  const [menuCustomLabels, setMenuCustomLabels] = useState<Record<string, string>>({});
 
   // Fetch logo settings
   const fetchLogoSettings = async () => {
@@ -94,7 +95,7 @@ export default function Navbar() {
     }
   };
 
-  // Fetch menu & submenu order settings
+  // Fetch menu & submenu order settings & custom labels
   const fetchMenuOrder = async () => {
     try {
       const res = await fetch(getApiPath("/api/admin/settings/menu-order"), { cache: "no-store" });
@@ -104,6 +105,7 @@ export default function Navbar() {
         if (data.reportsSubOrder && Array.isArray(data.reportsSubOrder)) setReportsSubOrder(data.reportsSubOrder);
         if (data.dataRecordsSubOrder && Array.isArray(data.dataRecordsSubOrder)) setDataRecordsSubOrder(data.dataRecordsSubOrder);
         if (data.manageSubOrder && Array.isArray(data.manageSubOrder)) setManageSubOrder(data.manageSubOrder);
+        if (data.menuCustomLabels && typeof data.menuCustomLabels === "object") setMenuCustomLabels(data.menuCustomLabels);
       }
     } catch {
       // Keep defaults
@@ -132,47 +134,45 @@ export default function Navbar() {
     fetchLogoSettings();
     fetchMenuOrder();
 
-    // Listen for custom update events
+    // Listen for custom events to update logo & menu ordering live without page refresh
     const handleLogoUpdate = () => fetchLogoSettings();
     const handleMenuUpdate = () => fetchMenuOrder();
 
     window.addEventListener("zyka-logo-updated", handleLogoUpdate);
     window.addEventListener("zyka-menu-updated", handleMenuUpdate);
+
     return () => {
       window.removeEventListener("zyka-logo-updated", handleLogoUpdate);
       window.removeEventListener("zyka-menu-updated", handleMenuUpdate);
     };
-  }, [pathname]);
+  }, []);
 
   const handleLogout = async () => {
-    await fetch(getApiPath("/api/auth/logout"), { method: "POST" });
-    setUser(null);
-    router.push("/login");
-    router.refresh();
+    try {
+      await fetch(getApiPath("/api/auth/logout"), { method: "POST" });
+      setUser(null);
+      router.push("/login");
+      router.refresh();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
-  // If on login page, return null
-  if (pathname === "/login") return null;
+  const getLabel = (key: string, fallback: string) => menuCustomLabels[key] || fallback;
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-[#2d4734]/40 bg-[#0f1712]/80 backdrop-blur-md">
+    <nav className="glass-earth-header sticky top-0 z-50 border-b border-[#2d4734]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Left Section: Logo & Nav Links with generous spacing */}
-          <div className="flex items-center gap-8 md:gap-12">
-            {/* Dynamic Brand Logo (Clickable for Admin to manage logo settings) */}
+          {/* Left: Brand Logo & Title */}
+          <div className="flex items-center gap-8">
             <Link
-              href={user?.role === "admin" ? "/admin/manage-logo" : "/dashboard"}
-              title={
-                user?.role === "admin"
-                  ? "กดเพื่อจัดการโลโก้และชื่อระบบ (Admin Only)"
-                  : "กลับสู่หน้าหลัก Dashboard"
-              }
-              className="flex items-center gap-2.5 group transition-transform duration-200 hover:scale-105 shrink-0"
+              href={user ? "/dashboard" : "/login"}
+              className="flex items-center gap-3 group"
             >
               {logoUrl ? (
-                // Custom Logo Image
-                <div className="w-10 h-10 rounded-xl overflow-hidden border border-[#98c9a3]/30 bg-[#18241c] flex items-center justify-center p-1 group-hover:border-[#98c9a3]/60 shadow-md">
+                // Custom Uploaded Logo Image
+                <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#18241c] border border-[#98c9a3]/40 flex items-center justify-center p-1 shadow-md group-hover:border-[#98c9a3] transition-colors">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={logoUrl}
@@ -206,21 +206,21 @@ export default function Navbar() {
                         key="dashboard"
                         href="/dashboard"
                         icon={<LayoutDashboard className="w-4 h-4" />}
-                        label="Dashboard"
+                        label={getLabel("dashboard", "Dashboard")}
                         active={pathname === "/dashboard"}
                       />
                     );
                   }
                   if (key === "reports") {
-                    return <ReportsDropdown key="reports" pathname={pathname} user={user} subOrder={reportsSubOrder} />;
+                    return <ReportsDropdown key="reports" pathname={pathname} user={user} subOrder={reportsSubOrder} menuCustomLabels={menuCustomLabels} />;
                   }
                   if (key === "datarecords") {
-                    return <DataRecordsDropdown key="datarecords" pathname={pathname} user={user} subOrder={dataRecordsSubOrder} />;
+                    return <DataRecordsDropdown key="datarecords" pathname={pathname} user={user} subOrder={dataRecordsSubOrder} menuCustomLabels={menuCustomLabels} />;
                   }
                   if (key === "manage" && user.role === "admin") {
                     return (
                       <div key="manage" className="pl-3 ml-3 border-l border-[#2d4734]">
-                        <AdminManageDropdown pathname={pathname} subOrder={manageSubOrder} />
+                        <AdminManageDropdown pathname={pathname} subOrder={manageSubOrder} menuCustomLabels={menuCustomLabels} />
                       </div>
                     );
                   }
@@ -287,14 +287,12 @@ function NavLink({
   label,
   active,
   isAllowed = true,
-  badge,
 }: {
   href: string;
   icon: React.ReactNode;
   label: string;
   active: boolean;
   isAllowed?: boolean;
-  badge?: string;
 }) {
   if (!isAllowed) return null;
 
@@ -309,11 +307,6 @@ function NavLink({
     >
       {icon}
       <span>{label}</span>
-      {badge && (
-        <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-[#446e50]/40 text-[#98c9a3] border border-[#98c9a3]/30 font-semibold">
-          {badge}
-        </span>
-      )}
     </Link>
   );
 }
@@ -322,13 +315,17 @@ function DataRecordsDropdown({
   pathname,
   user,
   subOrder = ["orders", "products", "inventory", "categories", "sub-categories", "locations", "personnel", "customers"],
+  menuCustomLabels = {},
 }: {
   pathname: string;
   user: UserProfile;
   subOrder?: string[];
+  menuCustomLabels?: Record<string, string>;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const getLabel = (key: string, fallback: string) => menuCustomLabels[key] || fallback;
 
   const isOrdersAllowed = user.role === "admin" || user.allowedPages.includes("/orders");
   const isCategoriesAllowed = user.role === "admin" || user.allowedPages.includes("/categories");
@@ -366,7 +363,7 @@ function DataRecordsDropdown({
         }`}
       >
         <FolderKanban className="w-4 h-4 text-[#98c9a3]" />
-        <span>Data Records</span>
+        <span>{getLabel("datarecords", "Data Records")}</span>
         <ChevronDown
           className={`w-4 h-4 transition-transform duration-200 ${
             isOpen ? "rotate-180 text-[#98c9a3]" : "text-[#a39b8b]"
@@ -388,7 +385,7 @@ function DataRecordsDropdown({
                   }`}
                 >
                   <ShoppingBag className="w-4 h-4 text-[#98c9a3]" />
-                  <span>Orders (บันทึกสั่งซื้อ & ใบเสร็จ)</span>
+                  <span>{getLabel("orders", "Orders (บันทึกสั่งซื้อ & ใบเสร็จ)")}</span>
                 </Link>
               );
             }
@@ -403,7 +400,7 @@ function DataRecordsDropdown({
                   }`}
                 >
                   <Tags className="w-4 h-4 text-[#98c9a3]" />
-                  <span>Categories (ประเภทหมวดสินค้า)</span>
+                  <span>{getLabel("categories", "Categories (ประเภทหมวดสินค้า)")}</span>
                 </Link>
               );
             }
@@ -418,7 +415,7 @@ function DataRecordsDropdown({
                   }`}
                 >
                   <FolderTree className="w-4 h-4 text-[#98c9a3]" />
-                  <span>Sub-Categories (หมวดสินค้า)</span>
+                  <span>{getLabel("sub-categories", "Sub-Categories (หมวดสินค้า)")}</span>
                 </Link>
               );
             }
@@ -433,7 +430,7 @@ function DataRecordsDropdown({
                   }`}
                 >
                   <Package className="w-4 h-4 text-[#98c9a3]" />
-                  <span>Products (บันทึกสินค้า)</span>
+                  <span>{getLabel("products", "Products (บันทึกสินค้า)")}</span>
                 </Link>
               );
             }
@@ -448,7 +445,7 @@ function DataRecordsDropdown({
                   }`}
                 >
                   <Boxes className="w-4 h-4 text-[#98c9a3]" />
-                  <span>Inventory (จัดการสต็อกสินค้า)</span>
+                  <span>{getLabel("inventory", "Inventory (จัดการสต็อกสินค้า)")}</span>
                 </Link>
               );
             }
@@ -463,7 +460,7 @@ function DataRecordsDropdown({
                   }`}
                 >
                   <Warehouse className="w-4 h-4 text-[#98c9a3]" />
-                  <span>Locations (สถานที่เก็บสินค้า)</span>
+                  <span>{getLabel("locations", "Locations (สถานที่เก็บสินค้า)")}</span>
                 </Link>
               );
             }
@@ -478,7 +475,7 @@ function DataRecordsDropdown({
                   }`}
                 >
                   <Users className="w-4 h-4 text-[#98c9a3]" />
-                  <span>Personnel (ข้อมูลบุคลากร)</span>
+                  <span>{getLabel("personnel", "Personnel (ข้อมูลบุคลากร)")}</span>
                 </Link>
               );
             }
@@ -493,7 +490,7 @@ function DataRecordsDropdown({
                   }`}
                 >
                   <Contact className="w-4 h-4 text-[#98c9a3]" />
-                  <span>Customers (ข้อมูลลูกค้า)</span>
+                  <span>{getLabel("customers", "Customers (ข้อมูลลูกค้า)")}</span>
                 </Link>
               );
             }
@@ -508,12 +505,16 @@ function DataRecordsDropdown({
 function AdminManageDropdown({
   pathname,
   subOrder = ["create-user", "manage-permissions", "manage-menu-order", "manage-logo", "user-logs"],
+  menuCustomLabels = {},
 }: {
   pathname: string;
   subOrder?: string[];
+  menuCustomLabels?: Record<string, string>;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const getLabel = (key: string, fallback: string) => menuCustomLabels[key] || fallback;
 
   const isAdminActive = pathname === "/admin/create-user" || pathname === "/admin/manage-permissions" || pathname === "/admin/manage-menu-order" || pathname === "/admin/manage-logo" || pathname === "/admin/user-logs";
 
@@ -538,7 +539,7 @@ function AdminManageDropdown({
         }`}
       >
         <Shield className="w-4 h-4 text-[#98c9a3]" />
-        <span>Manage</span>
+        <span>{getLabel("manage", "Manage")}</span>
         <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#446e50]/40 text-[#98c9a3] border border-[#98c9a3]/30 font-semibold">
           Admin
         </span>
@@ -563,7 +564,7 @@ function AdminManageDropdown({
                   }`}
                 >
                   <UserPlus className="w-4 h-4 text-[#98c9a3]" />
-                  <span>Create User (สร้างผู้ใช้)</span>
+                  <span>{getLabel("create-user", "Create User (สร้างผู้ใช้)")}</span>
                 </Link>
               );
             }
@@ -578,7 +579,7 @@ function AdminManageDropdown({
                   }`}
                 >
                   <Sliders className="w-4 h-4 text-[#98c9a3]" />
-                  <span>Permissions (จัดการสิทธิ์)</span>
+                  <span>{getLabel("manage-permissions", "Permissions (จัดการสิทธิ์)")}</span>
                 </Link>
               );
             }
@@ -593,7 +594,7 @@ function AdminManageDropdown({
                   }`}
                 >
                   <ListOrdered className="w-4 h-4 text-[#98c9a3]" />
-                  <span>Menu Order (จัดลำดับเมนู)</span>
+                  <span>{getLabel("manage-menu-order", "Menu Order (จัดลำดับและตั้งชื่อเมนู)")}</span>
                 </Link>
               );
             }
@@ -608,7 +609,7 @@ function AdminManageDropdown({
                   }`}
                 >
                   <Leaf className="w-4 h-4 text-[#98c9a3]" />
-                  <span>Logo & Branding (จัดการโลโก้)</span>
+                  <span>{getLabel("manage-logo", "Logo & Branding (จัดการโลโก้)")}</span>
                 </Link>
               );
             }
@@ -623,7 +624,7 @@ function AdminManageDropdown({
                   }`}
                 >
                   <Activity className="w-4 h-4 text-[#98c9a3]" />
-                  <span>User Logs (ประวัติการใช้งาน)</span>
+                  <span>{getLabel("user-logs", "User Logs (ประวัติการใช้งาน)")}</span>
                 </Link>
               );
             }
@@ -639,13 +640,17 @@ function ReportsDropdown({
   pathname,
   user,
   subOrder = ["sales", "charts", "customer", "product", "user"],
+  menuCustomLabels = {},
 }: {
   pathname: string;
   user: UserProfile;
   subOrder?: string[];
+  menuCustomLabels?: Record<string, string>;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const getLabel = (key: string, fallback: string) => menuCustomLabels[key] || fallback;
 
   const hasFullReportAccess = user.role === "admin" || user.allowedPages.includes("/reports");
 
@@ -682,7 +687,7 @@ function ReportsDropdown({
         }`}
       >
         <FileText className="w-4 h-4 text-[#98c9a3]" />
-        <span>Reports</span>
+        <span>{getLabel("reports", "Reports")}</span>
         <ChevronDown
           className={`w-4 h-4 transition-transform duration-200 ${
             isOpen ? "rotate-180 text-[#98c9a3]" : "text-[#a39b8b]"
@@ -702,7 +707,7 @@ function ReportsDropdown({
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-[#e6dfd3] hover:bg-[#18241c] hover:text-[#98c9a3] transition-colors"
                 >
                   <TrendingUp className="w-4 h-4 text-[#98c9a3]" />
-                  <span>📊 สรุปยอดขาย (Sales Summary)</span>
+                  <span>{getLabel("sales", "📊 สรุปยอดขาย (Sales Summary)")}</span>
                 </Link>
               );
             }
@@ -715,7 +720,7 @@ function ReportsDropdown({
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-[#e6dfd3] hover:bg-[#18241c] hover:text-[#98c9a3] transition-colors"
                 >
                   <BarChart3 className="w-4 h-4 text-[#98c9a3]" />
-                  <span>📈 กราฟวิเคราะห์ (Sales Charts)</span>
+                  <span>{getLabel("charts", "📈 กราฟวิเคราะห์ (Sales Charts)")}</span>
                 </Link>
               );
             }
@@ -728,7 +733,7 @@ function ReportsDropdown({
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-[#e6dfd3] hover:bg-[#18241c] hover:text-[#98c9a3] transition-colors"
                 >
                   <Users className="w-4 h-4 text-[#98c9a3]" />
-                  <span>👥 สรุปตามลูกค้า (Sales by Customer)</span>
+                  <span>{getLabel("customer", "👥 สรุปตามลูกค้า (Sales by Customer)")}</span>
                 </Link>
               );
             }
@@ -741,7 +746,7 @@ function ReportsDropdown({
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-[#e6dfd3] hover:bg-[#18241c] hover:text-[#98c9a3] transition-colors"
                 >
                   <Package className="w-4 h-4 text-[#98c9a3]" />
-                  <span>📦 สรุปตามสินค้า (Sales by Product)</span>
+                  <span>{getLabel("product", "📦 สรุปตามสินค้า (Sales by Product)")}</span>
                 </Link>
               );
             }
@@ -754,7 +759,7 @@ function ReportsDropdown({
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-[#e6dfd3] hover:bg-[#18241c] hover:text-[#98c9a3] transition-colors"
                 >
                   <Activity className="w-4 h-4 text-[#98c9a3]" />
-                  <span>👤 ประวัติผู้ใช้งาน (User Logs)</span>
+                  <span>{getLabel("user", "👤 ประวัติผู้ใช้งาน (User Logs)")}</span>
                 </Link>
               );
             }

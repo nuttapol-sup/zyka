@@ -3,7 +3,7 @@ import { connectDB } from "@/lib/db";
 import Setting from "@/models/Setting";
 import { getSession } from "@/lib/auth";
 
-const DEFAULT_MENU_ORDER = ["dashboard", "reports", "analytics", "datarecords", "manage"];
+const DEFAULT_MENU_ORDER = ["dashboard", "reports", "datarecords", "manage"];
 const DEFAULT_REPORTS_ORDER = ["sales", "charts", "customer", "product", "user"];
 const DEFAULT_DATA_RECORDS_ORDER = ["orders", "products", "inventory", "categories", "sub-categories", "locations", "personnel", "customers"];
 const DEFAULT_MANAGE_ORDER = ["create-user", "manage-permissions", "manage-menu-order", "manage-logo", "user-logs"];
@@ -24,6 +24,7 @@ export async function GET() {
         reportsSubOrder: DEFAULT_REPORTS_ORDER,
         dataRecordsSubOrder: DEFAULT_DATA_RECORDS_ORDER,
         manageSubOrder: DEFAULT_MANAGE_ORDER,
+        menuCustomLabels: {},
       });
     }
 
@@ -31,12 +32,14 @@ export async function GET() {
     const reportsSubOrder = setting.reportsSubOrder && setting.reportsSubOrder.length > 0 ? setting.reportsSubOrder : DEFAULT_REPORTS_ORDER;
     const dataRecordsSubOrder = setting.dataRecordsSubOrder && setting.dataRecordsSubOrder.length > 0 ? setting.dataRecordsSubOrder : DEFAULT_DATA_RECORDS_ORDER;
     const manageSubOrder = setting.manageSubOrder && setting.manageSubOrder.length > 0 ? setting.manageSubOrder : DEFAULT_MANAGE_ORDER;
+    const menuCustomLabels = setting.menuCustomLabels || {};
 
     return NextResponse.json({
       menuOrder,
       reportsSubOrder,
       dataRecordsSubOrder,
       manageSubOrder,
+      menuCustomLabels,
     });
   } catch (error: any) {
     return NextResponse.json(
@@ -54,7 +57,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { menuOrder, reportsSubOrder, dataRecordsSubOrder, manageSubOrder } = body;
+    const { menuOrder, reportsSubOrder, dataRecordsSubOrder, manageSubOrder, menuCustomLabels } = body;
 
     await connectDB();
     let setting = await Setting.findOne({ key: "app_settings" });
@@ -66,15 +69,17 @@ export async function POST(request: Request) {
     if (reportsSubOrder && Array.isArray(reportsSubOrder)) setting.reportsSubOrder = reportsSubOrder;
     if (dataRecordsSubOrder && Array.isArray(dataRecordsSubOrder)) setting.dataRecordsSubOrder = dataRecordsSubOrder;
     if (manageSubOrder && Array.isArray(manageSubOrder)) setting.manageSubOrder = manageSubOrder;
+    if (menuCustomLabels && typeof menuCustomLabels === "object") setting.menuCustomLabels = menuCustomLabels;
 
     await setting.save();
 
     return NextResponse.json({
-      message: "บันทึกจัดลำดับเมนูเรียบร้อยแล้ว",
+      message: "บันทึกจัดลำดับเมนูและตั้งชื่อเมนูเรียบร้อยแล้ว",
       menuOrder: setting.menuOrder,
       reportsSubOrder: setting.reportsSubOrder,
       dataRecordsSubOrder: setting.dataRecordsSubOrder,
       manageSubOrder: setting.manageSubOrder,
+      menuCustomLabels: setting.menuCustomLabels,
     });
   } catch (error: any) {
     return NextResponse.json(
