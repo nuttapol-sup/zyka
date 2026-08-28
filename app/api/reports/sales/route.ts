@@ -3,7 +3,15 @@ import { connectDB } from "@/lib/db";
 import Order from "@/models/Order";
 import Refer from "@/models/Refer";
 import Product from "@/models/Product";
+import Category from "@/models/Category";
+import SubCategory from "@/models/SubCategory";
+import StorageLocation from "@/models/StorageLocation";
 import { getSession } from "@/lib/auth";
+
+// Ensure models are registered for Mongoose population
+if (!Order || !Refer || !Product || !Category || !SubCategory || !StorageLocation) {
+  // Models registered
+}
 
 export async function GET(request: Request) {
   try {
@@ -12,7 +20,12 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "ยังไม่ได้เข้าสู่ระบบ" }, { status: 401 });
     }
 
-    if (session.role !== "admin" && (!session.allowedPages || !session.allowedPages.includes("/reports"))) {
+    const canAccess =
+      session.role === "admin" ||
+      (Array.isArray(session.allowedPages) &&
+        (session.allowedPages.includes("/dashboard") || session.allowedPages.includes("/reports")));
+
+    if (!canAccess) {
       return NextResponse.json({ error: "ไม่มีสิทธิ์เข้าถึงรายงานสรุปยอดขาย" }, { status: 403 });
     }
 
