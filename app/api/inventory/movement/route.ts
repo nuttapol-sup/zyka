@@ -23,6 +23,9 @@ export async function POST(request: Request) {
     if (!productId) {
       return NextResponse.json({ error: "กรุณาเลือกสินค้า" }, { status: 400 });
     }
+    if (!locationId) {
+      return NextResponse.json({ error: "กรุณาระบุสถานที่เก็บสินค้า (LOCATION)" }, { status: 400 });
+    }
     if (!type || !["IN", "OUT", "ADJUST"].includes(type)) {
       return NextResponse.json({ error: "ประเภทรายการไม่ถูกต้อง (IN, OUT, ADJUST)" }, { status: 400 });
     }

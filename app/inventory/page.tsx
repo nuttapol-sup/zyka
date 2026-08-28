@@ -193,6 +193,17 @@ export default function InventoryPage() {
   const handleProcessMovement = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!selectedProductId) {
+      setError("กรุณาเลือกสินค้า");
+      return;
+    }
+
+    if (!selectedLocationId) {
+      setError("กรุณาระบุสถานที่เก็บสินค้า (LOCATION)");
+      return;
+    }
+
     setSaving(true);
 
     try {
@@ -835,14 +846,15 @@ export default function InventoryPage() {
               {/* Location Selection */}
               <div>
                 <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
-                  สถานที่เก็บสินค้า (Location)
+                  สถานที่เก็บสินค้า (LOCATION) *
                 </label>
                 <select
+                  required
                   value={selectedLocationId}
                   onChange={(e) => setSelectedLocationId(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
                 >
-                  <option value="">-- คลังหลัก / ไม่ระบุ --</option>
+                  <option value="">-- เลือก --</option>
                   {locations.map((loc) => (
                     <option key={loc._id} value={loc._id}>
                       {loc.name} (รหัส: {loc.code})

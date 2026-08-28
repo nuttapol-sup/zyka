@@ -34,6 +34,16 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   basePath: "/zyka",
   reactStrictMode: true,
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/zyka",
+        basePath: false,
+        permanent: false,
+      },
+    ];
+  },
   async headers() {
     return [
       {
