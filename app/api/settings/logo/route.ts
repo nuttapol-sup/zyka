@@ -11,7 +11,7 @@ export async function GET() {
         key: "app_settings",
         logoUrl: "",
         appName: "ZYKA",
-        appSubtitle: "Access Control",
+        appSubtitle: "Medic",
         companyAddress: "",
         companyPhone: "",
         companyTaxId: "",
@@ -21,7 +21,7 @@ export async function GET() {
     return NextResponse.json({
       logoUrl: setting.logoUrl || "",
       appName: setting.appName || "ZYKA",
-      appSubtitle: setting.appSubtitle || "Access Control",
+      appSubtitle: setting.appSubtitle || "Medic",
       companyAddress: setting.companyAddress || "",
       companyPhone: setting.companyPhone || "",
       companyTaxId: setting.companyTaxId || "",
@@ -31,7 +31,7 @@ export async function GET() {
       {
         logoUrl: "",
         appName: "ZYKA",
-        appSubtitle: "Access Control",
+        appSubtitle: "Medic",
         companyAddress: "",
         companyPhone: "",
         companyTaxId: "",

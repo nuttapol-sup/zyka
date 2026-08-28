@@ -4,8 +4,8 @@ import Navbar from "@/app/components/Navbar";
 import ActivityTracker from "@/app/components/ActivityTracker";
 
 export const metadata: Metadata = {
-  title: "ZYKA Access Control - Earth Tone RBAC System",
-  description: "Next.js + MongoDB Login & Permission Control System with Earth Tone Green theme",
+  title: "Zyka Medic",
+  description: "Zyka Medic ERP System",
 };
 
 export default function RootLayout({
