@@ -413,6 +413,46 @@ export default function ManagePermissionsPage() {
     }
   };
 
+  const handleResetPassword = async (user: UserItem) => {
+    if (
+      !confirm(
+        `คุณต้องการรีเซ็ตรหัสผ่านของผู้ใช้งาน "${user.name}" (@${user.username}) เป็น "123456" ใช่หรือไม่?`
+      )
+    ) {
+      return;
+    }
+
+    setSavingId(user._id);
+    setSuccessMsg("");
+
+    try {
+      const res = await fetch(getApiPath(`/api/admin/users/${user._id}`), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: user.name,
+          username: user.username,
+          newPassword: "123456",
+          role: user.role,
+          allowedPages: user.allowedPages,
+          referId: user.referId,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "ไม่สามารถรีเซ็ตรหัสผ่านได้");
+
+      setSuccessMsg(
+        `🔑 รีเซ็ตรหัสผ่านของผู้ใช้งาน "${user.name}" เป็น "123456" เรียบร้อยแล้ว!`
+      );
+      setTimeout(() => setSuccessMsg(""), 4000);
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setSavingId(null);
+    }
+  };
+
   const handleDeleteUser = async (user: UserItem) => {
     if (user._id === currentAdminId) {
       alert("ไม่สามารถลบบัญชีผู้ใช้ของตัวคุณเองได้");
@@ -625,6 +665,16 @@ export default function ManagePermissionsPage() {
                         <Sliders className="w-3.5 h-3.5" />
                         <span>{isExpanded ? "ซ่อนสิทธิ์" : "จัดการสิทธิ์รายหน้า"}</span>
                         {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                      </button>
+
+                      <button
+                        onClick={() => handleResetPassword(user)}
+                        disabled={savingId === user._id}
+                        className="p-1.5 px-2.5 rounded-xl bg-[#1e2d21] text-[#f59e0b] hover:bg-[#2b3a2f] border border-[#f59e0b]/40 transition-colors flex items-center gap-1.5 text-xs font-bold disabled:opacity-50"
+                        title="รีเซ็ตรหัสผ่านเป็น 123456"
+                      >
+                        <KeyRound className="w-3.5 h-3.5 text-[#f59e0b]" />
+                        <span>รีเซ็ตรหัสผ่าน</span>
                       </button>
 
                       <button
@@ -847,15 +897,26 @@ export default function ManagePermissionsPage() {
                   <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1.5">
                     เปลี่ยนรหัสผ่านใหม่ (เว้นว่างไว้หากไม่เปลี่ยน)
                   </label>
-                  <div className="relative">
-                    <KeyRound className="w-4 h-4 text-[#a39b8b] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    <input
-                      type="password"
-                      value={editPassword || ""}
-                      onChange={(e) => setEditPassword(e.target.value)}
-                      className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
-                      placeholder="รหัสผ่านใหม่อย่างน้อย 6 ตัวอักษร"
-                    />
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <KeyRound className="w-4 h-4 text-[#a39b8b] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        type="password"
+                        value={editPassword || ""}
+                        onChange={(e) => setEditPassword(e.target.value)}
+                        className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
+                        placeholder="รหัสผ่านใหม่อย่างน้อย 6 ตัวอักษร"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setEditPassword("123456")}
+                      className="px-2.5 py-2.5 rounded-xl bg-[#1e2d21] hover:bg-[#2b3a2f] border border-[#f59e0b]/50 text-[#f59e0b] text-xs font-bold flex items-center gap-1 shrink-0"
+                      title="ตั้งรหัสผ่านเป็น 123456"
+                    >
+                      <KeyRound className="w-3.5 h-3.5" />
+                      <span>เป็น 123456</span>
+                    </button>
                   </div>
                 </div>
 

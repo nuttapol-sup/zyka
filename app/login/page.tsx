@@ -57,9 +57,6 @@ export default function LoginPage() {
           <h2 className="text-3xl font-extrabold text-gradient-earth tracking-tight">
             เข้าสู่ระบบ ZYKA
           </h2>
-          <p className="text-sm text-[#a39b8b]">
-            ระบบจัดการสิทธิ์และลงชื่อเข้าใช้งาน (Earth Tone Theme)
-          </p>
         </div>
 
         {/* Alert Error */}
@@ -85,7 +82,7 @@ export default function LoginPage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full pl-11 pr-4 py-3 rounded-xl bg-[#121c15] border border-[#2d4734] text-[#f3efe6] placeholder-[#a39b8b]/50 focus:outline-none focus:border-[#98c9a3] focus:ring-1 focus:ring-[#98c9a3] transition-all"
-                placeholder="admin หรือ user1"
+                placeholder="Username"
               />
             </div>
           </div>
@@ -104,7 +101,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full pl-11 pr-4 py-3 rounded-xl bg-[#121c15] border border-[#2d4734] text-[#f3efe6] placeholder-[#a39b8b]/50 focus:outline-none focus:border-[#98c9a3] focus:ring-1 focus:ring-[#98c9a3] transition-all"
-                placeholder="••••••••"
+                placeholder="Password"
               />
             </div>
           </div>
