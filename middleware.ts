@@ -22,6 +22,19 @@ function withSecurityHeaders(response: NextResponse) {
   return response;
 }
 
+function createRedirect(targetPath: string, request: NextRequest): NextResponse {
+  const urlString = request.url;
+  const isSubpath = urlString.includes("/zyka") || request.nextUrl.pathname.startsWith("/zyka");
+
+  let fullPath = targetPath;
+  if (isSubpath && !targetPath.startsWith("/zyka")) {
+    fullPath = `/zyka${targetPath.startsWith("/") ? "" : "/"}${targetPath}`;
+  }
+
+  const redirectUrl = new URL(fullPath, request.url);
+  return withSecurityHeaders(NextResponse.redirect(redirectUrl));
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -38,10 +51,10 @@ export async function middleware(request: NextRequest) {
   if (PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(path))) {
     // If user is already logged in and visits /login, redirect to /dashboard
     const token = request.cookies.get(COOKIE_NAME)?.value;
-    if (token && pathname === "/login") {
+    if (token && (pathname === "/login" || pathname === "/zyka/login")) {
       const payload = await verifyToken(token);
       if (payload) {
-        return withSecurityHeaders(NextResponse.redirect(new URL("/dashboard", request.url)));
+        return createRedirect("/dashboard", request);
       }
     }
     return withSecurityHeaders(NextResponse.next());
@@ -53,7 +66,7 @@ export async function middleware(request: NextRequest) {
     if (pathname.startsWith("/api/")) {
       return withSecurityHeaders(NextResponse.json({ error: "ยังไม่ได้เข้าสู่ระบบ" }, { status: 401 }));
     }
-    return withSecurityHeaders(NextResponse.redirect(new URL("/login", request.url)));
+    return createRedirect("/login", request);
   }
 
   const payload = await verifyToken(token);
@@ -61,9 +74,9 @@ export async function middleware(request: NextRequest) {
     if (pathname.startsWith("/api/")) {
       return withSecurityHeaders(NextResponse.json({ error: "Token ไม่ถูกต้องหรือหมดอายุ" }, { status: 401 }));
     }
-    const response = NextResponse.redirect(new URL("/login", request.url));
+    const response = createRedirect("/login", request);
     response.cookies.delete(COOKIE_NAME);
-    return withSecurityHeaders(response);
+    return response;
   }
 
   // 4. Admin-Only Route Check
@@ -72,7 +85,7 @@ export async function middleware(request: NextRequest) {
       if (pathname.startsWith("/api/")) {
         return withSecurityHeaders(NextResponse.json({ error: "ต้องใช้สิทธิ์ Admin เท่านั้น" }, { status: 403 }));
       }
-      return withSecurityHeaders(NextResponse.redirect(new URL("/unauthorized?reason=admin_required", request.url)));
+      return createRedirect("/unauthorized?reason=admin_required", request);
     }
   }
 
@@ -96,7 +109,7 @@ export async function middleware(request: NextRequest) {
     if (matchedPage) {
       const hasPermission = payload.allowedPages && payload.allowedPages.includes(matchedPage);
       if (!hasPermission) {
-        return withSecurityHeaders(NextResponse.redirect(new URL(`/unauthorized?page=${encodeURIComponent(matchedPage)}`, request.url)));
+        return createRedirect(`/unauthorized?page=${encodeURIComponent(matchedPage)}`, request);
       }
     }
   }
@@ -106,9 +119,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for static assets
-     */
     "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };
