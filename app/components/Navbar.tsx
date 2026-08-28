@@ -445,56 +445,74 @@ export default function Navbar() {
 
                     {mobileReportsOpen && (
                       <div className="p-2 space-y-1 bg-[#18241c]/80 border-t border-[#2d4734]/40">
-                        {isSalesAllowed && (
-                          <Link
-                            href="/reports?tab=sales"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]"
-                          >
-                            <TrendingUp className="w-3.5 h-3.5 text-[#98c9a3]" />
-                            <span>{getLabel("sales", "📊 สรุปยอดขาย (Sales Summary)")}</span>
-                          </Link>
-                        )}
-                        {isChartsAllowed && (
-                          <Link
-                            href="/reports?tab=charts"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]"
-                          >
-                            <BarChart3 className="w-3.5 h-3.5 text-[#98c9a3]" />
-                            <span>{getLabel("charts", "📈 กราฟวิเคราะห์ (Sales Charts)")}</span>
-                          </Link>
-                        )}
-                        {isCustomerAllowed && (
-                          <Link
-                            href="/reports?tab=customer"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]"
-                          >
-                            <Users className="w-3.5 h-3.5 text-[#98c9a3]" />
-                            <span>{getLabel("customer", "👥 สรุปตามลูกค้า (Sales by Customer)")}</span>
-                          </Link>
-                        )}
-                        {isProductAllowed && (
-                          <Link
-                            href="/reports?tab=product"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]"
-                          >
-                            <Package className="w-3.5 h-3.5 text-[#98c9a3]" />
-                            <span>{getLabel("product", "📦 สรุปตามสินค้า (Sales by Product)")}</span>
-                          </Link>
-                        )}
-                        {isUserAllowed && (
-                          <Link
-                            href="/reports?tab=user"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]"
-                          >
-                            <Activity className="w-3.5 h-3.5 text-[#98c9a3]" />
-                            <span>{getLabel("user", "👤 ประวัติผู้ใช้งาน (User Logs)")}</span>
-                          </Link>
-                        )}
+                        {reportsSubOrder.map((subKey) => {
+                          if (subKey === "sales" && isSalesAllowed) {
+                            return (
+                              <Link
+                                key="m-sales"
+                                href="/reports?tab=sales"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]"
+                              >
+                                <TrendingUp className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("sales", "📊 สรุปยอดขาย (Sales Summary)")}</span>
+                              </Link>
+                            );
+                          }
+                          if (subKey === "charts" && isChartsAllowed) {
+                            return (
+                              <Link
+                                key="m-charts"
+                                href="/reports?tab=charts"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]"
+                              >
+                                <BarChart3 className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("charts", "📈 กราฟวิเคราะห์ (Sales Charts)")}</span>
+                              </Link>
+                            );
+                          }
+                          if (subKey === "customer" && isCustomerAllowed) {
+                            return (
+                              <Link
+                                key="m-customer"
+                                href="/reports?tab=customer"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]"
+                              >
+                                <Users className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("customer", "👥 สรุปตามลูกค้า (Sales by Customer)")}</span>
+                              </Link>
+                            );
+                          }
+                          if (subKey === "product" && isProductAllowed) {
+                            return (
+                              <Link
+                                key="m-product"
+                                href="/reports?tab=product"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]"
+                              >
+                                <Package className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("product", "📦 สรุปตามสินค้า (Sales by Product)")}</span>
+                              </Link>
+                            );
+                          }
+                          if (subKey === "user" && isUserAllowed) {
+                            return (
+                              <Link
+                                key="m-user"
+                                href="/reports?tab=user"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]"
+                              >
+                                <Activity className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("user", "👤 ประวัติผู้ใช้งาน (User Logs)")}</span>
+                              </Link>
+                            );
+                          }
+                          return null;
+                        })}
                       </div>
                     )}
                   </div>
@@ -529,54 +547,73 @@ export default function Navbar() {
 
                     {mobileDataOpen && (
                       <div className="p-2 space-y-1 bg-[#18241c]/80 border-t border-[#2d4734]/40">
-                        {isOrdersAllowed && (
-                          <Link href="/orders" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
-                            <ShoppingBag className="w-3.5 h-3.5 text-[#98c9a3]" />
-                            <span>{getLabel("orders", "Orders (บันทึกสั่งซื้อ & ใบเสร็จ)")}</span>
-                          </Link>
-                        )}
-                        {isCategoriesAllowed && (
-                          <Link href="/categories" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
-                            <Tags className="w-3.5 h-3.5 text-[#98c9a3]" />
-                            <span>{getLabel("categories", "Categories (ประเภทหมวดสินค้า)")}</span>
-                          </Link>
-                        )}
-                        {isSubCategoriesAllowed && (
-                          <Link href="/sub-categories" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
-                            <FolderTree className="w-3.5 h-3.5 text-[#98c9a3]" />
-                            <span>{getLabel("sub-categories", "Sub-Categories (หมวดสินค้า)")}</span>
-                          </Link>
-                        )}
-                        {isProductsAllowed && (
-                          <Link href="/products" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
-                            <Package className="w-3.5 h-3.5 text-[#98c9a3]" />
-                            <span>{getLabel("products", "Products (บันทึกสินค้า)")}</span>
-                          </Link>
-                        )}
-                        {isInventoryAllowed && (
-                          <Link href="/inventory" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
-                            <Boxes className="w-3.5 h-3.5 text-[#98c9a3]" />
-                            <span>{getLabel("inventory", "Inventory (จัดการสต็อกสินค้า)")}</span>
-                          </Link>
-                        )}
-                        {isLocationsAllowed && (
-                          <Link href="/locations" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
-                            <Warehouse className="w-3.5 h-3.5 text-[#98c9a3]" />
-                            <span>{getLabel("locations", "Locations (สถานที่เก็บสินค้า)")}</span>
-                          </Link>
-                        )}
-                        {isPersonnelAllowed && (
-                          <Link href="/personnel" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
-                            <Users className="w-3.5 h-3.5 text-[#98c9a3]" />
-                            <span>{getLabel("personnel", "Personnel (ข้อมูลบุคลากร)")}</span>
-                          </Link>
-                        )}
-                        {isCustomersAllowed && (
-                          <Link href="/customers" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
-                            <Contact className="w-3.5 h-3.5 text-[#98c9a3]" />
-                            <span>{getLabel("customers", "Customers (ข้อมูลลูกค้า)")}</span>
-                          </Link>
-                        )}
+                        {dataRecordsSubOrder.map((subKey) => {
+                          if (subKey === "orders" && isOrdersAllowed) {
+                            return (
+                              <Link key="m-orders" href="/orders" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                                <ShoppingBag className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("orders", "Orders (บันทึกสั่งซื้อ & ใบเสร็จ)")}</span>
+                              </Link>
+                            );
+                          }
+                          if (subKey === "categories" && isCategoriesAllowed) {
+                            return (
+                              <Link key="m-categories" href="/categories" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                                <Tags className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("categories", "Categories (ประเภทหมวดสินค้า)")}</span>
+                              </Link>
+                            );
+                          }
+                          if (subKey === "sub-categories" && isSubCategoriesAllowed) {
+                            return (
+                              <Link key="m-sub-categories" href="/sub-categories" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                                <FolderTree className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("sub-categories", "Sub-Categories (หมวดสินค้า)")}</span>
+                              </Link>
+                            );
+                          }
+                          if (subKey === "products" && isProductsAllowed) {
+                            return (
+                              <Link key="m-products" href="/products" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                                <Package className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("products", "Products (บันทึกสินค้า)")}</span>
+                              </Link>
+                            );
+                          }
+                          if (subKey === "inventory" && isInventoryAllowed) {
+                            return (
+                              <Link key="m-inventory" href="/inventory" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                                <Boxes className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("inventory", "Inventory (จัดการสต็อกสินค้า)")}</span>
+                              </Link>
+                            );
+                          }
+                          if (subKey === "locations" && isLocationsAllowed) {
+                            return (
+                              <Link key="m-locations" href="/locations" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                                <Warehouse className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("locations", "Locations (สถานที่เก็บสินค้า)")}</span>
+                              </Link>
+                            );
+                          }
+                          if (subKey === "personnel" && isPersonnelAllowed) {
+                            return (
+                              <Link key="m-personnel" href="/personnel" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                                <Users className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("personnel", "Personnel (ข้อมูลบุคลากร)")}</span>
+                              </Link>
+                            );
+                          }
+                          if (subKey === "customers" && isCustomersAllowed) {
+                            return (
+                              <Link key="m-customers" href="/customers" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                                <Contact className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("customers", "Customers (ข้อมูลลูกค้า)")}</span>
+                              </Link>
+                            );
+                          }
+                          return null;
+                        })}
                       </div>
                     )}
                   </div>
@@ -602,26 +639,49 @@ export default function Navbar() {
 
                     {mobileAdminOpen && (
                       <div className="p-2 space-y-1 bg-[#18241c]/80 border-t border-[#2d4734]/40">
-                        <Link href="/admin/create-user" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
-                          <UserPlus className="w-3.5 h-3.5 text-[#98c9a3]" />
-                          <span>{getLabel("create-user", "Create User (สร้างผู้ใช้)")}</span>
-                        </Link>
-                        <Link href="/admin/manage-permissions" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
-                          <Sliders className="w-3.5 h-3.5 text-[#98c9a3]" />
-                          <span>{getLabel("manage-permissions", "Permissions (จัดการสิทธิ์)")}</span>
-                        </Link>
-                        <Link href="/admin/manage-menu-order" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
-                          <ListOrdered className="w-3.5 h-3.5 text-[#98c9a3]" />
-                          <span>{getLabel("manage-menu-order", "Menu Order (จัดลำดับและตั้งชื่อเมนู)")}</span>
-                        </Link>
-                        <Link href="/admin/manage-logo" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
-                          <Leaf className="w-3.5 h-3.5 text-[#98c9a3]" />
-                          <span>{getLabel("manage-logo", "Logo & Branding (จัดการโลโก้)")}</span>
-                        </Link>
-                        <Link href="/admin/user-logs" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
-                          <Activity className="w-3.5 h-3.5 text-[#98c9a3]" />
-                          <span>{getLabel("user-logs", "User Logs (ประวัติการใช้งาน)")}</span>
-                        </Link>
+                        {manageSubOrder.map((subKey) => {
+                          if (subKey === "create-user") {
+                            return (
+                              <Link key="m-create-user" href="/admin/create-user" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                                <UserPlus className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("create-user", "Create User (สร้างผู้ใช้)")}</span>
+                              </Link>
+                            );
+                          }
+                          if (subKey === "manage-permissions") {
+                            return (
+                              <Link key="m-manage-permissions" href="/admin/manage-permissions" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                                <Sliders className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("manage-permissions", "Permissions (จัดการสิทธิ์)")}</span>
+                              </Link>
+                            );
+                          }
+                          if (subKey === "manage-menu-order") {
+                            return (
+                              <Link key="m-manage-menu-order" href="/admin/manage-menu-order" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                                <ListOrdered className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("manage-menu-order", "Menu Order (จัดลำดับและตั้งชื่อเมนู)")}</span>
+                              </Link>
+                            );
+                          }
+                          if (subKey === "manage-logo") {
+                            return (
+                              <Link key="m-manage-logo" href="/admin/manage-logo" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                                <Leaf className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("manage-logo", "Logo & Branding (จัดการโลโก้)")}</span>
+                              </Link>
+                            );
+                          }
+                          if (subKey === "user-logs") {
+                            return (
+                              <Link key="m-user-logs" href="/admin/user-logs" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                                <Activity className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("user-logs", "User Logs (ประวัติการใช้งาน)")}</span>
+                              </Link>
+                            );
+                          }
+                          return null;
+                        })}
                       </div>
                     )}
                   </div>
