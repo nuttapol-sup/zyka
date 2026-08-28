@@ -33,9 +33,16 @@ export default function LoginPage() {
         throw new Error(data.error || "ไม่สามารถเข้าสู่ระบบได้");
       }
 
-      // Success -> Redirect based on user permissions
-      router.push(data.targetPage || "/dashboard");
-      router.refresh();
+      // Success -> Dispatch update event & perform full navigation to sync Navbar & cookies
+      window.dispatchEvent(new Event("zyka-user-updated"));
+
+      const target = data.targetPage || "/dashboard";
+      const isSubpath = typeof window !== "undefined" && window.location.pathname.startsWith("/zyka");
+      const finalUrl = isSubpath && !target.startsWith("/zyka")
+        ? `/zyka${target.startsWith("/") ? "" : "/"}${target}`
+        : target;
+
+      window.location.href = finalUrl;
     } catch (err: any) {
       setError(err.message);
     } finally {

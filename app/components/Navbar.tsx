@@ -164,18 +164,21 @@ export default function Navbar() {
     fetchLogoSettings();
     fetchMenuOrder();
 
-    // Listen for custom events to update logo & menu ordering live without page refresh
+    // Listen for custom events to update logo, menu ordering & user session live without manual page refresh
     const handleLogoUpdate = () => fetchLogoSettings();
     const handleMenuUpdate = () => fetchMenuOrder();
+    const handleUserUpdate = () => fetchUser();
 
     window.addEventListener("zyka-logo-updated", handleLogoUpdate);
     window.addEventListener("zyka-menu-updated", handleMenuUpdate);
+    window.addEventListener("zyka-user-updated", handleUserUpdate);
 
     return () => {
       window.removeEventListener("zyka-logo-updated", handleLogoUpdate);
       window.removeEventListener("zyka-menu-updated", handleMenuUpdate);
+      window.removeEventListener("zyka-user-updated", handleUserUpdate);
     };
-  }, []);
+  }, [pathname]);
 
   const handleLogout = async () => {
     try {
