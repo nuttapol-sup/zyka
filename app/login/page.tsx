@@ -17,7 +17,11 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
+      const apiPath = typeof window !== "undefined" && window.location.pathname.startsWith("/zyka")
+        ? "/zyka/api/auth/login"
+        : "/api/auth/login";
+
+      const res = await fetch(apiPath, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),

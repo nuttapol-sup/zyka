@@ -73,7 +73,10 @@ export default function SalesDashboardCharts() {
   const fetchData = async (year: number) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/reports/sales?year=${year}`, { cache: "no-store" });
+      const apiPath = typeof window !== "undefined" && window.location.pathname.startsWith("/zyka")
+        ? `/zyka/api/reports/sales?year=${year}`
+        : `/api/reports/sales?year=${year}`;
+      const res = await fetch(apiPath, { cache: "no-store" });
       if (res.ok) {
         const result = await res.json();
         setData({

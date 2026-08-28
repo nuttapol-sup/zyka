@@ -27,6 +27,7 @@ import {
   TrendingUp,
   ListOrdered,
 } from "lucide-react";
+import { getApiPath } from "@/app/utils/apiPath";
 
 interface UserProfile {
   id: string;
@@ -82,7 +83,7 @@ export default function Navbar() {
   // Fetch logo settings
   const fetchLogoSettings = async () => {
     try {
-      const res = await fetch("/api/settings/logo", { cache: "no-store" });
+      const res = await fetch(getApiPath("/api/settings/logo"), { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setLogoUrl(data.logoUrl || "");
@@ -97,7 +98,7 @@ export default function Navbar() {
   // Fetch menu & submenu order settings
   const fetchMenuOrder = async () => {
     try {
-      const res = await fetch("/api/admin/settings/menu-order", { cache: "no-store" });
+      const res = await fetch(getApiPath("/api/admin/settings/menu-order"), { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         if (data.menuOrder && Array.isArray(data.menuOrder)) setMenuOrder(data.menuOrder);
@@ -113,7 +114,7 @@ export default function Navbar() {
   // Fetch current logged in user
   const fetchUser = async () => {
     try {
-      const res = await fetch("/api/auth/me", { cache: "no-store" });
+      const res = await fetch(getApiPath("/api/auth/me"), { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setUser(data.user);
@@ -145,7 +146,7 @@ export default function Navbar() {
   }, [pathname]);
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await fetch(getApiPath("/api/auth/logout"), { method: "POST" });
     setUser(null);
     router.push("/login");
     router.refresh();
