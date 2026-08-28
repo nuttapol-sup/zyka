@@ -5,9 +5,16 @@ import User from "@/models/User";
 import UserLog from "@/models/UserLog";
 import { signToken, COOKIE_NAME } from "@/lib/auth";
 
+// Anti-Brute Force Rate Limiter (Max 5 attempts per 15 minutes per IP/User)
+const loginAttempts = new Map<string, { count: number; resetTime: number }>();
+const MAX_ATTEMPTS = 5;
+const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+
 export async function POST(request: Request) {
   try {
-    const { username, password } = await request.json();
+    const body = await request.json();
+    const username = typeof body.username === "string" ? body.username.trim() : "";
+    const password = typeof body.password === "string" ? body.password : "";
 
     if (!username || !password) {
       return NextResponse.json(
@@ -16,9 +23,27 @@ export async function POST(request: Request) {
       );
     }
 
+    // Rate Limiting Key based on IP or Username
+    const clientIp = request.headers.get("x-forwarded-for") || "client_ip";
+    const rateKey = `${clientIp}_${username.toLowerCase()}`;
+    const now = Date.now();
+
+    const attemptData = loginAttempts.get(rateKey);
+    if (attemptData) {
+      if (now > attemptData.resetTime) {
+        loginAttempts.delete(rateKey);
+      } else if (attemptData.count >= MAX_ATTEMPTS) {
+        const remainingMinutes = Math.ceil((attemptData.resetTime - now) / 60000);
+        return NextResponse.json(
+          { error: `⚠️ พยายามเข้าสู่ระบบผิดเกินกำหนด กรุณารออีก ${remainingMinutes} นาทีแล้วลองใหม่` },
+          { status: 429 }
+        );
+      }
+    }
+
     await connectDB();
 
-    // Find user by username or fallback to email field if existing data
+    // Find user by username (Strict String Search - Prevent NoSQL Injection)
     const user = await User.findOne({
       $or: [
         { username: username.toLowerCase() },
@@ -27,6 +52,10 @@ export async function POST(request: Request) {
     });
 
     if (!user) {
+      // Record failed attempt
+      const current = loginAttempts.get(rateKey) || { count: 0, resetTime: now + WINDOW_MS };
+      loginAttempts.set(rateKey, { count: current.count + 1, resetTime: current.resetTime });
+
       return NextResponse.json(
         { error: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" },
         { status: 401 }
@@ -36,11 +65,18 @@ export async function POST(request: Request) {
     // Compare password
     const isMatch = await bcrypt.compare(password, user.password!);
     if (!isMatch) {
+      // Record failed attempt
+      const current = loginAttempts.get(rateKey) || { count: 0, resetTime: now + WINDOW_MS };
+      loginAttempts.set(rateKey, { count: current.count + 1, resetTime: current.resetTime });
+
       return NextResponse.json(
         { error: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" },
         { status: 401 }
       );
     }
+
+    // Clear rate limit on successful login
+    loginAttempts.delete(rateKey);
 
     // Generate JWT token
     const token = await signToken({
@@ -51,7 +87,6 @@ export async function POST(request: Request) {
       allowedPages: Array.from(user.allowedPages || ["/dashboard"]),
     });
 
-    // Determine target page according to user permissions
     let targetPage = "/dashboard";
     if (user.role !== "admin") {
       if (user.allowedPages && user.allowedPages.length > 0) {
@@ -63,7 +98,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Record user login in UserLog
     try {
       await UserLog.updateMany(
         { userId: user._id, status: "online" },
@@ -95,10 +129,10 @@ export async function POST(request: Request) {
       },
     });
 
-    // Set HTTP-Only Cookie
+    // Set Secure HTTP-Only Cookie
     response.cookies.set(COOKIE_NAME, token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: true,
       sameSite: "lax",
       maxAge: 60 * 60 * 24, // 1 day
       path: "/",
