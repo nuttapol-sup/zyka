@@ -1,5 +1,7 @@
 "use client";
 
+import { getApiPath } from "@/app/utils/apiPath";
+
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
@@ -12,7 +14,7 @@ export default function ActivityTracker() {
 
     const sendHeartbeat = async () => {
       try {
-        await fetch("/api/user/heartbeat", {
+        await fetch(getApiPath("/api/user/heartbeat"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ currentPath: pathname }),

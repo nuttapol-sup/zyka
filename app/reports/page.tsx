@@ -1,5 +1,7 @@
 "use client";
 
+import { getApiPath } from "@/app/utils/apiPath";
+
 import React, { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
@@ -166,7 +168,7 @@ function ReportsPageContent() {
         params.append("paymentStatus", paymentStatusFilter);
       }
 
-      const res = await fetch(`/api/reports/sales?${params.toString()}`, { cache: "no-store" });
+      const res = await fetch(getApiPath(`/api/reports/sales?${params.toString()}`), { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setDateRange(data.dateRange || {});
@@ -186,7 +188,7 @@ function ReportsPageContent() {
   const fetchUserUsageReport = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/reports/user-usage?preset=${preset}`, { cache: "no-store" });
+      const res = await fetch(getApiPath(`/api/reports/user-usage?preset=${preset}`), { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setUserSummaries(data.userSummaries || []);

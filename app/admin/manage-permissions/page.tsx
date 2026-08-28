@@ -1,5 +1,7 @@
 "use client";
 
+import { getApiPath } from "@/app/utils/apiPath";
+
 import { useEffect, useState } from "react";
 import {
   Sliders,
@@ -226,9 +228,9 @@ export default function ManagePermissionsPage() {
   const fetchUsers = async () => {
     try {
       const [usersRes, meRes, personnelRes] = await Promise.all([
-        fetch("/api/admin/users", { cache: "no-store" }),
-        fetch("/api/auth/me", { cache: "no-store" }),
-        fetch("/api/personnel", { cache: "no-store" }),
+        fetch(getApiPath("/api/admin/users"), { cache: "no-store" }),
+        fetch(getApiPath("/api/auth/me"), { cache: "no-store" }),
+        fetch(getApiPath("/api/personnel"), { cache: "no-store" }),
       ]);
 
       if (usersRes.ok) {
@@ -258,7 +260,7 @@ export default function ManagePermissionsPage() {
     setSavingId(userId);
 
     try {
-      const res = await fetch(`/api/admin/users/${userId}/permissions`, {
+      const res = await fetch(getApiPath(`/api/admin/users/${userId}/permissions`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -313,7 +315,7 @@ export default function ManagePermissionsPage() {
     setSavingId(user._id);
 
     try {
-      const res = await fetch(`/api/admin/users/${user._id}/permissions`, {
+      const res = await fetch(getApiPath(`/api/admin/users/${user._id}/permissions`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -326,7 +328,7 @@ export default function ManagePermissionsPage() {
         setUsers((prev) =>
           prev.map((u) => (u._id === user._id ? { ...u, role: newRole } : u))
         );
-        setSuccessMsg(`เปลี่ยนสิทธิ์ของ ${user.name} เป็น ${newRole.toUpperCase()} เรียบร้อยแล้ว`);
+        setSuccessMsg(`เปลี่ยนบทบาทของ ${user.name} เป็น ${newRole === "admin" ? "ผู้ดูแลระบบ" : "ผู้ใช้งานทั่วไป"} เรียบร้อย`);
         setTimeout(() => setSuccessMsg(""), 3000);
       }
     } catch (err) {
@@ -384,7 +386,7 @@ export default function ManagePermissionsPage() {
     setModalSaving(true);
 
     try {
-      const res = await fetch(`/api/admin/users/${editingUser._id}`, {
+      const res = await fetch(getApiPath(`/api/admin/users/${editingUser._id}`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -422,7 +424,7 @@ export default function ManagePermissionsPage() {
     }
 
     try {
-      const res = await fetch(`/api/admin/users/${user._id}`, {
+      const res = await fetch(getApiPath(`/api/admin/users/${user._id}`), {
         method: "DELETE",
       });
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { getApiPath } from "@/app/utils/apiPath";
+
 import { useState, useEffect } from "react";
 import {
   Image as ImageIcon,
@@ -32,7 +34,7 @@ export default function ManageLogoPage() {
   const fetchSettings = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/settings/logo");
+      const res = await fetch(getApiPath("/api/settings/logo"));
       if (res.ok) {
         const data = await res.json();
         setLogoUrl(data.logoUrl || "");
@@ -80,7 +82,7 @@ export default function ManageLogoPage() {
     setSaving(true);
 
     try {
-      const res = await fetch("/api/admin/settings/logo", {
+      const res = await fetch(getApiPath("/api/admin/settings/logo"), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

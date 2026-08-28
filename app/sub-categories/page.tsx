@@ -1,5 +1,7 @@
 "use client";
 
+import { getApiPath } from "@/app/utils/apiPath";
+
 import { useEffect, useState } from "react";
 import {
   FolderTree,
@@ -69,7 +71,7 @@ export default function SubCategoriesPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/sub-categories", { cache: "no-store" });
+      const res = await fetch(getApiPath("/api/sub-categories"), { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setItems(data.subCategories || []);
@@ -117,9 +119,10 @@ export default function SubCategoriesPage() {
     setSaving(true);
 
     try {
-      const url = editingItem
+      const rawUrl = editingItem
         ? `/api/sub-categories/${editingItem._id}`
         : "/api/sub-categories";
+      const url = getApiPath(rawUrl);
       const method = editingItem ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -157,7 +160,7 @@ export default function SubCategoriesPage() {
     if (!confirm(`คุณต้องการลบหมวดสินค้า "${name}" ใช่หรือไม่?`)) return;
 
     try {
-      const res = await fetch(`/api/sub-categories/${id}`, { method: "DELETE" });
+      const res = await fetch(getApiPath(`/api/sub-categories/${id}`), { method: "DELETE" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "ไม่สามารถลบข้อมูลได้");
 

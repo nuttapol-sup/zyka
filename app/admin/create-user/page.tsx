@@ -1,5 +1,7 @@
 "use client";
 
+import { getApiPath } from "@/app/utils/apiPath";
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -65,7 +67,7 @@ export default function CreateUserPage() {
   useEffect(() => {
     async function fetchPersonnel() {
       try {
-        const res = await fetch("/api/personnel", { cache: "no-store" });
+        const res = await fetch(getApiPath("/api/personnel"), { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
           setPersonnelList(data.personnel || []);
@@ -107,7 +109,7 @@ export default function CreateUserPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/admin/users", {
+      const res = await fetch(getApiPath("/api/admin/users"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -1,5 +1,7 @@
 "use client";
 
+import { getApiPath } from "@/app/utils/apiPath";
+
 import { useEffect, useState } from "react";
 import {
   Tags,
@@ -56,7 +58,7 @@ export default function CategoriesPage() {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/categories", { cache: "no-store" });
+      const res = await fetch(getApiPath("/api/categories"), { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setCategories(data.categories || []);
@@ -99,9 +101,10 @@ export default function CategoriesPage() {
     setSaving(true);
 
     try {
-      const url = editingItem
+      const rawUrl = editingItem
         ? `/api/categories/${editingItem._id}`
         : "/api/categories";
+      const url = getApiPath(rawUrl);
       const method = editingItem ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -137,7 +140,7 @@ export default function CategoriesPage() {
     if (!confirm(`คุณต้องการลบประเภทหมวดสินค้า "${name}" ใช่หรือไม่?`)) return;
 
     try {
-      const res = await fetch(`/api/categories/${id}`, { method: "DELETE" });
+      const res = await fetch(getApiPath(`/api/categories/${id}`), { method: "DELETE" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "ไม่สามารถลบข้อมูลได้");
 

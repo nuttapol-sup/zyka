@@ -1,5 +1,7 @@
 "use client";
 
+import { getApiPath } from "@/app/utils/apiPath";
+
 import { useEffect, useState } from "react";
 import {
   ArrowUp,
@@ -213,7 +215,7 @@ export default function ManageMenuOrderPage() {
   const fetchMenuOrders = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/settings/menu-order", { cache: "no-store" });
+      const res = await fetch(getApiPath("/api/admin/settings/menu-order"), { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         if (data.menuOrder && Array.isArray(data.menuOrder)) setMenuOrder(data.menuOrder);
@@ -270,7 +272,7 @@ export default function ManageMenuOrderPage() {
     setErrorMsg("");
 
     try {
-      const res = await fetch("/api/admin/settings/menu-order", {
+      const res = await fetch(getApiPath("/api/admin/settings/menu-order"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

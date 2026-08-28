@@ -1,5 +1,7 @@
 "use client";
 
+import { getApiPath } from "@/app/utils/apiPath";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { KeyRound, Lock, CheckCircle2, AlertCircle, ArrowLeft } from "lucide-react";
@@ -33,7 +35,7 @@ export default function ChangePasswordPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/change-password", {
+      const res = await fetch(getApiPath("/api/auth/change-password"), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ currentPassword, newPassword }),

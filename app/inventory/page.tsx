@@ -1,5 +1,7 @@
 "use client";
 
+import { getApiPath } from "@/app/utils/apiPath";
+
 import { useEffect, useState } from "react";
 import {
   Boxes,
@@ -112,7 +114,7 @@ export default function InventoryPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/inventory", { cache: "no-store" });
+      const res = await fetch(getApiPath("/api/inventory"), { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setInventories(data.inventories || []);
@@ -171,7 +173,7 @@ export default function InventoryPage() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await fetch("/api/upload", {
+      const res = await fetch(getApiPath("/api/upload"), {
         method: "POST",
         body: formData,
       });
@@ -194,7 +196,7 @@ export default function InventoryPage() {
     setSaving(true);
 
     try {
-      const res = await fetch("/api/inventory/movement", {
+      const res = await fetch(getApiPath("/api/inventory/movement"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -233,7 +235,7 @@ export default function InventoryPage() {
     setSaving(true);
 
     try {
-      const res = await fetch(`/api/inventory/movement/${editingMovement._id}`, {
+      const res = await fetch(getApiPath(`/api/inventory/movement/${editingMovement._id}`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -262,7 +264,7 @@ export default function InventoryPage() {
     if (!confirm("คุณต้องการลบรายการประวัตินี้ใช่หรือไม่?")) return;
 
     try {
-      const res = await fetch(`/api/inventory/movement/${id}`, { method: "DELETE" });
+      const res = await fetch(getApiPath(`/api/inventory/movement/${id}`), { method: "DELETE" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "ไม่สามารถลบรายการได้");
 
