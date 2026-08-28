@@ -27,6 +27,7 @@ import {
   FolderSearch,
 } from "lucide-react";
 import Pagination from "@/app/components/Pagination";
+import { getApiPath } from "@/app/utils/apiPath";
 
 interface CustomerItem {
   _id: string;
@@ -186,7 +187,7 @@ export default function OrdersPage() {
     setLoading(true);
     try {
       const url = `/api/orders?search=${encodeURIComponent(searchTerm)}&deliveryStatus=${filterDelivery}&paymentStatus=${filterPayment}`;
-      const res = await fetch(url, { cache: "no-store" });
+      const res = await fetch(getApiPath(url), { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setOrders(data.orders || []);
@@ -202,9 +203,9 @@ export default function OrdersPage() {
   const fetchDependencies = async () => {
     try {
       const [resCust, resProd, resLoc] = await Promise.all([
-        fetch("/api/customers", { cache: "no-store" }),
-        fetch("/api/products", { cache: "no-store" }),
-        fetch("/api/locations", { cache: "no-store" }),
+        fetch(getApiPath("/api/customers"), { cache: "no-store" }),
+        fetch(getApiPath("/api/products"), { cache: "no-store" }),
+        fetch(getApiPath("/api/locations"), { cache: "no-store" }),
       ]);
 
       if (resCust.ok) {
@@ -323,7 +324,7 @@ export default function OrdersPage() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await fetch("/api/upload", {
+      const res = await fetch(getApiPath("/api/upload"), {
         method: "POST",
         body: formData,
       });
@@ -362,7 +363,7 @@ export default function OrdersPage() {
         }
       }
 
-      const res = await fetch("/api/orders", {
+      const res = await fetch(getApiPath("/api/orders"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -429,7 +430,7 @@ export default function OrdersPage() {
     setSaving(true);
 
     try {
-      const res = await fetch(`/api/orders/${editingOrder._id}`, {
+      const res = await fetch(getApiPath(`/api/orders/${editingOrder._id}`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -465,7 +466,7 @@ export default function OrdersPage() {
     if (!confirm("คุณแน่ใจหรือไม่ว่าต้องการลบรายการสั่งซื้อนี้? ระบบจะทำการคืนสินค้าเข้าคลังสต็อกตามสถานที่เก็บเดิมให้อัตโนมัติ")) return;
 
     try {
-      const res = await fetch(`/api/orders/${id}`, { method: "DELETE" });
+      const res = await fetch(getApiPath(`/api/orders/${id}`), { method: "DELETE" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "เกิดข้อผิดพลาดในการลบ");
 

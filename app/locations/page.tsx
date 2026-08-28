@@ -16,6 +16,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import Pagination from "@/app/components/Pagination";
+import { getApiPath } from "@/app/utils/apiPath";
 
 interface StorageItem {
   _id: string;
@@ -61,7 +62,7 @@ export default function StorageLocationsPage() {
   const fetchLocations = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/locations", { cache: "no-store" });
+      const res = await fetch(getApiPath("/api/locations"), { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setLocations(data.locations || []);
@@ -133,9 +134,10 @@ export default function StorageLocationsPage() {
     setSaving(true);
 
     try {
-      const url = editingItem
+      const rawUrl = editingItem
         ? `/api/locations/${editingItem._id}`
         : "/api/locations";
+      const url = getApiPath(rawUrl);
       const method = editingItem ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -170,7 +172,7 @@ export default function StorageLocationsPage() {
     if (!confirm(`คุณต้องการลบสถานที่เก็บสินค้า "${locationName}" ใช่หรือไม่?`)) return;
 
     try {
-      const res = await fetch(`/api/locations/${id}`, { method: "DELETE" });
+      const res = await fetch(getApiPath(`/api/locations/${id}`), { method: "DELETE" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "ไม่สามารถลบข้อมูลได้");
 

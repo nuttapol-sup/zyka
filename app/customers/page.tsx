@@ -19,6 +19,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import Pagination from "@/app/components/Pagination";
+import { getApiPath } from "@/app/utils/apiPath";
 
 interface CustomerItem {
   _id: string;
@@ -73,7 +74,7 @@ export default function CustomersPage() {
   const fetchCustomers = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/customers", { cache: "no-store" });
+      const res = await fetch(getApiPath("/api/customers"), { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setCustomers(data.customers || []);
@@ -135,9 +136,10 @@ export default function CustomersPage() {
     setSaving(true);
 
     try {
-      const url = editingItem
+      const rawUrl = editingItem
         ? `/api/customers/${editingItem._id}`
         : "/api/customers";
+      const url = getApiPath(rawUrl);
       const method = editingItem ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -176,7 +178,7 @@ export default function CustomersPage() {
     if (!confirm(`คุณต้องการลบข้อมูลลูกค้า "${name}" ใช่หรือไม่?`)) return;
 
     try {
-      const res = await fetch(`/api/customers/${id}`, { method: "DELETE" });
+      const res = await fetch(getApiPath(`/api/customers/${id}`), { method: "DELETE" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "ไม่สามารถลบข้อมูลได้");
 

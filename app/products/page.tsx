@@ -16,6 +16,7 @@ import {
   Layers,
 } from "lucide-react";
 import Pagination from "@/app/components/Pagination";
+import { getApiPath } from "@/app/utils/apiPath";
 
 interface SubCategoryRef {
   _id: string;
@@ -76,7 +77,7 @@ export default function ProductsPage() {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/products", { cache: "no-store" });
+      const res = await fetch(getApiPath("/api/products"), { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setProducts(data.products || []);
@@ -92,7 +93,7 @@ export default function ProductsPage() {
   const fetchSubCategories = async () => {
     setLoadingSubCats(true);
     try {
-      const res = await fetch("/api/sub-categories", { cache: "no-store" });
+      const res = await fetch(getApiPath("/api/sub-categories"), { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setSubCategoriesList(data.subCategories || []);
@@ -161,9 +162,10 @@ export default function ProductsPage() {
     setSaving(true);
 
     try {
-      const url = editingItem
+      const rawUrl = editingItem
         ? `/api/products/${editingItem._id}`
         : "/api/products";
+      const url = getApiPath(rawUrl);
       const method = editingItem ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -203,7 +205,7 @@ export default function ProductsPage() {
     if (!confirm(`คุณต้องการลบสินค้า "${name}" ใช่หรือไม่?`)) return;
 
     try {
-      const res = await fetch(`/api/products/${id}`, { method: "DELETE" });
+      const res = await fetch(getApiPath(`/api/products/${id}`), { method: "DELETE" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "ไม่สามารถลบข้อมูลได้");
 

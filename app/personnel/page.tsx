@@ -16,6 +16,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import Pagination from "@/app/components/Pagination";
+import { getApiPath } from "@/app/utils/apiPath";
 
 interface PersonnelItem {
   _id: string;
@@ -64,7 +65,7 @@ export default function PersonnelPage() {
   const fetchPersonnel = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/personnel", { cache: "no-store" });
+      const res = await fetch(getApiPath("/api/personnel"), { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setPersonnelList(data.personnel || []);
@@ -110,9 +111,10 @@ export default function PersonnelPage() {
     setSaving(true);
 
     try {
-      const url = editingItem
+      const rawUrl = editingItem
         ? `/api/personnel/${editingItem._id}`
         : "/api/personnel";
+      const url = getApiPath(rawUrl);
       const method = editingItem ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -149,7 +151,7 @@ export default function PersonnelPage() {
     if (!confirm(`คุณต้องการลบข้อมูลบุคลากร "${name}" ใช่หรือไม่?`)) return;
 
     try {
-      const res = await fetch(`/api/personnel/${id}`, { method: "DELETE" });
+      const res = await fetch(getApiPath(`/api/personnel/${id}`), { method: "DELETE" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "ไม่สามารถลบข้อมูลได้");
 
