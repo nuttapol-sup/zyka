@@ -190,9 +190,16 @@ export default function Navbar() {
   };
 
   useEffect(() => {
-    fetchUser();
     fetchLogoSettings();
     fetchMenuOrder();
+
+    const isLoginPage = pathname === "/login" || pathname === "/zyka/login";
+    if (!isLoginPage) {
+      fetchUser();
+    } else {
+      setUser(null);
+      setLoading(false);
+    }
 
     // Listen for custom events to update logo, menu ordering & user session live without manual page refresh
     const handleLogoUpdate = () => fetchLogoSettings();

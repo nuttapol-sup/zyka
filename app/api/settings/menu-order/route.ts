@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Setting from "@/models/Setting";
-import { getSession } from "@/lib/auth";
 
 const DEFAULT_MENU_ORDER = ["dashboard", "reports", "datarecords", "manage"];
 const DEFAULT_REPORTS_ORDER = ["sales", "charts", "customer", "product", "user"];
@@ -10,11 +9,6 @@ const DEFAULT_MANAGE_ORDER = ["create-user", "manage-permissions", "manage-menu-
 
 export async function GET() {
   try {
-    const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ error: "ยังไม่ได้เข้าสู่ระบบ" }, { status: 401 });
-    }
-
     await connectDB();
     let setting = await Setting.findOne({ key: "app_settings" });
     if (!setting) {

@@ -3,7 +3,12 @@ import type { NextRequest } from "next/server";
 import { verifyToken, COOKIE_NAME } from "./lib/auth";
 
 // Public routes that don't require authentication
-const PUBLIC_PATHS = ["/login", "/api/auth/login"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/api/auth/login",
+  "/api/settings/logo",
+  "/api/settings/menu-order",
+];
 
 // Admin-only paths
 const ADMIN_PATHS = [
