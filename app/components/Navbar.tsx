@@ -43,10 +43,13 @@ const hasAccess = (user: UserProfile | null, path: string): boolean => {
   if (user.role === "admin") return true;
   if (!Array.isArray(user.allowedPages)) return false;
 
-  const cleanTarget = path.replace(/^\/zyka/, "");
+  const cleanTarget = path.replace(/^\/zyka/, "").toLowerCase();
+  const targetNorm = cleanTarget.startsWith("/") ? cleanTarget : `/${cleanTarget}`;
+
   return user.allowedPages.some((p) => {
-    const cleanP = p.replace(/^\/zyka/, "");
-    return cleanP === cleanTarget || cleanP === cleanTarget.replace(/^\//, "") || cleanTarget.startsWith(cleanP);
+    const cleanP = String(p).replace(/^\/zyka/, "").toLowerCase();
+    const pNorm = cleanP.startsWith("/") ? cleanP : `/${cleanP}`;
+    return pNorm === targetNorm || targetNorm.startsWith(pNorm);
   });
 };
 
@@ -55,6 +58,7 @@ export default function Navbar() {
   const router = useRouter();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+
   // Dynamic Logo & Branding State
   const [logoUrl, setLogoUrl] = useState("");
   const [appName, setAppName] = useState("ZYKA");
@@ -96,7 +100,10 @@ export default function Navbar() {
   // Fetch logo settings
   const fetchLogoSettings = async () => {
     try {
-      const res = await fetch(getApiPath("/api/settings/logo"), { cache: "no-store" });
+      const res = await fetch(getApiPath("/api/settings/logo"), {
+        cache: "no-store",
+        credentials: "same-origin",
+      });
       if (res.ok) {
         const data = await res.json();
         setLogoUrl(data.logoUrl || "");
@@ -111,7 +118,10 @@ export default function Navbar() {
   // Fetch menu & submenu order settings & custom labels
   const fetchMenuOrder = async () => {
     try {
-      const res = await fetch(getApiPath("/api/settings/menu-order"), { cache: "no-store" });
+      const res = await fetch(getApiPath("/api/settings/menu-order"), {
+        cache: "no-store",
+        credentials: "same-origin",
+      });
       if (res.ok) {
         const data = await res.json();
         if (data.menuOrder && Array.isArray(data.menuOrder)) setMenuOrder(data.menuOrder);
@@ -125,13 +135,20 @@ export default function Navbar() {
     }
   };
 
-  // Fetch current logged in user
+  // Fetch current logged in user with explicit credentials
   const fetchUser = async () => {
     try {
-      const res = await fetch(getApiPath("/api/auth/me"), { cache: "no-store" });
+      const res = await fetch(getApiPath("/api/auth/me"), {
+        cache: "no-store",
+        credentials: "same-origin",
+      });
       if (res.ok) {
         const data = await res.json();
-        setUser(data.user);
+        if (data?.user) {
+          setUser(data.user);
+        } else {
+          setUser(null);
+        }
       } else {
         setUser(null);
       }
@@ -162,7 +179,7 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     try {
-      await fetch(getApiPath("/api/auth/logout"), { method: "POST" });
+      await fetch(getApiPath("/api/auth/logout"), { method: "POST", credentials: "same-origin" });
       setUser(null);
       router.push("/login");
       router.refresh();
@@ -177,14 +194,13 @@ export default function Navbar() {
     <nav className="glass-earth-header sticky top-0 z-50 border-b border-[#2d4734]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Left: Brand Logo & Title */}
+          {/* Left: Brand Logo & Navigation Links */}
           <div className="flex items-center gap-6">
             <Link
               href={user ? "/dashboard" : "/login"}
               className="flex items-center gap-3 group shrink-0"
             >
               {logoUrl ? (
-                // Custom Uploaded Logo Image
                 <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#18241c] border border-[#98c9a3]/40 flex items-center justify-center p-1 shadow-md group-hover:border-[#98c9a3] transition-colors">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -194,7 +210,6 @@ export default function Navbar() {
                   />
                 </div>
               ) : (
-                // Default Icon Logo
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#446e50] to-[#1f3627] flex items-center justify-center border border-[#98c9a3]/30 shadow-md group-hover:border-[#98c9a3]/60">
                   <Leaf className="w-5 h-5 text-[#98c9a3]" />
                 </div>
@@ -209,18 +224,18 @@ export default function Navbar() {
               </div>
             </Link>
 
-            {/* Navigation Links (Ordered Dynamically) */}
+            {/* Navigation Links (Allowed per User Permissions) */}
             {user && (
               <div className="flex items-center flex-wrap gap-1.5">
                 {menuOrder.map((key) => {
-                  if (key === "dashboard") {
+                  if (key === "dashboard" && hasAccess(user, "/dashboard")) {
                     return (
                       <NavLink
                         key="dashboard"
                         href="/dashboard"
                         icon={<LayoutDashboard className="w-4 h-4" />}
                         label={getLabel("dashboard", "Dashboard")}
-                        active={pathname === "/dashboard"}
+                        active={pathname === "/dashboard" || pathname === "/zyka/dashboard"}
                       />
                     );
                   }
@@ -243,43 +258,45 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* User Status / Auth Action */}
+          {/* Right: User Profile Status & Logout Button */}
           <div className="flex items-center gap-3 shrink-0">
-            {user ? (
+            {user && (
               <div className="flex items-center gap-3">
-                {/* Clickable User Profile Badge -> Navigates to Change Password */}
                 <Link
                   href="/change-password"
                   title="คลิกเพื่อเปลี่ยนรหัสผ่าน (Change Password)"
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#18241c] border border-[#98c9a3]/20 hover:border-[#98c9a3]/60 hover:bg-[#1e3024] transition-all cursor-pointer group shadow-sm"
+                  className="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-[#18241c] border border-[#98c9a3]/30 hover:border-[#98c9a3] hover:bg-[#1e3024] transition-all cursor-pointer group shadow-md"
                 >
-                  <div className="w-7 h-7 rounded-full bg-[#2a4332] group-hover:bg-[#365741] flex items-center justify-center text-[#98c9a3] transition-colors">
+                  <div className="w-7 h-7 rounded-xl bg-[#2a4332] group-hover:bg-[#365741] flex items-center justify-center text-[#98c9a3] transition-colors shrink-0">
                     {user.role === "admin" ? (
                       <Shield className="w-4 h-4 text-[#98c9a3]" />
                     ) : (
                       <UserIcon className="w-4 h-4 text-[#e6dfd3]" />
                     )}
                   </div>
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded-full font-bold uppercase transition-colors ${
-                      user.role === "admin"
-                        ? "bg-[#446e50]/40 text-[#98c9a3] border border-[#98c9a3]/30"
-                        : "bg-[#2a302a] text-[#e6dfd3]"
-                    }`}
-                  >
-                    {user.role}
-                  </span>
+                  <div className="flex flex-col text-left">
+                    <span className="text-xs font-extrabold text-[#f3efe6] line-clamp-1 max-w-[130px]">
+                      {user.name || user.username}
+                    </span>
+                    <span
+                      className={`text-[10px] font-black uppercase leading-none ${
+                        user.role === "admin" ? "text-[#98c9a3]" : "text-[#a39b8b]"
+                      }`}
+                    >
+                      {user.role}
+                    </span>
+                  </div>
                 </Link>
 
                 <button
                   onClick={handleLogout}
-                  className="p-2 rounded-lg text-[#a39b8b] hover:text-[#f3efe6] hover:bg-[#1f3025] transition-colors border border-transparent hover:border-[#98c9a3]/20"
+                  className="p-2 rounded-xl text-[#a39b8b] hover:text-[#f3efe6] hover:bg-[#1f3025] transition-colors border border-[#2d4734] hover:border-[#98c9a3]/40"
                   title="ออกจากระบบ"
                 >
-                  <LogOut className="w-5 h-5" />
+                  <LogOut className="w-4 h-4" />
                 </button>
               </div>
-            ) : null}
+            )}
           </div>
         </div>
       </div>
@@ -305,9 +322,9 @@ function NavLink({
   return (
     <Link
       href={href}
-      className={`px-3.5 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all duration-200 ${
+      className={`px-3.5 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-all duration-200 ${
         active
-          ? "bg-[#273e2e] text-[#98c9a3] border border-[#98c9a3]/30 shadow-sm"
+          ? "bg-[#273e2e] text-[#98c9a3] border border-[#98c9a3]/30 shadow-sm font-bold"
           : "text-[#e6dfd3]/80 hover:text-[#f3efe6] hover:bg-[#18241c]"
       }`}
     >
@@ -362,9 +379,9 @@ function DataRecordsDropdown({
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`px-3.5 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all duration-200 ${
+        className={`px-3.5 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-all duration-200 ${
           isDataActive || isOpen
-            ? "bg-[#273e2e] text-[#98c9a3] border border-[#98c9a3]/30 shadow-sm"
+            ? "bg-[#273e2e] text-[#98c9a3] border border-[#98c9a3]/30 shadow-sm font-bold"
             : "text-[#e6dfd3]/80 hover:text-[#f3efe6] hover:bg-[#18241c]"
         }`}
       >
@@ -538,9 +555,9 @@ function AdminManageDropdown({
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`px-3.5 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all duration-200 ${
+        className={`px-3.5 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-all duration-200 ${
           isAdminActive || isOpen
-            ? "bg-[#273e2e] text-[#98c9a3] border border-[#98c9a3]/30 shadow-sm"
+            ? "bg-[#273e2e] text-[#98c9a3] border border-[#98c9a3]/30 shadow-sm font-bold"
             : "text-[#e6dfd3]/80 hover:text-[#f3efe6] hover:bg-[#18241c]"
         }`}
       >
@@ -684,9 +701,9 @@ function ReportsDropdown({
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`px-3.5 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all duration-200 ${
+        className={`px-3.5 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-all duration-200 ${
           isReportActive || isOpen
-            ? "bg-[#273e2e] text-[#98c9a3] border border-[#98c9a3]/30 shadow-sm"
+            ? "bg-[#273e2e] text-[#98c9a3] border border-[#98c9a3]/30 shadow-sm font-bold"
             : "text-[#e6dfd3]/80 hover:text-[#f3efe6] hover:bg-[#18241c]"
         }`}
       >
