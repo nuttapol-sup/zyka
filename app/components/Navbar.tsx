@@ -98,7 +98,7 @@ export default function Navbar() {
   // Fetch menu & submenu order settings & custom labels
   const fetchMenuOrder = async () => {
     try {
-      const res = await fetch(getApiPath("/api/admin/settings/menu-order"), { cache: "no-store" });
+      const res = await fetch(getApiPath("/api/settings/menu-order"), { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         if (data.menuOrder && Array.isArray(data.menuOrder)) setMenuOrder(data.menuOrder);

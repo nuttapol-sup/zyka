@@ -28,7 +28,7 @@ export async function GET() {
     const response = NextResponse.json({ user });
     response.cookies.set(COOKIE_NAME, refreshedToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.COOKIE_SECURE === "true",
       sameSite: "lax",
       maxAge: 60 * 60 * 24,
       path: "/",
