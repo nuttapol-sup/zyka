@@ -186,12 +186,6 @@ const PAGE_GROUPS: PageGroup[] = [
         description: "รายงานบันทึกประวัติการล็อกอินและใช้งานระบบ",
         icon: <Activity className="w-4 h-4 text-[#98c9a3]" />,
       },
-      {
-        path: "/analytics",
-        label: "Analytics (กราฟวิเคราะห์รวม)",
-        description: "หน้ารวมกราฟวิเคราะห์การขายและอันดับสินค้าขายดี",
-        icon: <BarChart3 className="w-4 h-4 text-[#98c9a3]" />,
-      },
     ],
   },
 ];

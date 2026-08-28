@@ -128,71 +128,30 @@ export default function SalesDashboardCharts() {
 
   return (
     <div className="space-y-6 print:p-0 print:space-y-4 text-[#f3efe6]">
-      {/* Top Banner Actions Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 print:hidden">
+      {/* Top Streamlined Year Filter & Actions Header */}
+      <div className="glass-earth-card p-5 rounded-3xl border border-[#98c9a3]/30 bg-[#121c15]/90 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl print:hidden">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#446e50] to-[#1f3627] border border-[#98c9a3]/40 flex items-center justify-center text-[#98c9a3] shadow-lg">
+          <div className="w-10 h-10 rounded-2xl bg-[#1e3425] border border-[#98c9a3]/40 flex items-center justify-center text-[#98c9a3] shrink-0">
             <BarChart3 className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-xl font-extrabold text-gradient-earth">
-              SALES DASHBOARD - {selectedYear}
-            </h1>
-            <p className="text-xs text-[#a39b8b]">
-              สรุปยอดขาย การจำแนกประเภทสินค้า และแนวโน้มรายเดือนแบบอินเทอร์แอคทีฟ
-            </p>
+            <h2 className="text-base font-bold text-[#f3efe6] tracking-wide flex items-center gap-2">
+              <span>รายงานสรุปยอดขาย (Sales Dashboard)</span>
+            </h2>
+            <span className="text-xs text-[#a39b8b]">
+              แสดงข้อมูลสถิติยอดขายประจำปี {selectedYear}
+            </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 self-end sm:self-auto">
-          <button
-            onClick={() => fetchData(selectedYear)}
-            className="px-3.5 py-2.5 rounded-xl bg-[#121c15] text-[#a39b8b] hover:text-[#f3efe6] border border-[#2d4734] text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
-            title="รีเฟรชกราฟ"
-          >
-            <RotateCcw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-            <span>รีเฟรช</span>
-          </button>
-          <button
-            onClick={handlePrint}
-            className="px-4 py-2.5 rounded-xl bg-[#1e3425] text-[#98c9a3] hover:bg-[#274530] border border-[#98c9a3]/40 text-xs font-bold flex items-center gap-2 transition-all shadow-md"
-          >
-            <Printer className="w-4 h-4" />
-            <span>พิมพ์ / พิมพ์ออกเป็น PDF</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Main Print Container */}
-      <div ref={printRef} className="space-y-6 print:space-y-4">
-        {/* 1. MAIN HEADER TITLE BANNER */}
-        <div className="rounded-3xl bg-gradient-to-r from-[#1b2b20] via-[#243c2c] to-[#121c15] p-5 text-center text-[#f3efe6] font-black text-2xl tracking-wider uppercase shadow-2xl border border-[#98c9a3]/30 relative overflow-hidden print:bg-gray-900 print:text-white">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#98c9a3]/10 to-transparent pointer-events-none" />
-          <span className="text-gradient-earth">SALES DASHBOARD - {selectedYear}</span>
-        </div>
-
-        {/* 2. YEAR DROPDOWN SELECTOR FILTER BOX */}
-        <div className="glass-earth-card p-5 rounded-3xl border border-[#98c9a3]/30 bg-[#121c15]/90 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl print:hidden">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#1e3425] border border-[#98c9a3]/40 flex items-center justify-center text-[#98c9a3] shrink-0">
-              <Calendar className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="text-xs font-bold text-[#e6dfd3] uppercase tracking-wider block">
-                เลือกปีที่ต้องการดูข้อมูล (Select Year)
-              </span>
-              <span className="text-xs text-[#a39b8b]">
-                แสดงรายงานสรุปยอดขายประจำปี {selectedYear}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            {/* 10-Year Dropdown Selector */}
+        <div className="flex items-center gap-3 flex-wrap w-full sm:w-auto justify-end">
+          {/* 10-Year Dropdown Selector */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-[#a39b8b]">เลือกปี:</span>
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="px-4 py-2.5 rounded-xl bg-[#18241c] text-[#f3efe6] border border-[#98c9a3]/50 text-sm font-extrabold focus:outline-none focus:border-[#98c9a3] cursor-pointer shadow-inner w-full sm:w-56"
+              className="px-3.5 py-2 rounded-xl bg-[#18241c] text-[#f3efe6] border border-[#98c9a3]/50 text-xs font-extrabold focus:outline-none focus:border-[#98c9a3] cursor-pointer shadow-inner"
             >
               {yearOptions.map((year) => (
                 <option key={year} value={year} className="bg-[#121c15] text-[#f3efe6] py-1">
@@ -200,21 +159,29 @@ export default function SalesDashboardCharts() {
                 </option>
               ))}
             </select>
-
-            {selectedYear !== currentYear && (
-              <button
-                onClick={() => setSelectedYear(currentYear)}
-                className="px-3.5 py-2.5 rounded-xl bg-[#18241c] text-[#a39b8b] hover:text-[#98c9a3] border border-[#2d4734] text-xs font-semibold flex items-center gap-1.5 transition-all shrink-0"
-                title="กลับมาปีปัจจุบัน"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>ปีปัจจุบัน</span>
-              </button>
-            )}
           </div>
-        </div>
 
-        {/* 3. TOP 3 SUMMARY KPI CARDS */}
+          <button
+            onClick={() => fetchData(selectedYear)}
+            className="p-2 rounded-xl bg-[#18241c] text-[#a39b8b] hover:text-[#98c9a3] border border-[#2d4734] text-xs font-semibold flex items-center gap-1.5 transition-all"
+            title="รีเฟรชกราฟ"
+          >
+            <RotateCcw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+          </button>
+
+          <button
+            onClick={handlePrint}
+            className="px-3.5 py-2 rounded-xl bg-[#1e3425] text-[#98c9a3] hover:bg-[#274530] border border-[#98c9a3]/40 text-xs font-bold flex items-center gap-1.5 transition-all shadow-md"
+          >
+            <Printer className="w-4 h-4" />
+            <span>พิมพ์ / PDF</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Main Print Container */}
+      <div ref={printRef} className="space-y-6 print:space-y-4">
+        {/* 1. TOP 3 SUMMARY KPI CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Card 1: Total Sales */}
           <div className="glass-earth-card rounded-2xl p-5 border border-[#98c9a3]/30 text-center shadow-xl bg-gradient-to-b from-[#18241c] to-[#121c15] relative overflow-hidden group">
@@ -257,7 +224,7 @@ export default function SalesDashboardCharts() {
           </div>
         </div>
 
-        {/* 4. MIDDLE ROW: 2 SIDE-BY-SIDE CHARTS (Sales by Category & Sales by Region) */}
+        {/* 2. MIDDLE ROW: 2 SIDE-BY-SIDE CHARTS (Sales by Category & Sales by Region) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Left Chart: Sales by Category (Horizontal Bar Chart) */}
           <div className="glass-earth-card rounded-3xl p-6 border border-[#2d4734] shadow-xl bg-[#121c15] space-y-4">
@@ -379,7 +346,7 @@ export default function SalesDashboardCharts() {
           </div>
         </div>
 
-        {/* 5. MONTHLY TREND LINE CHART: Sales by Month (Jan - Dec) */}
+        {/* 3. MONTHLY TREND LINE CHART: Sales by Month (Jan - Dec) */}
         <div className="glass-earth-card rounded-3xl p-6 border border-[#2d4734] shadow-xl bg-[#121c15] space-y-4">
           <div className="bg-[#18241c] py-2 px-4 rounded-xl text-center font-bold text-xs text-[#98c9a3] uppercase tracking-wider border border-[#98c9a3]/20 flex items-center justify-center gap-2">
             <TrendingUp className="w-4 h-4 text-[#98c9a3]" />
@@ -438,7 +405,7 @@ export default function SalesDashboardCharts() {
           )}
         </div>
 
-        {/* 6. BOTTOM ROW: Sales by Sub-Category (Vertical Bar Chart) */}
+        {/* 4. BOTTOM ROW: Sales by Sub-Category (Vertical Bar Chart) */}
         <div className="glass-earth-card rounded-3xl p-6 border border-[#2d4734] shadow-xl bg-[#121c15] space-y-4">
           <div className="bg-[#18241c] py-2 px-4 rounded-xl text-center font-bold text-xs text-[#98c9a3] uppercase tracking-wider border border-[#98c9a3]/20 flex items-center justify-center gap-2">
             <Sparkles className="w-4 h-4 text-[#98c9a3]" />

@@ -1,6 +1,7 @@
 "use client";
 
 import { getApiPath } from "@/app/utils/apiPath";
+import SalesDashboardCharts from "@/app/components/SalesDashboardCharts";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -133,6 +134,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Executive Sales Dashboard Charts */}
+      <SalesDashboardCharts />
+
       {/* Access Control Grid Overview */}
       <div className="space-y-4">
         <h2 className="text-xl font-bold text-[#f3efe6] flex items-center gap-2">
@@ -165,15 +169,6 @@ export default function DashboardPage() {
             icon={<FileText className="w-6 h-6 text-[#98c9a3]" />}
             href="/reports"
             isAllowed={isPageAllowed("/reports")}
-          />
-
-          {/* Analytics Card */}
-          <FeatureCard
-            title="Analytics Page"
-            description="หน้าสถิติและกราฟวิเคราะห์เชิงลึก"
-            icon={<BarChart3 className="w-6 h-6 text-[#98c9a3]" />}
-            href="/analytics"
-            isAllowed={isPageAllowed("/analytics")}
           />
 
           {/* Categories Card */}

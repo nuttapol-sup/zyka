@@ -54,12 +54,6 @@ const MAIN_ITEMS: Record<string, MenuItem> = {
     description: "เมนูกลุ่มรายงานสรุปยอดขาย การชำระเงิน และประวัติผู้ใช้งาน",
     icon: <FileText className="w-5 h-5 text-[#98c9a3]" />,
   },
-  analytics: {
-    key: "analytics",
-    label: "Analytics",
-    description: "หน้ารวมสถิติกราฟวิเคราะห์แนวโน้มยอดขายและสินค้าขายดี",
-    icon: <BarChart3 className="w-5 h-5 text-[#98c9a3]" />,
-  },
   datarecords: {
     key: "datarecords",
     label: "Data Records (เมนูกลุ่มบันทึกข้อมูล)",
@@ -194,7 +188,7 @@ const MANAGE_ITEMS: Record<string, MenuItem> = {
   },
 };
 
-const DEFAULT_MAIN = ["dashboard", "reports", "analytics", "datarecords", "manage"];
+const DEFAULT_MAIN = ["dashboard", "reports", "datarecords", "manage"];
 const DEFAULT_REPORTS = ["sales", "charts", "customer", "product", "user"];
 const DEFAULT_DATA_RECORDS = ["orders", "products", "inventory", "categories", "sub-categories", "locations", "personnel", "customers"];
 const DEFAULT_MANAGE = ["create-user", "manage-permissions", "manage-menu-order", "manage-logo", "user-logs"];

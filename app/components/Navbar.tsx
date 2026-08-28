@@ -51,7 +51,6 @@ export default function Navbar() {
   const [menuOrder, setMenuOrder] = useState<string[]>([
     "dashboard",
     "reports",
-    "analytics",
     "datarecords",
     "manage",
   ]);
@@ -214,18 +213,6 @@ export default function Navbar() {
                   }
                   if (key === "reports") {
                     return <ReportsDropdown key="reports" pathname={pathname} user={user} subOrder={reportsSubOrder} />;
-                  }
-                  if (key === "analytics") {
-                    return (
-                      <NavLink
-                        key="analytics"
-                        href="/analytics"
-                        icon={<BarChart3 className="w-4 h-4" />}
-                        label="Analytics"
-                        active={pathname === "/analytics"}
-                        isAllowed={user.role === "admin" || user.allowedPages.includes("/analytics")}
-                      />
-                    );
                   }
                   if (key === "datarecords") {
                     return <DataRecordsDropdown key="datarecords" pathname={pathname} user={user} subOrder={dataRecordsSubOrder} />;
