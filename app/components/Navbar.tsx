@@ -266,13 +266,6 @@ export default function Navbar() {
                   <LogOut className="w-5 h-5" />
                 </button>
               </div>
-            ) : !loading ? (
-              <Link
-                href="/login"
-                className="btn-earth-primary px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
-              >
-                เข้าสู่ระบบ
-              </Link>
             ) : null}
           </div>
         </div>

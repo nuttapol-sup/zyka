@@ -38,6 +38,10 @@ function createRedirect(targetPath: string, request: NextRequest): NextResponse 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Helper: Strip /zyka prefix if present to normalize path checks
+  const cleanPath = pathname.replace(/^\/zyka/, "") || "/";
+  const isApi = cleanPath.startsWith("/api/");
+
   // 1. Allow public static assets and next internal requests
   if (
     pathname.startsWith("/_next") ||
@@ -48,10 +52,10 @@ export async function middleware(request: NextRequest) {
   }
 
   // 2. Allow public auth paths
-  if (PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(path))) {
+  if (PUBLIC_PATHS.some((path) => cleanPath === path || cleanPath.startsWith(path))) {
     // If user is already logged in and visits /login, redirect to /dashboard
     const token = request.cookies.get(COOKIE_NAME)?.value;
-    if (token && (pathname === "/login" || pathname === "/zyka/login")) {
+    if (token && cleanPath === "/login") {
       const payload = await verifyToken(token);
       if (payload) {
         return createRedirect("/dashboard", request);
@@ -63,7 +67,7 @@ export async function middleware(request: NextRequest) {
   // 3. Verify Token
   const token = request.cookies.get(COOKIE_NAME)?.value;
   if (!token) {
-    if (pathname.startsWith("/api/")) {
+    if (isApi) {
       return withSecurityHeaders(NextResponse.json({ error: "ยังไม่ได้เข้าสู่ระบบ" }, { status: 401 }));
     }
     return createRedirect("/login", request);
@@ -71,7 +75,7 @@ export async function middleware(request: NextRequest) {
 
   const payload = await verifyToken(token);
   if (!payload) {
-    if (pathname.startsWith("/api/")) {
+    if (isApi) {
       return withSecurityHeaders(NextResponse.json({ error: "Token ไม่ถูกต้องหรือหมดอายุ" }, { status: 401 }));
     }
     const response = createRedirect("/login", request);
@@ -80,9 +84,10 @@ export async function middleware(request: NextRequest) {
   }
 
   // 4. Admin-Only Route Check
-  if (ADMIN_PATHS.some((path) => pathname.startsWith(path)) || pathname.startsWith("/api/admin")) {
+  const isAdminRoute = ADMIN_PATHS.some((path) => cleanPath.startsWith(path)) || cleanPath.startsWith("/api/admin");
+  if (isAdminRoute) {
     if (payload.role !== "admin") {
-      if (pathname.startsWith("/api/")) {
+      if (isApi) {
         return withSecurityHeaders(NextResponse.json({ error: "ต้องใช้สิทธิ์ Admin เท่านั้น" }, { status: 403 }));
       }
       return createRedirect("/unauthorized?reason=admin_required", request);
@@ -104,7 +109,7 @@ export async function middleware(request: NextRequest) {
       "/personnel",
       "/customers",
     ];
-    const matchedPage = checkablePages.find((page) => pathname === page || pathname.startsWith(page + "/"));
+    const matchedPage = checkablePages.find((page) => cleanPath === page || cleanPath.startsWith(page + "/"));
 
     if (matchedPage) {
       const hasPermission = payload.allowedPages && payload.allowedPages.includes(matchedPage);
