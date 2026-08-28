@@ -18,6 +18,7 @@ import {
   Users,
   Contact,
   ChevronDown,
+  ChevronRight,
   FolderKanban,
   Tags,
   FolderTree,
@@ -26,6 +27,9 @@ import {
   ShoppingBag,
   TrendingUp,
   ListOrdered,
+  Menu,
+  X,
+  KeyRound,
 } from "lucide-react";
 import { getApiPath } from "@/app/utils/apiPath";
 
@@ -68,6 +72,12 @@ export default function Navbar() {
     return null;
   });
   const [loading, setLoading] = useState(true);
+
+  // Mobile Drawer & Mobile Submenu Accordion States
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mobileReportsOpen, setMobileReportsOpen] = useState(false);
+  const [mobileDataOpen, setMobileDataOpen] = useState(false);
+  const [mobileAdminOpen, setMobileAdminOpen] = useState(false);
 
   // Dynamic Logo & Branding State
   const [logoUrl, setLogoUrl] = useState("");
@@ -201,6 +211,9 @@ export default function Navbar() {
       setLoading(false);
     }
 
+    // Auto-close mobile drawer on route navigation
+    setIsMobileMenuOpen(false);
+
     // Listen for custom events to update logo, menu ordering & user session live without manual page refresh
     const handleLogoUpdate = () => fetchLogoSettings();
     const handleMenuUpdate = () => fetchMenuOrder();
@@ -224,6 +237,7 @@ export default function Navbar() {
       } catch {}
       await fetch(getApiPath("/api/auth/logout"), { method: "POST", credentials: "same-origin" });
       setUser(null);
+      setIsMobileMenuOpen(false);
       window.location.href = getApiPath("/login");
     } catch (error) {
       console.error("Logout failed:", error);
@@ -236,11 +250,12 @@ export default function Navbar() {
     <nav className="glass-earth-header sticky top-0 z-50 border-b border-[#2d4734]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Left: Brand Logo & Navigation Links */}
+          {/* Left: Brand Logo & Desktop Navigation Links */}
           <div className="flex items-center gap-6">
             <Link
               href={user ? "/dashboard" : "/login"}
               className="flex items-center gap-3 group shrink-0"
+              onClick={() => setIsMobileMenuOpen(false)}
             >
               {logoUrl ? (
                 <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#18241c] border border-[#98c9a3]/40 flex items-center justify-center p-1 shadow-md group-hover:border-[#98c9a3] transition-colors">
@@ -266,9 +281,9 @@ export default function Navbar() {
               </div>
             </Link>
 
-            {/* Navigation Links (Allowed per User Permissions) */}
+            {/* Desktop Navigation Links (Allowed per User Permissions) */}
             {user && (
-              <div className="flex items-center flex-wrap gap-1.5">
+              <div className="hidden md:flex items-center space-x-1.5">
                 {menuOrder.map((key) => {
                   if (key === "dashboard" && hasAccess(user, "/dashboard")) {
                     return (
@@ -300,10 +315,11 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Right: User Profile Status & Logout Button */}
+          {/* Right: Desktop User Profile Status OR Mobile Toggle Button */}
           <div className="flex items-center gap-3 shrink-0">
+            {/* Desktop User Status & Logout */}
             {user && (
-              <div className="flex items-center gap-3">
+              <div className="hidden md:flex items-center gap-3">
                 <Link
                   href="/change-password"
                   title="คลิกเพื่อเปลี่ยนรหัสผ่าน (Change Password)"
@@ -339,9 +355,292 @@ export default function Navbar() {
                 </button>
               </div>
             )}
+
+            {/* Mobile Hamburger Menu Toggle Button */}
+            {user && (
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="md:hidden p-2.5 rounded-xl bg-[#18241c] text-[#98c9a3] border border-[#98c9a3]/30 hover:bg-[#1e3024] transition-colors focus:outline-none"
+                aria-label="Toggle Mobile Menu"
+              >
+                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+            )}
           </div>
         </div>
       </div>
+
+      {/* MOBILE NAVIGATION DRAWER OVERLAY */}
+      {user && isMobileMenuOpen && (
+        <div className="md:hidden border-t border-[#2d4734] bg-[#0f1712]/95 backdrop-blur-2xl p-4 space-y-4 animate-in slide-in-from-top-3 duration-200 shadow-2xl">
+          {/* Mobile User Profile Summary */}
+          <div className="p-3.5 rounded-2xl bg-[#18241c] border border-[#98c9a3]/30 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#2a4332] flex items-center justify-center text-[#98c9a3]">
+                {user.role === "admin" ? <Shield className="w-5 h-5" /> : <UserIcon className="w-5 h-5 text-[#e6dfd3]" />}
+              </div>
+              <div>
+                <p className="text-sm font-extrabold text-[#f3efe6]">{user.name || user.username}</p>
+                <span className="text-[10px] font-black uppercase text-[#98c9a3] bg-[#2a4332]/50 px-2 py-0.5 rounded-full border border-[#98c9a3]/30">
+                  {user.role}
+                </span>
+              </div>
+            </div>
+
+            <Link
+              href="/change-password"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="p-2 rounded-xl bg-[#1e3024] text-[#98c9a3] hover:text-[#f3efe6] border border-[#98c9a3]/20 text-xs font-semibold flex items-center gap-1"
+            >
+              <KeyRound className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* Mobile Navigation Links */}
+          <div className="space-y-1.5">
+            {menuOrder.map((key) => {
+              if (key === "dashboard" && hasAccess(user, "/dashboard")) {
+                return (
+                  <Link
+                    key="mobile-dashboard"
+                    href="/dashboard"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`w-full flex items-center justify-between p-3 rounded-xl text-sm font-bold transition-all ${
+                      pathname === "/dashboard" || pathname === "/zyka/dashboard"
+                        ? "bg-[#273e2e] text-[#98c9a3] border border-[#98c9a3]/40 shadow-sm"
+                        : "text-[#e6dfd3] bg-[#121c15] border border-[#2d4734]/60"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <LayoutDashboard className="w-4 h-4 text-[#98c9a3]" />
+                      <span>{getLabel("dashboard", "Dashboard")}</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-[#a39b8b]" />
+                  </Link>
+                );
+              }
+
+              if (key === "reports") {
+                const isSalesAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=sales");
+                const isChartsAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=charts");
+                const isCustomerAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=customer");
+                const isProductAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=product");
+                const isUserAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=user");
+                const hasAnyReports = isSalesAllowed || isChartsAllowed || isCustomerAllowed || isProductAllowed || isUserAllowed;
+
+                if (!hasAnyReports) return null;
+
+                return (
+                  <div key="mobile-reports" className="rounded-xl bg-[#121c15] border border-[#2d4734]/60 overflow-hidden">
+                    <button
+                      onClick={() => setMobileReportsOpen(!mobileReportsOpen)}
+                      className="w-full flex items-center justify-between p-3 text-sm font-bold text-[#e6dfd3]"
+                    >
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-4 h-4 text-[#98c9a3]" />
+                        <span>{getLabel("reports", "Reports")}</span>
+                      </div>
+                      <ChevronDown className={`w-4 h-4 text-[#a39b8b] transition-transform ${mobileReportsOpen ? "rotate-180 text-[#98c9a3]" : ""}`} />
+                    </button>
+
+                    {mobileReportsOpen && (
+                      <div className="p-2 space-y-1 bg-[#18241c]/80 border-t border-[#2d4734]/40">
+                        {isSalesAllowed && (
+                          <Link
+                            href="/reports?tab=sales"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]"
+                          >
+                            <TrendingUp className="w-3.5 h-3.5 text-[#98c9a3]" />
+                            <span>{getLabel("sales", "📊 สรุปยอดขาย (Sales Summary)")}</span>
+                          </Link>
+                        )}
+                        {isChartsAllowed && (
+                          <Link
+                            href="/reports?tab=charts"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]"
+                          >
+                            <BarChart3 className="w-3.5 h-3.5 text-[#98c9a3]" />
+                            <span>{getLabel("charts", "📈 กราฟวิเคราะห์ (Sales Charts)")}</span>
+                          </Link>
+                        )}
+                        {isCustomerAllowed && (
+                          <Link
+                            href="/reports?tab=customer"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]"
+                          >
+                            <Users className="w-3.5 h-3.5 text-[#98c9a3]" />
+                            <span>{getLabel("customer", "👥 สรุปตามลูกค้า (Sales by Customer)")}</span>
+                          </Link>
+                        )}
+                        {isProductAllowed && (
+                          <Link
+                            href="/reports?tab=product"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]"
+                          >
+                            <Package className="w-3.5 h-3.5 text-[#98c9a3]" />
+                            <span>{getLabel("product", "📦 สรุปตามสินค้า (Sales by Product)")}</span>
+                          </Link>
+                        )}
+                        {isUserAllowed && (
+                          <Link
+                            href="/reports?tab=user"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]"
+                          >
+                            <Activity className="w-3.5 h-3.5 text-[#98c9a3]" />
+                            <span>{getLabel("user", "👤 ประวัติผู้ใช้งาน (User Logs)")}</span>
+                          </Link>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              if (key === "datarecords") {
+                const isOrdersAllowed = hasAccess(user, "/orders");
+                const isCategoriesAllowed = hasAccess(user, "/categories");
+                const isSubCategoriesAllowed = hasAccess(user, "/sub-categories");
+                const isProductsAllowed = hasAccess(user, "/products");
+                const isInventoryAllowed = hasAccess(user, "/inventory");
+                const isLocationsAllowed = hasAccess(user, "/locations");
+                const isPersonnelAllowed = hasAccess(user, "/personnel");
+                const isCustomersAllowed = hasAccess(user, "/customers");
+                const hasAnyData = isOrdersAllowed || isCategoriesAllowed || isSubCategoriesAllowed || isProductsAllowed || isInventoryAllowed || isLocationsAllowed || isPersonnelAllowed || isCustomersAllowed;
+
+                if (!hasAnyData) return null;
+
+                return (
+                  <div key="mobile-datarecords" className="rounded-xl bg-[#121c15] border border-[#2d4734]/60 overflow-hidden">
+                    <button
+                      onClick={() => setMobileDataOpen(!mobileDataOpen)}
+                      className="w-full flex items-center justify-between p-3 text-sm font-bold text-[#e6dfd3]"
+                    >
+                      <div className="flex items-center gap-3">
+                        <FolderKanban className="w-4 h-4 text-[#98c9a3]" />
+                        <span>{getLabel("datarecords", "Data Records")}</span>
+                      </div>
+                      <ChevronDown className={`w-4 h-4 text-[#a39b8b] transition-transform ${mobileDataOpen ? "rotate-180 text-[#98c9a3]" : ""}`} />
+                    </button>
+
+                    {mobileDataOpen && (
+                      <div className="p-2 space-y-1 bg-[#18241c]/80 border-t border-[#2d4734]/40">
+                        {isOrdersAllowed && (
+                          <Link href="/orders" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                            <ShoppingBag className="w-3.5 h-3.5 text-[#98c9a3]" />
+                            <span>{getLabel("orders", "Orders (บันทึกสั่งซื้อ & ใบเสร็จ)")}</span>
+                          </Link>
+                        )}
+                        {isCategoriesAllowed && (
+                          <Link href="/categories" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                            <Tags className="w-3.5 h-3.5 text-[#98c9a3]" />
+                            <span>{getLabel("categories", "Categories (ประเภทหมวดสินค้า)")}</span>
+                          </Link>
+                        )}
+                        {isSubCategoriesAllowed && (
+                          <Link href="/sub-categories" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                            <FolderTree className="w-3.5 h-3.5 text-[#98c9a3]" />
+                            <span>{getLabel("sub-categories", "Sub-Categories (หมวดสินค้า)")}</span>
+                          </Link>
+                        )}
+                        {isProductsAllowed && (
+                          <Link href="/products" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                            <Package className="w-3.5 h-3.5 text-[#98c9a3]" />
+                            <span>{getLabel("products", "Products (บันทึกสินค้า)")}</span>
+                          </Link>
+                        )}
+                        {isInventoryAllowed && (
+                          <Link href="/inventory" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                            <Boxes className="w-3.5 h-3.5 text-[#98c9a3]" />
+                            <span>{getLabel("inventory", "Inventory (จัดการสต็อกสินค้า)")}</span>
+                          </Link>
+                        )}
+                        {isLocationsAllowed && (
+                          <Link href="/locations" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                            <Warehouse className="w-3.5 h-3.5 text-[#98c9a3]" />
+                            <span>{getLabel("locations", "Locations (สถานที่เก็บสินค้า)")}</span>
+                          </Link>
+                        )}
+                        {isPersonnelAllowed && (
+                          <Link href="/personnel" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                            <Users className="w-3.5 h-3.5 text-[#98c9a3]" />
+                            <span>{getLabel("personnel", "Personnel (ข้อมูลบุคลากร)")}</span>
+                          </Link>
+                        )}
+                        {isCustomersAllowed && (
+                          <Link href="/customers" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                            <Contact className="w-3.5 h-3.5 text-[#98c9a3]" />
+                            <span>{getLabel("customers", "Customers (ข้อมูลลูกค้า)")}</span>
+                          </Link>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              if (key === "manage" && user.role === "admin") {
+                return (
+                  <div key="mobile-manage" className="rounded-xl bg-[#121c15] border border-[#2d4734]/60 overflow-hidden">
+                    <button
+                      onClick={() => setMobileAdminOpen(!mobileAdminOpen)}
+                      className="w-full flex items-center justify-between p-3 text-sm font-bold text-[#e6dfd3]"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Shield className="w-4 h-4 text-[#98c9a3]" />
+                        <span>{getLabel("manage", "Manage")}</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#446e50]/40 text-[#98c9a3] border border-[#98c9a3]/30 font-semibold">
+                          Admin
+                        </span>
+                      </div>
+                      <ChevronDown className={`w-4 h-4 text-[#a39b8b] transition-transform ${mobileAdminOpen ? "rotate-180 text-[#98c9a3]" : ""}`} />
+                    </button>
+
+                    {mobileAdminOpen && (
+                      <div className="p-2 space-y-1 bg-[#18241c]/80 border-t border-[#2d4734]/40">
+                        <Link href="/admin/create-user" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                          <UserPlus className="w-3.5 h-3.5 text-[#98c9a3]" />
+                          <span>{getLabel("create-user", "Create User (สร้างผู้ใช้)")}</span>
+                        </Link>
+                        <Link href="/admin/manage-permissions" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                          <Sliders className="w-3.5 h-3.5 text-[#98c9a3]" />
+                          <span>{getLabel("manage-permissions", "Permissions (จัดการสิทธิ์)")}</span>
+                        </Link>
+                        <Link href="/admin/manage-menu-order" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                          <ListOrdered className="w-3.5 h-3.5 text-[#98c9a3]" />
+                          <span>{getLabel("manage-menu-order", "Menu Order (จัดลำดับและตั้งชื่อเมนู)")}</span>
+                        </Link>
+                        <Link href="/admin/manage-logo" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                          <Leaf className="w-3.5 h-3.5 text-[#98c9a3]" />
+                          <span>{getLabel("manage-logo", "Logo & Branding (จัดการโลโก้)")}</span>
+                        </Link>
+                        <Link href="/admin/user-logs" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                          <Activity className="w-3.5 h-3.5 text-[#98c9a3]" />
+                          <span>{getLabel("user-logs", "User Logs (ประวัติการใช้งาน)")}</span>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+              return null;
+            })}
+          </div>
+
+          {/* Mobile Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-red-950/40 text-red-300 border border-red-800/40 text-sm font-bold hover:bg-red-900/40 transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>ออกจากระบบ</span>
+          </button>
+        </div>
+      )}
     </nav>
   );
 }
