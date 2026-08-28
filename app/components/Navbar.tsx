@@ -30,12 +30,25 @@ import {
 import { getApiPath } from "@/app/utils/apiPath";
 
 interface UserProfile {
-  id: string;
+  id?: string;
+  _id?: string;
   name: string;
   username: string;
   role: "admin" | "user";
   allowedPages: string[];
 }
+
+const hasAccess = (user: UserProfile | null, path: string): boolean => {
+  if (!user) return false;
+  if (user.role === "admin") return true;
+  if (!Array.isArray(user.allowedPages)) return false;
+
+  const cleanTarget = path.replace(/^\/zyka/, "");
+  return user.allowedPages.some((p) => {
+    const cleanP = p.replace(/^\/zyka/, "");
+    return cleanP === cleanTarget || cleanP === cleanTarget.replace(/^\//, "") || cleanTarget.startsWith(cleanP);
+  });
+};
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -165,10 +178,10 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left: Brand Logo & Title */}
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-6">
             <Link
               href={user ? "/dashboard" : "/login"}
-              className="flex items-center gap-3 group"
+              className="flex items-center gap-3 group shrink-0"
             >
               {logoUrl ? (
                 // Custom Uploaded Logo Image
@@ -198,7 +211,7 @@ export default function Navbar() {
 
             {/* Navigation Links (Ordered Dynamically) */}
             {user && (
-              <div className="hidden md:flex items-center space-x-1.5">
+              <div className="flex items-center flex-wrap gap-1.5">
                 {menuOrder.map((key) => {
                   if (key === "dashboard") {
                     return (
@@ -219,7 +232,7 @@ export default function Navbar() {
                   }
                   if (key === "manage" && user.role === "admin") {
                     return (
-                      <div key="manage" className="pl-3 ml-3 border-l border-[#2d4734]">
+                      <div key="manage" className="pl-2 border-l border-[#2d4734]">
                         <AdminManageDropdown pathname={pathname} subOrder={manageSubOrder} menuCustomLabels={menuCustomLabels} />
                       </div>
                     );
@@ -231,7 +244,7 @@ export default function Navbar() {
           </div>
 
           {/* User Status / Auth Action */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             {user ? (
               <div className="flex items-center gap-3">
                 {/* Clickable User Profile Badge -> Navigates to Change Password */}
@@ -320,14 +333,14 @@ function DataRecordsDropdown({
 
   const getLabel = (key: string, fallback: string) => menuCustomLabels[key] || fallback;
 
-  const isOrdersAllowed = user.role === "admin" || user.allowedPages.includes("/orders");
-  const isCategoriesAllowed = user.role === "admin" || user.allowedPages.includes("/categories");
-  const isSubCategoriesAllowed = user.role === "admin" || user.allowedPages.includes("/sub-categories");
-  const isProductsAllowed = user.role === "admin" || user.allowedPages.includes("/products");
-  const isInventoryAllowed = user.role === "admin" || user.allowedPages.includes("/inventory");
-  const isLocationsAllowed = user.role === "admin" || user.allowedPages.includes("/locations");
-  const isPersonnelAllowed = user.role === "admin" || user.allowedPages.includes("/personnel");
-  const isCustomersAllowed = user.role === "admin" || user.allowedPages.includes("/customers");
+  const isOrdersAllowed = hasAccess(user, "/orders");
+  const isCategoriesAllowed = hasAccess(user, "/categories");
+  const isSubCategoriesAllowed = hasAccess(user, "/sub-categories");
+  const isProductsAllowed = hasAccess(user, "/products");
+  const isInventoryAllowed = hasAccess(user, "/inventory");
+  const isLocationsAllowed = hasAccess(user, "/locations");
+  const isPersonnelAllowed = hasAccess(user, "/personnel");
+  const isCustomersAllowed = hasAccess(user, "/customers");
 
   const hasAnyAccess = isOrdersAllowed || isCategoriesAllowed || isSubCategoriesAllowed || isProductsAllowed || isInventoryAllowed || isLocationsAllowed || isPersonnelAllowed || isCustomersAllowed;
 
@@ -645,13 +658,11 @@ function ReportsDropdown({
 
   const getLabel = (key: string, fallback: string) => menuCustomLabels[key] || fallback;
 
-  const hasFullReportAccess = user.role === "admin" || user.allowedPages.includes("/reports");
-
-  const isSalesAllowed = hasFullReportAccess || user.allowedPages.includes("/reports?tab=sales");
-  const isChartsAllowed = hasFullReportAccess || user.allowedPages.includes("/reports?tab=charts");
-  const isCustomerAllowed = hasFullReportAccess || user.allowedPages.includes("/reports?tab=customer");
-  const isProductAllowed = hasFullReportAccess || user.allowedPages.includes("/reports?tab=product");
-  const isUserAllowed = hasFullReportAccess || user.allowedPages.includes("/reports?tab=user");
+  const isSalesAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=sales");
+  const isChartsAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=charts");
+  const isCustomerAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=customer");
+  const isProductAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=product");
+  const isUserAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=user");
 
   const hasAnyAccess = isSalesAllowed || isChartsAllowed || isCustomerAllowed || isProductAllowed || isUserAllowed;
 
