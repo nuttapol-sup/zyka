@@ -56,7 +56,17 @@ const hasAccess = (user: UserProfile | null, path: string): boolean => {
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [user, setUser] = useState<UserProfile | null>(null);
+
+  // Instant user state initialization from sessionStorage cache (0ms render)
+  const [user, setUser] = useState<UserProfile | null>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const cached = sessionStorage.getItem("zyka_user_cache");
+        if (cached) return JSON.parse(cached);
+      } catch {}
+    }
+    return null;
+  });
   const [loading, setLoading] = useState(true);
 
   // Dynamic Logo & Branding State
@@ -135,8 +145,8 @@ export default function Navbar() {
     }
   };
 
-  // Fetch current logged in user with explicit credentials
-  const fetchUser = async () => {
+  // Fetch current logged in user with explicit credentials & automatic retry
+  const fetchUser = async (retryCount = 0) => {
     try {
       const res = await fetch(getApiPath("/api/auth/me"), {
         cache: "no-store",
@@ -146,13 +156,33 @@ export default function Navbar() {
         const data = await res.json();
         if (data?.user) {
           setUser(data.user);
-        } else {
-          setUser(null);
+          try {
+            sessionStorage.setItem("zyka_user_cache", JSON.stringify(data.user));
+          } catch {}
+          setLoading(false);
+          return;
         }
-      } else {
-        setUser(null);
       }
+
+      // Retry once after 400ms if initial request failed (e.g. cookie timing)
+      if (retryCount < 2) {
+        setTimeout(() => fetchUser(retryCount + 1), 400);
+        return;
+      }
+
+      // Clear cache if confirmed unauthenticated after retries
+      try {
+        sessionStorage.removeItem("zyka_user_cache");
+      } catch {}
+      setUser(null);
     } catch {
+      if (retryCount < 2) {
+        setTimeout(() => fetchUser(retryCount + 1), 400);
+        return;
+      }
+      try {
+        sessionStorage.removeItem("zyka_user_cache");
+      } catch {}
       setUser(null);
     } finally {
       setLoading(false);
@@ -182,10 +212,12 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     try {
+      try {
+        sessionStorage.removeItem("zyka_user_cache");
+      } catch {}
       await fetch(getApiPath("/api/auth/logout"), { method: "POST", credentials: "same-origin" });
       setUser(null);
-      router.push("/login");
-      router.refresh();
+      window.location.href = getApiPath("/login");
     } catch (error) {
       console.error("Logout failed:", error);
     }

@@ -33,6 +33,13 @@ export default function LoginPage() {
         throw new Error(data.error || "ไม่สามารถเข้าสู่ระบบได้");
       }
 
+      // Store user in sessionStorage so Navbar renders 0ms instantly on redirect
+      if (data?.user) {
+        try {
+          sessionStorage.setItem("zyka_user_cache", JSON.stringify(data.user));
+        } catch {}
+      }
+
       // Success -> Dispatch update event & perform full navigation to sync Navbar & cookies
       window.dispatchEvent(new Event("zyka-user-updated"));
 
