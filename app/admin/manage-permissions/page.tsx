@@ -137,6 +137,12 @@ const PAGE_GROUPS: PageGroup[] = [
         icon: <Users className="w-4 h-4 text-[#98c9a3]" />,
       },
       {
+        path: "/positions",
+        label: "Positions (ตำแหน่งงาน)",
+        description: "จัดการและบันทึกข้อมูลตำแหน่งงานพนักงาน",
+        icon: <Briefcase className="w-4 h-4 text-[#98c9a3]" />,
+      },
+      {
         path: "/customers",
         label: "Customers (ลูกค้า)",
         description: "จัดการข้อมูลรายชื่อและที่อยู่ลูกค้า",

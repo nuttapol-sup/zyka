@@ -237,18 +237,25 @@ export default function Navbar() {
   const handleLogout = async () => {
     try {
       try {
-        sessionStorage.removeItem("zyka_user_cache");
+        sessionStorage.clear();
+        localStorage.clear();
       } catch {}
       await fetch(getApiPath("/api/auth/logout"), { method: "POST", credentials: "same-origin" });
       setUser(null);
       setIsMobileMenuOpen(false);
-      window.location.href = getApiPath("/login");
+      window.location.replace(getApiPath("/login"));
     } catch (error) {
       console.error("Logout failed:", error);
+      window.location.replace(getApiPath("/login"));
     }
   };
 
   const getLabel = (key: string, fallback: string) => menuCustomLabels[key] || fallback;
+
+  // Never render Navbar on /login page
+  if (pathname === "/login" || pathname === "/zyka/login" || pathname?.endsWith("/login")) {
+    return null;
+  }
 
   return (
     <nav className="glass-earth-header sticky top-0 z-50 border-b border-[#2d4734]">

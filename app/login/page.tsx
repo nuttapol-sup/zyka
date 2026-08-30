@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Leaf, Lock, User, ArrowRight } from "lucide-react";
+import { Leaf, Lock, User, ArrowRight, RefreshCw } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -10,6 +10,40 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    const checkLoggedIn = async () => {
+      try {
+        const apiPath = typeof window !== "undefined" && window.location.pathname.startsWith("/zyka")
+          ? "/zyka/api/auth/me"
+          : "/api/auth/me";
+
+        const res = await fetch(apiPath, { cache: "no-store", credentials: "same-origin" });
+        if (res.ok) {
+          const isSubpath = typeof window !== "undefined" && window.location.pathname.startsWith("/zyka");
+          const target = isSubpath ? "/zyka/dashboard" : "/dashboard";
+          window.location.replace(target);
+          return;
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setCheckingAuth(false);
+      }
+    };
+
+    checkLoggedIn();
+
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        checkLoggedIn();
+      }
+    };
+
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +90,17 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  if (checkingAuth) {
+    return (
+      <div className="min-h-[85vh] flex items-center justify-center">
+        <div className="text-center text-[#a39b8b] flex flex-col items-center gap-2">
+          <RefreshCw className="w-8 h-8 animate-spin text-[#98c9a3]" />
+          <span className="text-xs">กำลังตรวจสอบสถานะการเข้าสู่ระบบ...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">

@@ -30,6 +30,7 @@ import {
   TrendingUp,
   Sparkles,
   Edit3,
+  Briefcase,
 } from "lucide-react";
 import { getApiPath } from "@/app/utils/apiPath";
 
@@ -145,6 +146,12 @@ const DATA_RECORDS_ITEMS: Record<string, MenuItem> = {
     label: "Personnel (บุคลากร)",
     description: "หน้าบันทึกข้อมูลรายชื่อและตำแหน่งพนักงาน",
     icon: <Users className="w-5 h-5 text-[#98c9a3]" />,
+  },
+  positions: {
+    key: "positions",
+    label: "Positions (ตำแหน่งงาน)",
+    description: "หน้าบันทึกและจัดการข้อมูลตำแหน่งงานพนักงาน",
+    icon: <Briefcase className="w-5 h-5 text-[#98c9a3]" />,
   },
   customers: {
     key: "customers",
