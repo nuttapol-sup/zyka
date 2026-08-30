@@ -197,7 +197,7 @@ const MANAGE_ITEMS: Record<string, MenuItem> = {
 
 const DEFAULT_MAIN = ["dashboard", "reports", "datarecords", "manage"];
 const DEFAULT_REPORTS = ["sales", "charts", "customer", "product", "user"];
-const DEFAULT_DATA_RECORDS = ["orders", "products", "inventory", "categories", "sub-categories", "locations", "personnel", "customers"];
+const DEFAULT_DATA_RECORDS = ["orders", "products", "inventory", "categories", "sub-categories", "locations", "personnel", "positions", "customers"];
 const DEFAULT_MANAGE = ["create-user", "manage-permissions", "manage-menu-order", "manage-logo", "user-logs"];
 
 export default function ManageMenuOrderPage() {
@@ -222,7 +222,18 @@ export default function ManageMenuOrderPage() {
         const data = await res.json();
         if (data.menuOrder && Array.isArray(data.menuOrder)) setMenuOrder(data.menuOrder);
         if (data.reportsSubOrder && Array.isArray(data.reportsSubOrder)) setReportsSubOrder(data.reportsSubOrder);
-        if (data.dataRecordsSubOrder && Array.isArray(data.dataRecordsSubOrder)) setDataRecordsSubOrder(data.dataRecordsSubOrder);
+        if (data.dataRecordsSubOrder && Array.isArray(data.dataRecordsSubOrder)) {
+          const list = [...data.dataRecordsSubOrder];
+          if (!list.includes("positions")) {
+            const custIdx = list.indexOf("customers");
+            if (custIdx !== -1) {
+              list.splice(custIdx, 0, "positions");
+            } else {
+              list.push("positions");
+            }
+          }
+          setDataRecordsSubOrder(list);
+        }
         if (data.manageSubOrder && Array.isArray(data.manageSubOrder)) setManageSubOrder(data.manageSubOrder);
         if (data.menuCustomLabels && typeof data.menuCustomLabels === "object") setMenuCustomLabels(data.menuCustomLabels);
       }
