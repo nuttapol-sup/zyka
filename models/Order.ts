@@ -19,6 +19,9 @@ export interface IOrder extends Document {
   customerPhone?: string;
   customerAddress?: string;
   customerTaxId?: string;
+  salespersonId?: mongoose.Types.ObjectId | string;
+  salespersonName?: string;
+  [key: string]: any;
   orderDate: Date;
   dueDate?: Date;
   creditDays?: number;
@@ -81,6 +84,11 @@ const OrderSchema: Schema<IOrder> = new Schema(
     customerPhone: { type: String, trim: true, default: "" },
     customerAddress: { type: String, trim: true, default: "" },
     customerTaxId: { type: String, trim: true, default: "" },
+    salespersonId: {
+      type: Schema.Types.ObjectId,
+      ref: "Personnel",
+    },
+    salespersonName: { type: String, trim: true, default: "" },
     orderDate: { type: Date, default: Date.now },
     dueDate: { type: Date },
     creditDays: { type: Number, default: 0 },
@@ -127,9 +135,7 @@ const OrderSchema: Schema<IOrder> = new Schema(
   }
 );
 
-if (process.env.NODE_ENV === "development") {
-  delete (mongoose.models as any).Order;
-}
+delete (mongoose.models as any).Order;
 
 const Order: Model<IOrder> =
   mongoose.models.Order || mongoose.model<IOrder>("Order", OrderSchema);
