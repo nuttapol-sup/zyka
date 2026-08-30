@@ -150,7 +150,11 @@ export default function Navbar() {
         const data = await res.json();
         if (data.menuOrder && Array.isArray(data.menuOrder)) setMenuOrder(data.menuOrder);
         if (data.reportsSubOrder && Array.isArray(data.reportsSubOrder)) setReportsSubOrder(data.reportsSubOrder);
-        if (data.dataRecordsSubOrder && Array.isArray(data.dataRecordsSubOrder)) setDataRecordsSubOrder(data.dataRecordsSubOrder);
+        if (data.dataRecordsSubOrder && Array.isArray(data.dataRecordsSubOrder)) {
+          const list = [...data.dataRecordsSubOrder];
+          if (!list.includes("positions")) list.push("positions");
+          setDataRecordsSubOrder(list);
+        }
         if (data.manageSubOrder && Array.isArray(data.manageSubOrder)) setManageSubOrder(data.manageSubOrder);
         if (data.menuCustomLabels && typeof data.menuCustomLabels === "object") setMenuCustomLabels(data.menuCustomLabels);
       }
@@ -573,7 +577,13 @@ export default function Navbar() {
 
                     {mobileDataOpen && (
                       <div className="p-2 space-y-1 bg-[#18241c]/80 border-t border-[#2d4734]/40">
-                        {dataRecordsSubOrder.map((subKey) => {
+                        {(() => {
+                          const ALL_DATA = ["orders", "products", "inventory", "categories", "sub-categories", "locations", "personnel", "positions", "customers"];
+                          const effectiveMobileDataOrder = [...dataRecordsSubOrder];
+                          ALL_DATA.forEach((k) => {
+                            if (!effectiveMobileDataOrder.includes(k)) effectiveMobileDataOrder.push(k);
+                          });
+                          return effectiveMobileDataOrder.map((subKey) => {
                           if (subKey === "orders" && isOrdersAllowed) {
                             return (
                               <Link key="m-orders" href="/orders" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
@@ -647,7 +657,8 @@ export default function Navbar() {
                             );
                           }
                           return null;
-                        })}
+                        });
+                      })()}
                       </div>
                     )}
                   </div>
@@ -809,7 +820,13 @@ function DataRecordsDropdown({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  if (!hasAnyAccess) return null;
+  const ALL_DATA_KEYS = ["orders", "products", "inventory", "categories", "sub-categories", "locations", "personnel", "positions", "customers"];
+  const effectiveSubOrder = Array.isArray(subOrder) ? [...subOrder] : ALL_DATA_KEYS;
+  ALL_DATA_KEYS.forEach((k) => {
+    if (!effectiveSubOrder.includes(k)) {
+      effectiveSubOrder.push(k);
+    }
+  });
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -832,7 +849,7 @@ function DataRecordsDropdown({
 
       {isOpen && (
         <div className="absolute left-0 mt-2 w-64 rounded-2xl bg-[#0f1712] border border-[#98c9a3]/30 shadow-2xl backdrop-blur-xl p-2 space-y-1 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-          {subOrder.map((key) => {
+          {effectiveSubOrder.map((key) => {
             if (key === "orders" && isOrdersAllowed) {
               return (
                 <Link
