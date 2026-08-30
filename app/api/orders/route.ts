@@ -62,6 +62,10 @@ export async function GET(request: Request) {
       pendingDelivery: allOrders.filter((o) => o.deliveryStatus === "PENDING" || o.deliveryStatus === "SHIPPED").length,
       pendingPayment: allOrders.filter((o) => o.paymentStatus === "UNPAID" || o.paymentStatus === "BILLED").length,
       totalRevenue: allOrders.reduce((sum, o) => sum + (o.grandTotal || 0), 0),
+      unpaidCount: allOrders.filter((o) => o.paymentStatus === "UNPAID").length,
+      billedCount: allOrders.filter((o) => o.paymentStatus === "BILLED").length,
+      paidCount: allOrders.filter((o) => o.paymentStatus === "PAID").length,
+      overdueCount: allOrders.filter((o) => o.paymentStatus === "OVERDUE").length,
     };
 
     return NextResponse.json({ orders, stats });

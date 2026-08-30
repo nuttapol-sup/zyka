@@ -118,6 +118,10 @@ export default function OrdersPage() {
     pendingDelivery: 0,
     pendingPayment: 0,
     totalRevenue: 0,
+    unpaidCount: 0,
+    billedCount: 0,
+    paidCount: 0,
+    overdueCount: 0,
   });
 
   const [loading, setLoading] = useState(true);
@@ -614,52 +618,91 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="glass-earth-card p-4 rounded-2xl border border-[#2d4734] flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="relative max-w-sm w-full">
-          <Search className="w-4 h-4 text-[#a39b8b] absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="ค้นหารหัสสั่งซื้อ, ชื่อลูกค้า, เลขพัสดุ..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] placeholder-[#a39b8b]/50 focus:outline-none focus:border-[#98c9a3]"
-          />
-        </div>
+      {/* Payment / Billing Status Filter Tabs */}
+      <div className="glass-earth-card p-2 sm:p-3 rounded-2xl border border-[#2d4734] flex flex-wrap items-center gap-2 overflow-x-auto">
+        <button
+          onClick={() => setFilterPayment("all")}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 ${
+            filterPayment === "all"
+              ? "bg-[#98c9a3] text-[#0f1712] shadow-md"
+              : "bg-[#121c15] text-[#a39b8b] hover:text-[#f3efe6] border border-[#2d4734]"
+          }`}
+        >
+          <span>ทั้งหมด</span>
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+            filterPayment === "all" ? "bg-[#0f1712]/30 text-[#0f1712]" : "bg-[#1e3425] text-[#98c9a3]"
+          }`}>
+            {stats.totalOrders}
+          </span>
+        </button>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-1.5 text-xs text-[#a39b8b]">
-            <Truck className="w-3.5 h-3.5" />
-            <span>ขนส่ง:</span>
-            <select
-              value={filterDelivery}
-              onChange={(e) => setFilterDelivery(e.target.value)}
-              className="bg-[#121c15] text-[#f3efe6] text-xs px-3 py-1.5 rounded-xl border border-[#2d4734] focus:outline-none focus:border-[#98c9a3]"
-            >
-              <option value="all">ทุกสถานะจัดส่ง</option>
-              <option value="PENDING">รอจัดส่ง</option>
-              <option value="SHIPPED">กำลังจัดส่ง</option>
-              <option value="DELIVERED">ส่งมอบสำเร็จ</option>
-              <option value="CANCELLED">ยกเลิก</option>
-            </select>
-          </div>
+        <button
+          onClick={() => setFilterPayment("UNPAID")}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 ${
+            filterPayment === "UNPAID"
+              ? "bg-amber-500 text-amber-950 shadow-md font-bold"
+              : "bg-[#121c15] text-amber-300 hover:text-amber-200 border border-amber-900/40"
+          }`}
+        >
+          <Clock className="w-3.5 h-3.5" />
+          <span>⏳ รอวางบิล / รอชำระ</span>
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+            filterPayment === "UNPAID" ? "bg-amber-950/30 text-amber-950" : "bg-amber-950/60 text-amber-300 border border-amber-800/40"
+          }`}>
+            {stats.unpaidCount || 0}
+          </span>
+        </button>
 
-          <div className="flex items-center gap-1.5 text-xs text-[#a39b8b]">
-            <FileText className="w-3.5 h-3.5" />
-            <span>การเงิน:</span>
-            <select
-              value={filterPayment}
-              onChange={(e) => setFilterPayment(e.target.value)}
-              className="bg-[#121c15] text-[#f3efe6] text-xs px-3 py-1.5 rounded-xl border border-[#2d4734] focus:outline-none focus:border-[#98c9a3]"
-            >
-              <option value="all">ทุกสถานะชำระ/วางบิล</option>
-              <option value="UNPAID">รอวางบิล / รอชำระ</option>
-              <option value="BILLED">วางบิลแล้ว</option>
-              <option value="PAID">ชำระเงินแล้ว (เสร็จสิ้น)</option>
-              <option value="OVERDUE">เกินกำหนดชำระ</option>
-            </select>
-          </div>
-        </div>
+        <button
+          onClick={() => setFilterPayment("BILLED")}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 ${
+            filterPayment === "BILLED"
+              ? "bg-blue-500 text-blue-950 shadow-md font-bold"
+              : "bg-[#121c15] text-blue-300 hover:text-blue-200 border border-blue-900/40"
+          }`}
+        >
+          <FileText className="w-3.5 h-3.5" />
+          <span>📄 วางบิลแล้ว</span>
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+            filterPayment === "BILLED" ? "bg-blue-950/30 text-blue-950" : "bg-blue-950/60 text-blue-300 border border-blue-800/40"
+          }`}>
+            {stats.billedCount || 0}
+          </span>
+        </button>
+
+        <button
+          onClick={() => setFilterPayment("PAID")}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 ${
+            filterPayment === "PAID"
+              ? "bg-emerald-500 text-emerald-950 shadow-md font-bold"
+              : "bg-[#121c15] text-emerald-300 hover:text-emerald-200 border border-emerald-900/40"
+          }`}
+        >
+          <CheckCircle2 className="w-3.5 h-3.5" />
+          <span>🟢 ชำระเงินแล้ว (เสร็จสิ้น)</span>
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+            filterPayment === "PAID" ? "bg-emerald-950/30 text-emerald-950" : "bg-emerald-950/60 text-emerald-300 border border-emerald-800/40"
+          }`}>
+            {stats.paidCount || 0}
+          </span>
+        </button>
+
+        <button
+          onClick={() => setFilterPayment("OVERDUE")}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 ${
+            filterPayment === "OVERDUE"
+              ? "bg-rose-500 text-rose-950 shadow-md font-bold"
+              : "bg-[#121c15] text-rose-300 hover:text-rose-200 border border-rose-900/40"
+          }`}
+        >
+          <AlertTriangle className="w-3.5 h-3.5" />
+          <span>⚠️ เกินกำหนดชำระ</span>
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+            filterPayment === "OVERDUE" ? "bg-rose-950/30 text-rose-950" : "bg-rose-950/60 text-rose-300 border border-rose-800/40"
+          }`}>
+            {stats.overdueCount || 0}
+          </span>
+        </button>
       </div>
 
       {/* Orders Table */}
@@ -861,55 +904,57 @@ export default function OrdersPage() {
             )}
 
             <form onSubmit={handleCreateOrder} className="space-y-6">
-              {/* Section 1: Customer & Basic Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-[#121c15]/60 p-4 rounded-2xl border border-[#2d4734]">
-                <div>
-                  <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
-                    เลือกลูกค้า (Customer) *
-                  </label>
-                  <select
-                    required
-                    value={selectedCustomerId}
-                    onChange={(e) => setSelectedCustomerId(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
-                  >
-                    <option value="">-- เลือกลูกค้า --</option>
-                    {customers.map((c) => (
-                      <option key={c._id} value={c._id}>
-                        {c.fullname} {c.phone ? `(โทร: ${c.phone})` : ""}
-                      </option>
-                    ))}
-                  </select>
+              {/* Section 1: Customer & Salesperson & Order Meta */}
+              <div className="bg-[#121c15]/60 p-4 sm:p-5 rounded-2xl border border-[#2d4734] space-y-4">
+                {/* Row 1: Customer (50%) & Salesperson (50%) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Customer Dropdown */}
+                  <div>
+                    <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
+                      เลือกลูกค้า (CUSTOMER) *
+                    </label>
+                    <select
+                      required
+                      value={selectedCustomerId}
+                      onChange={(e) => setSelectedCustomerId(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
+                    >
+                      <option value="">-- เลือกลูกค้า --</option>
+                      {customers.map((c) => (
+                        <option key={c._id} value={c._id}>
+                          {c.fullname} {c.phone ? `(โทร: ${c.phone})` : ""}
+                        </option>
+                      ))}
+                    </select>
 
-                  {/* Customer Preview Box */}
-                  {selectedCustomerId && (
-                    <div className="mt-2 p-3 rounded-xl bg-[#18241c] border border-[#2d4734] text-xs text-[#a39b8b] space-y-1">
-                      {(() => {
-                        const cust = customers.find((c) => c._id === selectedCustomerId);
-                        if (!cust) return null;
-                        return (
-                          <>
-                            <p className="text-[#f3efe6] font-semibold">{cust.fullname}</p>
-                            <p>ที่อยู่: {cust.address || "-"}</p>
-                            <p>เลขผู้เสียภาษี: {cust.taxId || "-"}</p>
-                          </>
-                        );
-                      })()}
-                    </div>
-                  )}
-                </div>
+                    {/* Customer Preview Box */}
+                    {selectedCustomerId && (
+                      <div className="mt-2 p-3 rounded-xl bg-[#18241c] border border-[#2d4734] text-xs text-[#a39b8b] space-y-1">
+                        {(() => {
+                          const cust = customers.find((c) => c._id === selectedCustomerId);
+                          if (!cust) return null;
+                          return (
+                            <>
+                              <p className="text-[#f3efe6] font-semibold">{cust.fullname}</p>
+                              <p>ที่อยู่: {cust.address || "-"}</p>
+                              <p>เลขผู้เสียภาษี: {cust.taxId || "-"}</p>
+                            </>
+                          );
+                        })()}
+                      </div>
+                    )}
+                  </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {/* Salesperson Picker Button */}
                   <div>
                     <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1 flex items-center gap-1">
                       <User className="w-3.5 h-3.5 text-[#98c9a3]" />
-                      <span>พนักงานขาย (SALE)</span>
+                      <span>พนักงานขาย (SALE / ผู้รับผิดชอบ)</span>
                     </label>
                     <button
                       type="button"
                       onClick={() => setIsSalespersonPickerOpen(true)}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] hover:border-[#98c9a3]/60 text-xs flex items-center justify-between text-[#f3efe6] transition-colors shadow-inner"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] hover:border-[#98c9a3]/60 text-xs flex items-center justify-between text-[#f3efe6] transition-colors shadow-inner group"
                     >
                       {selectedSalespersonName ? (
                         <span className="font-bold text-[#98c9a3] flex items-center gap-2 truncate">
@@ -917,15 +962,21 @@ export default function OrdersPage() {
                           <span className="truncate">{selectedSalespersonName}</span>
                         </span>
                       ) : (
-                        <span className="text-[#a39b8b] flex items-center gap-2 truncate">
+                        <span className="text-[#a39b8b] group-hover:text-[#f3efe6] flex items-center gap-2 truncate">
                           <UserPlus className="w-4 h-4 text-[#98c9a3] shrink-0" />
-                          <span>-- กดเพื่อเลือกเซล --</span>
+                          <span>-- กดเพื่อเลือกพนักงานขาย (SALE) --</span>
                         </span>
                       )}
                       <ChevronRight className="w-4 h-4 text-[#a39b8b] shrink-0" />
                     </button>
+                    <p className="text-[11px] text-[#a39b8b] mt-1.5">
+                      กดเพื่อเปิดป๊อบอัพค้นหาและเลือกเซลผู้ดูแลออเดอร์
+                    </p>
                   </div>
+                </div>
 
+                {/* Row 2: Order Date, Due Date, Carrier, Tracking No (4 columns) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-[#2d4734]/50">
                   <div>
                     <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
                       วันที่สั่งซื้อ *
@@ -953,7 +1004,7 @@ export default function OrdersPage() {
 
                   <div>
                     <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
-                      บริษัทขนส่ง (Carrier)
+                      บริษัทขนส่ง (CARRIER)
                     </label>
                     <input
                       type="text"
@@ -966,7 +1017,7 @@ export default function OrdersPage() {
 
                   <div>
                     <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
-                      เลขพัสดุ (Tracking No)
+                      เลขพัสดุ (TRACKING NO)
                     </label>
                     <input
                       type="text"
