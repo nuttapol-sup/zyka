@@ -508,32 +508,19 @@ export default function PersonnelPage() {
                   <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
                     ตำแหน่งงาน *
                   </label>
-                  <div className="space-y-2">
-                    {positionsList.length > 0 && (
-                      <select
-                        onChange={(e) => {
-                          if (e.target.value) setPosition(e.target.value);
-                        }}
-                        value={positionsList.some((p) => p.name === position) ? position : ""}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
-                      >
-                        <option value="">-- เลือกจากตำแหน่งงานที่บันทึกไว้ --</option>
-                        {positionsList.map((pos) => (
-                          <option key={pos._id} value={pos.name}>
-                            {pos.name} {pos.code ? `(${pos.code})` : ""}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                    <input
-                      type="text"
-                      required
-                      value={position}
-                      onChange={(e) => setPosition(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
-                      placeholder="หรือพิมพ์ชื่อตำแหน่ง..."
-                    />
-                  </div>
+                  <select
+                    required
+                    value={position}
+                    onChange={(e) => setPosition(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
+                  >
+                    <option value="">-- เลือกตำแหน่งงาน --</option>
+                    {positionsList.map((pos) => (
+                      <option key={pos._id} value={pos.name}>
+                        {pos.name} {pos.code ? `(${pos.code})` : ""}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Phone */}
