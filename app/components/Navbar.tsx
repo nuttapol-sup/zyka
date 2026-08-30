@@ -31,6 +31,7 @@ import {
   X,
   KeyRound,
   UserCheck,
+  Briefcase,
 } from "lucide-react";
 import { getApiPath } from "@/app/utils/apiPath";
 
@@ -108,6 +109,7 @@ export default function Navbar() {
     "sub-categories",
     "locations",
     "personnel",
+    "positions",
     "customers",
   ]);
   const [manageSubOrder, setManageSubOrder] = useState<string[]>([
@@ -543,8 +545,9 @@ export default function Navbar() {
                 const isInventoryAllowed = hasAccess(user, "/inventory");
                 const isLocationsAllowed = hasAccess(user, "/locations");
                 const isPersonnelAllowed = hasAccess(user, "/personnel");
+                const isPositionsAllowed = hasAccess(user, "/positions");
                 const isCustomersAllowed = hasAccess(user, "/customers");
-                const hasAnyData = isOrdersAllowed || isCategoriesAllowed || isSubCategoriesAllowed || isProductsAllowed || isInventoryAllowed || isLocationsAllowed || isPersonnelAllowed || isCustomersAllowed;
+                const hasAnyData = isOrdersAllowed || isCategoriesAllowed || isSubCategoriesAllowed || isProductsAllowed || isInventoryAllowed || isLocationsAllowed || isPersonnelAllowed || isPositionsAllowed || isCustomersAllowed;
 
                 if (!hasAnyData) return null;
 
@@ -617,6 +620,14 @@ export default function Navbar() {
                               <Link key="m-personnel" href="/personnel" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
                                 <Users className="w-3.5 h-3.5 text-[#98c9a3]" />
                                 <span>{getLabel("personnel", "Personnel (ข้อมูลบุคลากร)")}</span>
+                              </Link>
+                            );
+                          }
+                          if (subKey === "positions" && isPositionsAllowed) {
+                            return (
+                              <Link key="m-positions" href="/positions" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                                <Briefcase className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("positions", "Positions (ข้อมูลตำแหน่งงาน)")}</span>
                               </Link>
                             );
                           }
@@ -754,7 +765,7 @@ function NavLink({
 function DataRecordsDropdown({
   pathname,
   user,
-  subOrder = ["orders", "products", "inventory", "categories", "sub-categories", "locations", "personnel", "customers"],
+  subOrder = ["orders", "products", "inventory", "categories", "sub-categories", "locations", "personnel", "positions", "customers"],
   menuCustomLabels = {},
 }: {
   pathname: string;
@@ -774,11 +785,12 @@ function DataRecordsDropdown({
   const isInventoryAllowed = hasAccess(user, "/inventory");
   const isLocationsAllowed = hasAccess(user, "/locations");
   const isPersonnelAllowed = hasAccess(user, "/personnel");
+  const isPositionsAllowed = hasAccess(user, "/positions");
   const isCustomersAllowed = hasAccess(user, "/customers");
 
-  const hasAnyAccess = isOrdersAllowed || isCategoriesAllowed || isSubCategoriesAllowed || isProductsAllowed || isInventoryAllowed || isLocationsAllowed || isPersonnelAllowed || isCustomersAllowed;
+  const hasAnyAccess = isOrdersAllowed || isCategoriesAllowed || isSubCategoriesAllowed || isProductsAllowed || isInventoryAllowed || isLocationsAllowed || isPersonnelAllowed || isPositionsAllowed || isCustomersAllowed;
 
-  const isDataActive = pathname === "/orders" || pathname === "/categories" || pathname === "/sub-categories" || pathname === "/products" || pathname === "/inventory" || pathname === "/locations" || pathname === "/personnel" || pathname === "/customers";
+  const isDataActive = pathname === "/orders" || pathname === "/categories" || pathname === "/sub-categories" || pathname === "/products" || pathname === "/inventory" || pathname === "/locations" || pathname === "/personnel" || pathname === "/positions" || pathname === "/customers";
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -916,6 +928,21 @@ function DataRecordsDropdown({
                 >
                   <Users className="w-4 h-4 text-[#98c9a3]" />
                   <span>{getLabel("personnel", "Personnel (ข้อมูลบุคลากร)")}</span>
+                </Link>
+              );
+            }
+            if (key === "positions" && isPositionsAllowed) {
+              return (
+                <Link
+                  key="positions"
+                  href="/positions"
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
+                    pathname === "/positions" ? "bg-[#1f3025] text-[#98c9a3] border border-[#98c9a3]/30 font-semibold" : "text-[#e6dfd3] hover:bg-[#18241c] hover:text-[#98c9a3]"
+                  }`}
+                >
+                  <Briefcase className="w-4 h-4 text-[#98c9a3]" />
+                  <span>{getLabel("positions", "Positions (ข้อมูลตำแหน่งงาน)")}</span>
                 </Link>
               );
             }
