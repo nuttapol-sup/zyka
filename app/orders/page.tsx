@@ -573,7 +573,7 @@ export default function OrdersPage() {
             className="btn-earth-primary px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg"
           >
             <Plus className="w-4 h-4" />
-            <span>+ สร้างคำสั่งซื้อใหม่</span>
+            <span>สร้างคำสั่งซื้อใหม่</span>
           </button>
         </div>
       </div>

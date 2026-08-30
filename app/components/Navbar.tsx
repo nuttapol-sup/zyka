@@ -55,7 +55,20 @@ const hasAccess = (user: UserProfile | null, path: string): boolean => {
   return user.allowedPages.some((p) => {
     const cleanP = String(p).replace(/^\/zyka/, "").toLowerCase();
     const pNorm = cleanP.startsWith("/") ? cleanP : `/${cleanP}`;
-    return pNorm === targetNorm || targetNorm.startsWith(pNorm);
+
+    // 1. Exact match
+    if (pNorm === targetNorm) return true;
+
+    // 2. All Reports granted (/reports)
+    if (pNorm === "/reports" && targetNorm.startsWith("/reports")) return true;
+
+    // 3. Base /reports check when checking header access
+    if (targetNorm === "/reports" && pNorm.startsWith("/reports")) return true;
+
+    // 4. Standard path sub-route (e.g. /orders/123)
+    if (!pNorm.includes("?") && !targetNorm.includes("?") && targetNorm.startsWith(pNorm + "/")) return true;
+
+    return false;
   });
 };
 

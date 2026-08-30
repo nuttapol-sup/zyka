@@ -135,12 +135,41 @@ function ReportsPageContent() {
   const tabParam = searchParams.get("tab");
 
   const [activeTab, setActiveTab] = useState<"sales" | "charts" | "customer" | "product" | "salesperson" | "user">("sales");
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchUserSession = async () => {
+      try {
+        const res = await fetch(getApiPath("/api/auth/me"), { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          setCurrentUser(data.user);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchUserSession();
+  }, []);
+
+  const isTabAllowed = (tabKey: string) => {
+    if (!currentUser) return true;
+    if (currentUser.role === "admin") return true;
+    if (!Array.isArray(currentUser.allowedPages)) return false;
+
+    if (currentUser.allowedPages.includes("/reports")) return true;
+    return currentUser.allowedPages.includes(`/reports?tab=${tabKey}`);
+  };
 
   useEffect(() => {
     if (tabParam === "charts" || tabParam === "customer" || tabParam === "product" || tabParam === "salesperson" || tabParam === "user" || tabParam === "sales") {
-      setActiveTab(tabParam as any);
+      if (tabParam === "user" && currentUser && !isTabAllowed("user")) {
+        setActiveTab("sales");
+      } else {
+        setActiveTab(tabParam as any);
+      }
     }
-  }, [tabParam]);
+  }, [tabParam, currentUser]);
   const [preset, setPreset] = useState<"7days" | "this_week" | "this_month" | "30days" | "this_year" | "custom">("7days");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -222,11 +251,15 @@ function ReportsPageContent() {
 
   useEffect(() => {
     if (activeTab === "user") {
+      if (currentUser && !isTabAllowed("user")) {
+        setActiveTab("sales");
+        return;
+      }
       fetchUserUsageReport();
     } else {
       fetchSalesReport();
     }
-  }, [activeTab, preset, paymentStatusFilter]);
+  }, [activeTab, preset, paymentStatusFilter, currentUser]);
 
   const handleCustomDateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
