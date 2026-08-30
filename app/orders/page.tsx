@@ -262,7 +262,18 @@ export default function OrdersPage() {
     fetchOrders();
   }, [searchTerm, filterDelivery, filterPayment]);
 
+  const isSalesperson = (pos?: string) => {
+    if (!pos) return false;
+    const lower = pos.toLowerCase();
+    return lower.includes("ขาย") || lower.includes("เซล") || lower.includes("sale");
+  };
+
   const filteredPersonnelList = personnelList.filter((p) => {
+    const hasSalesPersonnel = personnelList.some((item) => isSalesperson(item.position));
+    if (hasSalesPersonnel && !isSalesperson(p.position)) {
+      return false;
+    }
+
     if (!salespersonSearchTerm) return true;
     const term = salespersonSearchTerm.toLowerCase();
     return (
