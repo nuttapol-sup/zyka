@@ -26,6 +26,7 @@ import {
   ArrowUpRight,
   ShoppingBag,
   BarChart3,
+  UserCheck,
 } from "lucide-react";
 import SalesDashboardCharts from "@/app/components/SalesDashboardCharts";
 
@@ -70,6 +71,22 @@ interface ProductSales {
   unit: string;
   totalQty: number;
   totalAmount: number;
+}
+
+interface SalespersonSales {
+  salespersonName: string;
+  totalOrders: number;
+  paidAmount: number;
+  pendingAmount: number;
+  totalSales: number;
+  orders?: {
+    _id: string;
+    orderNo: string;
+    customerName: string;
+    orderDate: string;
+    grandTotal: number;
+    paymentStatus: string;
+  }[];
 }
 
 interface OrderReportItem {
@@ -117,10 +134,10 @@ function ReportsPageContent() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
 
-  const [activeTab, setActiveTab] = useState<"sales" | "charts" | "customer" | "product" | "user">("sales");
+  const [activeTab, setActiveTab] = useState<"sales" | "charts" | "customer" | "product" | "salesperson" | "user">("sales");
 
   useEffect(() => {
-    if (tabParam === "charts" || tabParam === "customer" || tabParam === "product" || tabParam === "user" || tabParam === "sales") {
+    if (tabParam === "charts" || tabParam === "customer" || tabParam === "product" || tabParam === "salesperson" || tabParam === "user" || tabParam === "sales") {
       setActiveTab(tabParam as any);
     }
   }, [tabParam]);
@@ -147,6 +164,7 @@ function ReportsPageContent() {
   const [dailySales, setDailySales] = useState<DailySales[]>([]);
   const [customerSales, setCustomerSales] = useState<CustomerSales[]>([]);
   const [productSales, setProductSales] = useState<ProductSales[]>([]);
+  const [salespersonSales, setSalespersonSales] = useState<SalespersonSales[]>([]);
   const [ordersList, setOrdersList] = useState<OrderReportItem[]>([]);
 
   // User Usage State
@@ -176,6 +194,7 @@ function ReportsPageContent() {
         setDailySales(data.dailySales || []);
         setCustomerSales(data.customerSales || []);
         setProductSales(data.productSales || []);
+        setSalespersonSales(data.salespersonSales || []);
         setOrdersList(data.orders || []);
       }
     } catch (err) {
@@ -973,6 +992,73 @@ function ReportsPageContent() {
                         </td>
                         <td className="py-3.5 px-6 text-right font-mono font-extrabold text-[#98c9a3] print:text-black">
                           ฿{p.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: SALESPERSON SALES SUMMARY REPORT */}
+        {activeTab === "salesperson" && (
+          <div className="glass-earth-card rounded-3xl overflow-hidden border border-[#2d4734] print:border-black">
+            <div className="p-4 sm:p-6 border-b border-[#2d4734] flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:border-black">
+              <div>
+                <h3 className="text-lg font-bold text-[#f3efe6] print:text-black">
+                  รายงานสรุปยอดขายแยกตามเซล / พนักงานขาย (Salesperson Performance Report)
+                </h3>
+                <p className="text-xs text-[#a39b8b] print:text-gray-600">
+                  แสดงยอดขายรวม จำนวนคำสั่งซื้อ ยอดชำระแล้ว และยอดค้างชำระของพนักงานขายแต่ละคน
+                </p>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse print:text-xs">
+                <thead>
+                  <tr className="bg-[#121c15] border-b border-[#2d4734] text-xs font-semibold text-[#a39b8b] uppercase print:bg-gray-100 print:text-black">
+                    <th className="py-3.5 px-6">#</th>
+                    <th className="py-3.5 px-6">พนักงานขาย (SALE)</th>
+                    <th className="py-3.5 px-4 text-center">จำนวนคำสั่งซื้อ</th>
+                    <th className="py-3.5 px-6 text-right">ยอดชำระแล้ว (PAID)</th>
+                    <th className="py-3.5 px-6 text-right">ยอดรอเก็บเงิน (PENDING)</th>
+                    <th className="py-3.5 px-6 text-right">ยอดขายรวมสุทธิ</th>
+                  </tr>
+                </thead>
+
+                <tbody className="divide-y divide-[#2d4734]/50 text-sm print:divide-gray-300 print:text-black">
+                  {salespersonSales.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="p-8 text-center text-[#a39b8b]">
+                        ไม่พบข้อมูลสรุปยอดขายของพนักงานขาย
+                      </td>
+                    </tr>
+                  ) : (
+                    salespersonSales.map((sp, i) => (
+                      <tr key={i} className="hover:bg-[#18241c]/50 transition-colors">
+                        <td className="py-3.5 px-6 font-mono text-xs text-[#a39b8b] print:text-black">{i + 1}</td>
+                        <td className="py-3.5 px-6">
+                          <span className="font-bold text-[#f3efe6] flex items-center gap-2 print:text-black">
+                            <UserCheck className="w-4 h-4 text-[#98c9a3]" />
+                            {sp.salespersonName}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-center font-mono">
+                          <span className="px-3 py-1 rounded-xl bg-[#1e3425] text-[#98c9a3] font-bold text-xs border border-[#98c9a3]/30 inline-block">
+                            {sp.totalOrders} รายการ
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-6 text-right font-mono text-emerald-400 print:text-black">
+                          ฿{sp.paidAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        </td>
+                        <td className="py-3.5 px-6 text-right font-mono text-amber-400 print:text-black">
+                          ฿{sp.pendingAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        </td>
+                        <td className="py-3.5 px-6 text-right font-mono font-extrabold text-[#98c9a3] print:text-black">
+                          ฿{sp.totalSales.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                         </td>
                       </tr>
                     ))

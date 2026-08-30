@@ -21,6 +21,7 @@ export async function GET(
 
     const order = await Order.findById(id)
       .populate({ path: "customerId", strictPopulate: false })
+      .populate({ path: "salespersonId", strictPopulate: false })
       .populate({ path: "items.productId", strictPopulate: false })
       .populate({ path: "items.locationId", strictPopulate: false });
 
@@ -109,6 +110,8 @@ export async function PUT(
       order.deductedLocationId = locId || undefined;
     }
 
+    if (body.salespersonId !== undefined) order.salespersonId = body.salespersonId || undefined;
+    if (body.salespersonName !== undefined) order.salespersonName = body.salespersonName;
     if (body.deliveryStatus !== undefined) order.deliveryStatus = body.deliveryStatus;
     if (body.shippingCarrier !== undefined) order.shippingCarrier = body.shippingCarrier;
     if (body.trackingNo !== undefined) order.trackingNo = body.trackingNo;
@@ -124,6 +127,7 @@ export async function PUT(
 
     const updated = await Order.findById(id)
       .populate({ path: "customerId", strictPopulate: false })
+      .populate({ path: "salespersonId", strictPopulate: false })
       .populate({ path: "items.productId", strictPopulate: false })
       .populate({ path: "items.locationId", strictPopulate: false });
 

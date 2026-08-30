@@ -30,6 +30,7 @@ import {
   Menu,
   X,
   KeyRound,
+  UserCheck,
 } from "lucide-react";
 import { getApiPath } from "@/app/utils/apiPath";
 
@@ -96,6 +97,7 @@ export default function Navbar() {
     "charts",
     "customer",
     "product",
+    "salesperson",
     "user",
   ]);
   const [dataRecordsSubOrder, setDataRecordsSubOrder] = useState<string[]>([
@@ -425,8 +427,9 @@ export default function Navbar() {
                 const isChartsAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=charts");
                 const isCustomerAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=customer");
                 const isProductAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=product");
+                const isSalespersonAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=salesperson");
                 const isUserAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=user");
-                const hasAnyReports = isSalesAllowed || isChartsAllowed || isCustomerAllowed || isProductAllowed || isUserAllowed;
+                const hasAnyReports = isSalesAllowed || isChartsAllowed || isCustomerAllowed || isProductAllowed || isSalespersonAllowed || isUserAllowed;
 
                 if (!hasAnyReports) return null;
 
@@ -495,6 +498,19 @@ export default function Navbar() {
                               >
                                 <Package className="w-3.5 h-3.5 text-[#98c9a3]" />
                                 <span>{getLabel("product", "📦 สรุปตามสินค้า (Sales by Product)")}</span>
+                              </Link>
+                            );
+                          }
+                          if (subKey === "salesperson" && isSalespersonAllowed) {
+                            return (
+                              <Link
+                                key="m-salesperson"
+                                href="/reports?tab=salesperson"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]"
+                              >
+                                <UserCheck className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("salesperson", "👔 สรุปตามพนักงานขาย (Salesperson)")}</span>
                               </Link>
                             );
                           }
@@ -1063,7 +1079,7 @@ function AdminManageDropdown({
 function ReportsDropdown({
   pathname,
   user,
-  subOrder = ["sales", "charts", "customer", "product", "user"],
+  subOrder = ["sales", "charts", "customer", "product", "salesperson", "user"],
   menuCustomLabels = {},
 }: {
   pathname: string;
@@ -1080,9 +1096,10 @@ function ReportsDropdown({
   const isChartsAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=charts");
   const isCustomerAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=customer");
   const isProductAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=product");
+  const isSalespersonAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=salesperson");
   const isUserAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=user");
 
-  const hasAnyAccess = isSalesAllowed || isChartsAllowed || isCustomerAllowed || isProductAllowed || isUserAllowed;
+  const hasAnyAccess = isSalesAllowed || isChartsAllowed || isCustomerAllowed || isProductAllowed || isSalespersonAllowed || isUserAllowed;
 
   const isReportActive = pathname === "/reports";
 
@@ -1169,6 +1186,19 @@ function ReportsDropdown({
                 >
                   <Package className="w-4 h-4 text-[#98c9a3]" />
                   <span>{getLabel("product", "📦 สรุปตามสินค้า (Sales by Product)")}</span>
+                </Link>
+              );
+            }
+            if (key === "salesperson" && isSalespersonAllowed) {
+              return (
+                <Link
+                  key="salesperson"
+                  href="/reports?tab=salesperson"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-[#e6dfd3] hover:bg-[#18241c] hover:text-[#98c9a3] transition-colors"
+                >
+                  <UserCheck className="w-4 h-4 text-[#98c9a3]" />
+                  <span>{getLabel("salesperson", "👔 สรุปตามพนักงานขาย (Salesperson)")}</span>
                 </Link>
               );
             }

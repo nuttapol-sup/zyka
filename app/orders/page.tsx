@@ -20,6 +20,9 @@ import {
   X,
   Paperclip,
   User,
+  UserCheck,
+  UserPlus,
+  ChevronRight,
   Calendar,
   CreditCard,
   Building,
@@ -62,6 +65,15 @@ interface OrderItemRow {
   stock?: number;
 }
 
+interface PersonnelItem {
+  _id: string;
+  prefix: string;
+  fullname: string;
+  position: string;
+  phone?: string;
+  status: string;
+}
+
 interface OrderData {
   _id: string;
   orderNo: string;
@@ -70,6 +82,8 @@ interface OrderData {
   customerPhone?: string;
   customerAddress?: string;
   customerTaxId?: string;
+  salespersonId?: any;
+  salespersonName?: string;
   orderDate: string;
   dueDate?: string;
   creditDays?: number;
@@ -97,6 +111,7 @@ export default function OrdersPage() {
   const [customers, setCustomers] = useState<CustomerItem[]>([]);
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [locations, setLocations] = useState<LocationItem[]>([]);
+  const [personnelList, setPersonnelList] = useState<PersonnelItem[]>([]);
 
   const [stats, setStats] = useState({
     totalOrders: 0,
@@ -121,6 +136,10 @@ export default function OrdersPage() {
   // Create Order Modal State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
+  const [selectedSalespersonId, setSelectedSalespersonId] = useState("");
+  const [selectedSalespersonName, setSelectedSalespersonName] = useState("");
+  const [isSalespersonPickerOpen, setIsSalespersonPickerOpen] = useState(false);
+  const [salespersonSearchTerm, setSalespersonSearchTerm] = useState("");
   const [orderDate, setOrderDate] = useState(new Date().toISOString().split("T")[0]);
   const [dueDate, setDueDate] = useState("");
   const [creditDays, setCreditDays] = useState(0);
@@ -202,10 +221,11 @@ export default function OrdersPage() {
 
   const fetchDependencies = async () => {
     try {
-      const [resCust, resProd, resLoc] = await Promise.all([
+      const [resCust, resProd, resLoc, resPers] = await Promise.all([
         fetch(getApiPath("/api/customers"), { cache: "no-store" }),
         fetch(getApiPath("/api/products"), { cache: "no-store" }),
         fetch(getApiPath("/api/locations"), { cache: "no-store" }),
+        fetch(getApiPath("/api/personnel"), { cache: "no-store" }),
       ]);
 
       if (resCust.ok) {
@@ -219,6 +239,10 @@ export default function OrdersPage() {
       if (resLoc.ok) {
         const dataLoc = await resLoc.json();
         setLocations(dataLoc.locations || []);
+      }
+      if (resPers.ok) {
+        const dataPers = await resPers.json();
+        setPersonnelList(dataPers.personnel || []);
       }
     } catch (err) {
       console.error(err);
@@ -234,8 +258,20 @@ export default function OrdersPage() {
     fetchOrders();
   }, [searchTerm, filterDelivery, filterPayment]);
 
+  const filteredPersonnelList = personnelList.filter((p) => {
+    if (!salespersonSearchTerm) return true;
+    const term = salespersonSearchTerm.toLowerCase();
+    return (
+      (p.fullname && p.fullname.toLowerCase().includes(term)) ||
+      (p.position && p.position.toLowerCase().includes(term)) ||
+      (p.phone && p.phone.includes(term))
+    );
+  });
+
   const openCreateModal = () => {
     setSelectedCustomerId(customers[0]?._id || "");
+    setSelectedSalespersonId("");
+    setSelectedSalespersonName("");
     setOrderDate(new Date().toISOString().split("T")[0]);
     setDueDate("");
     setCreditDays(0);
@@ -368,6 +404,8 @@ export default function OrdersPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           customerId: selectedCustomerId,
+          salespersonId: selectedSalespersonId || undefined,
+          salespersonName: selectedSalespersonName || "",
           orderDate,
           dueDate,
           creditDays,
@@ -677,6 +715,12 @@ export default function OrdersPage() {
                     {/* Customer */}
                     <td className="py-4 px-6">
                       <span className="font-bold text-[#f3efe6] block">{o.customerName}</span>
+                      {o.salespersonName && (
+                        <span className="text-[11px] text-[#98c9a3] font-semibold flex items-center gap-1 mt-0.5">
+                          <UserCheck className="w-3 h-3 text-[#98c9a3]" />
+                          เซล: {o.salespersonName}
+                        </span>
+                      )}
                       {o.customerPhone && (
                         <span className="text-xs text-[#a39b8b] block">โทร: {o.customerPhone}</span>
                       )}
@@ -855,7 +899,33 @@ export default function OrdersPage() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* Salesperson Picker Button */}
+                  <div>
+                    <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1 flex items-center gap-1">
+                      <User className="w-3.5 h-3.5 text-[#98c9a3]" />
+                      <span>พนักงานขาย (SALE)</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsSalespersonPickerOpen(true)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] hover:border-[#98c9a3]/60 text-xs flex items-center justify-between text-[#f3efe6] transition-colors shadow-inner"
+                    >
+                      {selectedSalespersonName ? (
+                        <span className="font-bold text-[#98c9a3] flex items-center gap-2 truncate">
+                          <UserCheck className="w-4 h-4 text-[#98c9a3] shrink-0" />
+                          <span className="truncate">{selectedSalespersonName}</span>
+                        </span>
+                      ) : (
+                        <span className="text-[#a39b8b] flex items-center gap-2 truncate">
+                          <UserPlus className="w-4 h-4 text-[#98c9a3] shrink-0" />
+                          <span>-- กดเพื่อเลือกเซล --</span>
+                        </span>
+                      )}
+                      <ChevronRight className="w-4 h-4 text-[#a39b8b] shrink-0" />
+                    </button>
+                  </div>
+
                   <div>
                     <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
                       วันที่สั่งซื้อ *
@@ -1578,6 +1648,118 @@ export default function OrdersPage() {
               <button
                 type="button"
                 onClick={() => setIsProductPickerOpen(false)}
+                className="px-4 py-2.5 rounded-xl bg-[#121c15] text-[#a39b8b] hover:text-[#f3efe6] text-xs font-semibold"
+              >
+                ปิดหน้าต่าง
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SALESPERSON POPUP PICKER MODAL */}
+      {isSalespersonPickerOpen && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
+          <div className="max-w-md w-full glass-earth-card p-6 sm:p-8 rounded-3xl border border-[#98c9a3]/30 space-y-6 relative max-h-[85vh] flex flex-col shadow-2xl">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-[#2d4734] pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#1e3425] border border-[#98c9a3]/30 flex items-center justify-center text-[#98c9a3]">
+                  <UserCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-[#f3efe6]">เลือกพนักงานขาย (SALE)</h3>
+                  <p className="text-xs text-[#a39b8b]">เลือกเซล/พนักงานผู้รับผิดชอบคำสั่งซื้อนี้</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsSalespersonPickerOpen(false)}
+                className="p-2 rounded-xl text-[#a39b8b] hover:text-[#f3efe6] hover:bg-[#121c15]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Search input */}
+            <div className="relative">
+              <Search className="w-4 h-4 text-[#a39b8b] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="ค้นหาชื่อ หรือ ตำแหน่งพนักงานขาย..."
+                value={salespersonSearchTerm}
+                onChange={(e) => setSalespersonSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] placeholder-[#a39b8b]/50 focus:outline-none focus:border-[#98c9a3]"
+              />
+            </div>
+
+            {/* Personnel List */}
+            <div className="flex-1 overflow-y-auto space-y-2 pr-1 divide-y divide-[#2d4734]/40 max-h-[45vh]">
+              {/* Option: ไม่ระบุพนักงานขาย */}
+              <div
+                onClick={() => {
+                  setSelectedSalespersonId("");
+                  setSelectedSalespersonName("");
+                  setIsSalespersonPickerOpen(false);
+                }}
+                className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
+                  !selectedSalespersonId
+                    ? "bg-[#1e3425] border-[#98c9a3]/50 text-[#98c9a3]"
+                    : "bg-[#121c15] border-[#2d4734] hover:bg-[#18241c] text-[#e6dfd3]"
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <User className="w-4 h-4 text-[#a39b8b]" />
+                  <span className="text-xs font-semibold">-- ไม่ระบุพนักงานขาย --</span>
+                </div>
+                {!selectedSalespersonId && <CheckCircle2 className="w-4 h-4 text-[#98c9a3]" />}
+              </div>
+
+              {filteredPersonnelList.length === 0 ? (
+                <div className="p-6 text-center text-xs text-[#a39b8b]">
+                  ไม่พบพนักงานในระบบ (สามารถเพิ่มบุคลากรได้ที่เมนู Personnel)
+                </div>
+              ) : (
+                filteredPersonnelList.map((p) => {
+                  const fullName = `${p.prefix || ""} ${p.fullname}`.trim();
+                  const isSelected = selectedSalespersonId === p._id;
+
+                  return (
+                    <div
+                      key={p._id}
+                      onClick={() => {
+                        setSelectedSalespersonId(p._id);
+                        setSelectedSalespersonName(fullName);
+                        setIsSalespersonPickerOpen(false);
+                      }}
+                      className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between mt-2 ${
+                        isSelected
+                          ? "bg-[#1e3425] border-[#98c9a3]/50 text-[#98c9a3]"
+                          : "bg-[#121c15] border-[#2d4734] hover:bg-[#18241c] text-[#e6dfd3]"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-[#18241c] border border-[#2d4734] flex items-center justify-center text-[#98c9a3] shrink-0 font-bold text-xs">
+                          {p.fullname.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-[#f3efe6]">{fullName}</p>
+                          <span className="text-[10px] text-[#a39b8b]">
+                            ตำแหน่ง: {p.position || "พนักงานขาย"} {p.phone ? `| โทร: ${p.phone}` : ""}
+                          </span>
+                        </div>
+                      </div>
+                      {isSelected && <CheckCircle2 className="w-4 h-4 text-[#98c9a3]" />}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="flex justify-end pt-2 border-t border-[#2d4734]">
+              <button
+                type="button"
+                onClick={() => setIsSalespersonPickerOpen(false)}
                 className="px-4 py-2.5 rounded-xl bg-[#121c15] text-[#a39b8b] hover:text-[#f3efe6] text-xs font-semibold"
               >
                 ปิดหน้าต่าง

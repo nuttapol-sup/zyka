@@ -50,6 +50,7 @@ export async function GET(request: Request) {
 
     const orders = await Order.find(query)
       .populate({ path: "customerId", strictPopulate: false })
+      .populate({ path: "salespersonId", strictPopulate: false })
       .populate({ path: "items.productId", strictPopulate: false })
       .populate({ path: "items.locationId", strictPopulate: false })
       .sort({ createdAt: -1 });
@@ -86,6 +87,8 @@ export async function POST(request: Request) {
 
     const {
       customerId,
+      salespersonId,
+      salespersonName,
       orderDate,
       creditDays,
       dueDate,
@@ -214,6 +217,8 @@ export async function POST(request: Request) {
       customerPhone: customer.phone || "",
       customerAddress: customer.address || "",
       customerTaxId: customer.taxId || "",
+      salespersonId: salespersonId || undefined,
+      salespersonName: salespersonName ? salespersonName.trim() : "",
       orderDate: orderDate ? new Date(orderDate) : new Date(),
       dueDate: dueDate ? new Date(dueDate) : undefined,
       creditDays: creditDays || 0,
@@ -239,6 +244,7 @@ export async function POST(request: Request) {
 
     const populatedOrder = await Order.findById(order._id)
       .populate({ path: "customerId", strictPopulate: false })
+      .populate({ path: "salespersonId", strictPopulate: false })
       .populate({ path: "items.productId", strictPopulate: false })
       .populate({ path: "items.locationId", strictPopulate: false });
 

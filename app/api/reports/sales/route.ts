@@ -130,6 +130,17 @@ export async function GET(request: Request) {
     > = {};
     const productMap: Record<string, { code: string; name: string; unit: string; totalQty: number; totalAmount: number }> = {};
     const dailyMap: Record<string, { date: string; total: number; paid: number; pending: number }> = {};
+    const salespersonMap: Record<
+      string,
+      {
+        salespersonName: string;
+        totalOrders: number;
+        paidAmount: number;
+        pendingAmount: number;
+        totalSales: number;
+        orders: any[];
+      }
+    > = {};
 
     orders.forEach((o) => {
       const gTotal = o.grandTotal || 0;
@@ -176,6 +187,34 @@ export async function GET(request: Request) {
       } else {
         customerMap[custId].pendingAmount += gTotal;
       }
+
+      // Salesperson Sales Breakdown
+      const spName = o.salespersonName || "ไม่ระบุพนักงานขาย";
+      if (!salespersonMap[spName]) {
+        salespersonMap[spName] = {
+          salespersonName: spName,
+          totalOrders: 0,
+          paidAmount: 0,
+          pendingAmount: 0,
+          totalSales: 0,
+          orders: [],
+        };
+      }
+      salespersonMap[spName].totalOrders += 1;
+      salespersonMap[spName].totalSales += gTotal;
+      if (o.paymentStatus === "PAID") {
+        salespersonMap[spName].paidAmount += gTotal;
+      } else {
+        salespersonMap[spName].pendingAmount += gTotal;
+      }
+      salespersonMap[spName].orders.push({
+        _id: o._id,
+        orderNo: o.orderNo,
+        customerName: o.customerName,
+        orderDate: o.orderDate,
+        grandTotal: gTotal,
+        paymentStatus: o.paymentStatus,
+      });
 
       // Add order item details to customer's order history
       customerMap[custId].orders.push({
@@ -280,6 +319,7 @@ export async function GET(request: Request) {
       .sort((a, b) => b.grandTotal - a.grandTotal);
     const productSales = Object.values(productMap).sort((a, b) => b.totalAmount - a.totalAmount);
     const dailySales = Object.values(dailyMap).sort((a, b) => a.date.localeCompare(b.date));
+    const salespersonSales = Object.values(salespersonMap).sort((a, b) => b.totalSales - a.totalSales);
 
     return NextResponse.json({
       dateRange: {
@@ -303,6 +343,7 @@ export async function GET(request: Request) {
       locationSales,
       customerSales,
       productSales,
+      salespersonSales,
       dailySales,
       orders,
     });
