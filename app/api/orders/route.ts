@@ -210,7 +210,7 @@ export async function POST(request: Request) {
     const taxAmount = isTaxIncluded ? (currentSubtotal * rate) / 100 : 0;
     const grandTotal = currentSubtotal + taxAmount;
 
-    const order = await Order.create({
+    const orderPayload: any = {
       orderNo,
       customerId: customer._id,
       customerName: customer.fullname,
@@ -240,9 +240,11 @@ export async function POST(request: Request) {
       attachmentName: attachmentName || undefined,
       note: note ? note.trim() : undefined,
       createdByName: session.username || "System",
-    });
+    };
 
-    const populatedOrder = await Order.findById(order._id)
+    const newOrder: any = await Order.create(orderPayload);
+
+    const populatedOrder = await Order.findById(newOrder._id)
       .populate({ path: "customerId", strictPopulate: false })
       .populate({ path: "salespersonId", strictPopulate: false })
       .populate({ path: "items.productId", strictPopulate: false })

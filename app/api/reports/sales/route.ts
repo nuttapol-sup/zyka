@@ -189,7 +189,7 @@ export async function GET(request: Request) {
       }
 
       // Salesperson Sales Breakdown
-      const spName = o.salespersonName || "ไม่ระบุพนักงานขาย";
+      const spName = (o as any).salespersonName || "ไม่ระบุพนักงานขาย";
       if (!salespersonMap[spName]) {
         salespersonMap[spName] = {
           salespersonName: spName,

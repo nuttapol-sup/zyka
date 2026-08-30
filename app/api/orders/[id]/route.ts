@@ -110,8 +110,8 @@ export async function PUT(
       order.deductedLocationId = locId || undefined;
     }
 
-    if (body.salespersonId !== undefined) order.salespersonId = body.salespersonId || undefined;
-    if (body.salespersonName !== undefined) order.salespersonName = body.salespersonName;
+    if (body.salespersonId !== undefined) (order as any).salespersonId = body.salespersonId || undefined;
+    if (body.salespersonName !== undefined) (order as any).salespersonName = body.salespersonName;
     if (body.deliveryStatus !== undefined) order.deliveryStatus = body.deliveryStatus;
     if (body.shippingCarrier !== undefined) order.shippingCarrier = body.shippingCarrier;
     if (body.trackingNo !== undefined) order.trackingNo = body.trackingNo;
