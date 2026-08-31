@@ -401,7 +401,7 @@ export default function ProductsPage() {
                   <th className="py-4 px-6">รหัสสินค้า</th>
                   <th className="py-4 px-6">ชื่อสินค้า / รายละเอียด</th>
                   <th className="py-4 px-4 text-center">หน่วยนับ</th>
-                  <th className="py-4 px-6">หมวดสินค้า (Sub-Category)</th>
+                  <th className="py-4 px-6">หมวดหมู่สินค้า (Category)</th>
                   <th className="py-4 px-4 text-center">จำนวนขั้นต่ำ (min)</th>
                   <th className="py-4 px-4 text-center">สถานะ</th>
                   <th className="py-4 px-6 text-center">จัดการ</th>
@@ -470,10 +470,10 @@ export default function ProductsPage() {
                       </span>
                     </td>
 
-                    {/* Sub-Category */}
+                    {/* Category (Red Bounding Box Column) */}
                     <td className="py-4 px-6 whitespace-nowrap">
-                      <span className="px-2.5 py-1 rounded-lg bg-[#121c15] text-[#98c9a3] text-xs font-semibold border border-[#2d4734] inline-block whitespace-nowrap">
-                        🏷️ {item.subCategoryId?.name || "Clips"}
+                      <span className="px-2.5 py-1 rounded-lg bg-[#1e3425] text-[#98c9a3] text-xs font-bold border border-[#98c9a3]/30 inline-block whitespace-nowrap">
+                        📂 {(item as any).categoryName || item.subCategoryId?.categoryCode || "หมวดหลัก"}
                       </span>
                     </td>
 

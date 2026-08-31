@@ -2,11 +2,12 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Product from "@/models/Product";
 import Inventory from "@/models/Inventory";
+import Category from "@/models/Category";
 import SubCategory from "@/models/SubCategory";
 import { getSession } from "@/lib/auth";
 
-// Register SubCategory model explicitly for populate
-if (!SubCategory) {
+// Ensure models registered
+if (!Category || !SubCategory) {
   // Ensure schema registered
 }
 
@@ -55,6 +56,12 @@ export async function GET() {
     await connectDB();
     const productsRaw = await Product.find().populate("subCategoryId").sort({ seq: 1 });
     const inventories = await Inventory.find({});
+    const categories = await Category.find({});
+
+    const categoryMap: Record<string, string> = {};
+    categories.forEach((cat) => {
+      categoryMap[cat.code] = cat.name;
+    });
 
     const stockMap: Record<string, number> = {};
     inventories.forEach((inv) => {
@@ -66,8 +73,13 @@ export async function GET() {
 
     const products = productsRaw.map((p) => {
       const obj = p.toObject();
+      const subCat: any = obj.subCategoryId;
+      const catCode = subCat?.categoryCode || "";
+      const categoryName = categoryMap[catCode] || catCode || "หมวดหลัก";
+
       return {
         ...obj,
+        categoryName,
         stock: stockMap[p._id.toString()] || 0,
       };
     });
