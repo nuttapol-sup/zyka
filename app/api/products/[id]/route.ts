@@ -25,7 +25,7 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const { code, name, unit, subCategoryId, description, minQuantity, seq, status } = await request.json();
+    const { code, name, unit, subCategoryId, description, minQuantity, seq, imageUrl, status } = await request.json();
 
     await connectDB();
     const item = await Product.findById(id);
@@ -45,6 +45,7 @@ export async function PUT(
     if (unit) item.unit = unit.trim();
     item.subCategoryId = subCategoryId || undefined;
     if (description !== undefined) item.description = description;
+    if (imageUrl !== undefined) item.imageUrl = imageUrl;
     if (minQuantity !== undefined) item.minQuantity = Math.max(0, parseInt(minQuantity, 10));
     if (seq !== undefined) item.seq = parseInt(seq, 10);
     if (status) item.status = status;

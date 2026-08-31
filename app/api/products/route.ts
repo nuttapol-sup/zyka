@@ -97,7 +97,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "ไม่มีสิทธิ์สร้างสินค้า" }, { status: 403 });
     }
 
-    const { seq, code, name, subCategoryId, unit, minQuantity, isRawMaterial, status } = await request.json();
+    const { seq, code, name, subCategoryId, unit, minQuantity, imageUrl, isRawMaterial, status } = await request.json();
 
     if (!code || !name) {
       return NextResponse.json({ error: "กรุณากรอกรหัสและชื่อสินค้า" }, { status: 400 });
@@ -118,6 +118,7 @@ export async function POST(request: Request) {
       subCategoryId: subCategoryId || undefined,
       unit: unit ? unit.trim() : "ชิ้น",
       minQuantity: minQuantity || 0,
+      imageUrl: imageUrl ? imageUrl.trim() : "",
       status: status || "active",
     });
 

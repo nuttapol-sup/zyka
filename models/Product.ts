@@ -6,6 +6,7 @@ export interface IProduct extends Document {
   unit: string;
   subCategoryId?: mongoose.Types.ObjectId | string;
   description?: string;
+  imageUrl?: string;
   minQuantity: number;
   seq: number;
   status: "active" | "inactive";
@@ -40,6 +41,11 @@ const ProductSchema: Schema<IProduct> = new Schema(
     description: {
       type: String,
       trim: true,
+    },
+    imageUrl: {
+      type: String,
+      trim: true,
+      default: "",
     },
     minQuantity: {
       type: Number,

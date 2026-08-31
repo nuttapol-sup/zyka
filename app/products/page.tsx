@@ -14,6 +14,9 @@ import {
   FolderTree,
   AlertTriangle,
   Layers,
+  Image as ImageIcon,
+  Upload,
+  Paperclip,
 } from "lucide-react";
 import Pagination from "@/app/components/Pagination";
 import { getApiPath } from "@/app/utils/apiPath";
@@ -32,6 +35,7 @@ interface ProductItem {
   unit: string;
   subCategoryId?: SubCategoryRef | null;
   description?: string;
+  imageUrl?: string;
   minQuantity: number;
   seq: number;
   status: "active" | "inactive";
@@ -66,6 +70,8 @@ export default function ProductsPage() {
   const [subCategoryId, setSubCategoryId] = useState("");
   const [selectedSubCatObj, setSelectedSubCatObj] = useState<SubCategoryRef | null>(null);
   const [description, setDescription] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [minQuantity, setMinQuantity] = useState(5);
   const [seq, setSeq] = useState(1);
   const [status, setStatus] = useState<"active" | "inactive">("active");
@@ -118,6 +124,7 @@ export default function ProductsPage() {
     setSubCategoryId("");
     setSelectedSubCatObj(null);
     setDescription("");
+    setImageUrl("");
     setMinQuantity(5);
     setSeq(nextSeq);
     setStatus("active");
@@ -138,6 +145,7 @@ export default function ProductsPage() {
       setSelectedSubCatObj(null);
     }
     setDescription(item.description || "");
+    setImageUrl(item.imageUrl || "");
     setMinQuantity(item.minQuantity || 0);
     setSeq(item.seq);
     setStatus(item.status);
@@ -154,6 +162,33 @@ export default function ProductsPage() {
   const handleClearSubCategory = () => {
     setSubCategoryId("");
     setSelectedSubCatObj(null);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    setError("");
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch(getApiPath("/api/upload"), {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ");
+
+      setImageUrl(data.url);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -177,6 +212,7 @@ export default function ProductsPage() {
           unit,
           subCategoryId,
           description,
+          imageUrl,
           minQuantity,
           seq,
           status,
@@ -361,6 +397,7 @@ export default function ProductsPage() {
               <thead>
                 <tr className="bg-[#121c15] border-b border-[#2d4734] text-xs font-semibold text-[#a39b8b] uppercase tracking-wider">
                   <th className="py-4 px-4 text-center">ลำดับ</th>
+                  <th className="py-4 px-4 text-center">รูปภาพ</th>
                   <th className="py-4 px-6">รหัสสินค้า</th>
                   <th className="py-4 px-6">ชื่อสินค้า / รายละเอียด</th>
                   <th className="py-4 px-4 text-center">หน่วยนับ</th>
@@ -377,6 +414,26 @@ export default function ProductsPage() {
                     {/* Seq */}
                     <td className="py-4 px-4 text-center font-mono text-xs text-[#a39b8b]">
                       #{item.seq}
+                    </td>
+
+                    {/* Image Thumbnail */}
+                    <td className="py-4 px-4 text-center">
+                      {item.imageUrl ? (
+                        <div className="w-11 h-11 mx-auto rounded-xl overflow-hidden bg-[#121c15] border border-[#98c9a3]/40 p-0.5 shadow-md">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={getApiPath(item.imageUrl)}
+                            alt={item.name}
+                            className="w-full h-full object-cover rounded-lg hover:scale-110 transition-transform cursor-pointer"
+                            onClick={() => window.open(getApiPath(item.imageUrl!), "_blank")}
+                            title="กดเพื่อเปิดดูรูปภาพขนาดเต็ม"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-10 h-10 mx-auto rounded-xl bg-[#121c15] border border-[#2d4734]/60 flex items-center justify-center text-[#a39b8b]/30">
+                          <ImageIcon className="w-4 h-4" />
+                        </div>
+                      )}
                     </td>
 
                     {/* Code */}
@@ -542,6 +599,68 @@ export default function ProductsPage() {
                     placeholder="พาราเซตามอล 500mg"
                   />
                 </div>
+              </div>
+
+              {/* Product Image Upload Section */}
+              <div>
+                <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1 flex items-center gap-1.5">
+                  <ImageIcon className="w-3.5 h-3.5 text-[#98c9a3]" />
+                  <span>รูปภาพสินค้า (Product Image)</span>
+                </label>
+
+                {imageUrl ? (
+                  <div className="p-3 rounded-xl bg-[#121c15] border border-[#2d4734] flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-14 h-14 rounded-lg overflow-hidden bg-black/40 border border-[#98c9a3]/40 p-0.5 shrink-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={getApiPath(imageUrl)}
+                          alt="Product Preview"
+                          className="w-full h-full object-cover rounded"
+                        />
+                      </div>
+                      <div className="text-xs text-[#a39b8b] truncate max-w-xs">
+                        <p className="text-[#98c9a3] font-semibold flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>อัปโหลดรูปภาพสินค้าสำเร็จ</span>
+                        </p>
+                        <p className="text-[11px] truncate mt-0.5">{imageUrl}</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setImageUrl("")}
+                      className="px-3 py-1.5 rounded-lg bg-red-950/60 text-red-300 hover:bg-red-900/60 border border-red-800/40 text-xs font-bold transition-colors shrink-0"
+                    >
+                      ลบรูปภาพ
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <label className="flex-1 cursor-pointer">
+                      <div className="w-full px-4 py-3 rounded-xl bg-[#121c15] border border-dashed border-[#2d4734] hover:border-[#98c9a3]/60 text-xs flex items-center justify-center gap-2 text-[#a39b8b] hover:text-[#f3efe6] transition-colors">
+                        {uploadingImage ? (
+                          <>
+                            <RefreshCw className="w-4 h-4 animate-spin text-[#98c9a3]" />
+                            <span>กำลังอัปโหลดรูปภาพ...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-4 h-4 text-[#98c9a3]" />
+                            <span>กดเพื่อแนบรูปภาพสินค้า (JPG, PNG, WEBP)</span>
+                          </>
+                        )}
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        disabled={uploadingImage}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                )}
               </div>
 
               {/* Unit of Measurement (หน่วยนับ) */}
