@@ -82,7 +82,7 @@ export async function GET() {
     });
 
     const defaultCatName = categories.length > 0 ? categories[0].name : "ทดสอบ 1";
-    const defaultSubCat = subCategories.length > 0 ? subCategories[0] : null;
+    const defaultSubCat = subCategories.find((s) => s.name === "Clip") || (subCategories.length > 0 ? subCategories[0] : null);
 
     const products = productsRaw.map((p) => {
       const obj = p.toObject();
