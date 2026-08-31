@@ -5,6 +5,7 @@ export interface IPersonnel extends Document {
   fullname: string;
   position: string;
   phone?: string;
+  lineUserId?: string;
   note?: string;
   personnelType: string;
   status: "active" | "inactive";
@@ -32,6 +33,11 @@ const PersonnelSchema: Schema<IPersonnel> = new Schema(
     },
     phone: {
       type: String,
+      default: "",
+    },
+    lineUserId: {
+      type: String,
+      trim: true,
       default: "",
     },
     note: {

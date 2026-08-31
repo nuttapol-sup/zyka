@@ -13,6 +13,10 @@ export interface ISetting extends Document {
   dataRecordsSubOrder?: string[];
   manageSubOrder?: string[];
   menuCustomLabels?: Record<string, string>;
+  lineChannelSecret?: string;
+  lineChannelAccessToken?: string;
+  lineGroupId?: string;
+  lineEnabled?: boolean;
   updatedAt: Date;
 }
 
@@ -67,6 +71,22 @@ const SettingSchema: Schema<ISetting> = new Schema(
     menuCustomLabels: {
       type: Schema.Types.Mixed,
       default: {},
+    },
+    lineChannelSecret: {
+      type: String,
+      default: "",
+    },
+    lineChannelAccessToken: {
+      type: String,
+      default: "",
+    },
+    lineGroupId: {
+      type: String,
+      default: "",
+    },
+    lineEnabled: {
+      type: Boolean,
+      default: false,
     },
   },
   {

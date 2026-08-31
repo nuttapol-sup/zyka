@@ -32,6 +32,7 @@ import {
   KeyRound,
   UserCheck,
   Briefcase,
+  MessageSquare,
 } from "lucide-react";
 import { getApiPath } from "@/app/utils/apiPath";
 
@@ -145,6 +146,7 @@ export default function Navbar() {
     "manage-permissions",
     "manage-menu-order",
     "manage-logo",
+    "manage-line",
     "user-logs",
   ]);
   const [menuCustomLabels, setMenuCustomLabels] = useState<Record<string, string>>({});
@@ -750,6 +752,14 @@ export default function Navbar() {
                               </Link>
                             );
                           }
+                          if (subKey === "manage-line") {
+                            return (
+                              <Link key="m-manage-line" href="/admin/manage-line" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                                <MessageSquare className="w-3.5 h-3.5 text-[#00b900]" />
+                                <span>{getLabel("manage-line", "LINE Messaging API (เช็คสต็อกผ่าน LINE)")}</span>
+                              </Link>
+                            );
+                          }
                           if (subKey === "user-logs") {
                             return (
                               <Link key="m-user-logs" href="/admin/user-logs" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
@@ -1134,6 +1144,21 @@ function AdminManageDropdown({
                 >
                   <Leaf className="w-4 h-4 text-[#98c9a3]" />
                   <span>{getLabel("manage-logo", "Logo & Branding (จัดการโลโก้)")}</span>
+                </Link>
+              );
+            }
+            if (key === "manage-line") {
+              return (
+                <Link
+                  key="manage-line"
+                  href="/admin/manage-line"
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
+                    pathname === "/admin/manage-line" ? "bg-[#1f3025] text-[#00b900] border border-[#00b900]/30 font-semibold" : "text-[#e6dfd3] hover:bg-[#18241c] hover:text-[#00b900]"
+                  }`}
+                >
+                  <MessageSquare className="w-4 h-4 text-[#00b900]" />
+                  <span>{getLabel("manage-line", "LINE Messaging API (เช็คสต็อกผ่าน LINE)")}</span>
                 </Link>
               );
             }
