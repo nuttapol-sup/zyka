@@ -8,6 +8,8 @@ const PUBLIC_PATHS = [
   "/api/auth/login",
   "/api/settings/logo",
   "/api/settings/menu-order",
+  "/api/line/webhook",
+  "/orders/print",
 ];
 
 // Admin-only paths
