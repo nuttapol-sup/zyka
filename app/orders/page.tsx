@@ -85,6 +85,7 @@ interface OrderData {
   salespersonId?: any;
   salespersonName?: string;
   orderDate: string;
+  billingDate?: string;
   dueDate?: string;
   creditDays?: number;
   deliveryStatus: "PENDING" | "SHIPPED" | "DELIVERED" | "CANCELLED";
@@ -145,6 +146,7 @@ export default function OrdersPage() {
   const [isSalespersonPickerOpen, setIsSalespersonPickerOpen] = useState(false);
   const [salespersonSearchTerm, setSalespersonSearchTerm] = useState("");
   const [orderDate, setOrderDate] = useState(new Date().toISOString().split("T")[0]);
+  const [billingDate, setBillingDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [creditDays, setCreditDays] = useState(0);
   const [shippingCarrier, setShippingCarrier] = useState("Kerry Express");
@@ -167,6 +169,8 @@ export default function OrdersPage() {
   // Edit Status Modal State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<OrderData | null>(null);
+  const [editBillingDate, setEditBillingDate] = useState("");
+  const [editDueDate, setEditDueDate] = useState("");
 
   // Print Receipt Modal State
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
@@ -288,6 +292,7 @@ export default function OrdersPage() {
     setSelectedSalespersonId("");
     setSelectedSalespersonName("");
     setOrderDate(new Date().toISOString().split("T")[0]);
+    setBillingDate("");
     setDueDate("");
     setCreditDays(0);
     setShippingCarrier("Kerry Express");
@@ -422,6 +427,7 @@ export default function OrdersPage() {
           salespersonId: selectedSalespersonId || undefined,
           salespersonName: selectedSalespersonName || "",
           orderDate,
+          billingDate: billingDate || undefined,
           dueDate,
           creditDays,
           shippingCarrier,
@@ -465,7 +471,8 @@ export default function OrdersPage() {
     setTrackingNo(order.trackingNo || "");
     setPaymentStatus(order.paymentStatus);
     setPaymentMethod(order.paymentMethod || "TRANSFER");
-    setDueDate(order.dueDate ? order.dueDate.split("T")[0] : "");
+    setEditBillingDate(order.billingDate ? order.billingDate.split("T")[0] : "");
+    setEditDueDate(order.dueDate ? order.dueDate.split("T")[0] : "");
     setAttachmentUrl(order.attachmentUrl || "");
     setAttachmentName(order.attachmentName || "");
     setNote(order.note || "");
@@ -492,7 +499,8 @@ export default function OrdersPage() {
           trackingNo,
           paymentStatus,
           paymentMethod,
-          dueDate: dueDate || undefined,
+          billingDate: editBillingDate || undefined,
+          dueDate: editDueDate || undefined,
           attachmentUrl,
           attachmentName,
           note,
@@ -753,8 +761,13 @@ export default function OrdersPage() {
                         {o.orderNo}
                       </span>
                       <span className="text-xs text-[#a39b8b] block">
-                        {new Date(o.orderDate).toLocaleDateString("th-TH")}
+                        สั่งซื้อ: {new Date(o.orderDate).toLocaleDateString("th-TH")}
                       </span>
+                      {o.billingDate && (
+                        <span className="text-[11px] text-[#98c9a3] font-medium block">
+                          📄 วางบิล: {new Date(o.billingDate).toLocaleDateString("th-TH")}
+                        </span>
+                      )}
                       {o.stockDeducted ? (
                         <span className="px-2 py-0.5 mt-1 rounded bg-[#1e3425] text-[#98c9a3] text-[10px] font-bold border border-[#98c9a3]/30 inline-block">
                           ✓ ตัดสต็อกสินค้าแล้ว
@@ -986,8 +999,8 @@ export default function OrdersPage() {
                   </div>
                 </div>
 
-                {/* Row 2: Order Date, Due Date, Carrier, Tracking No (4 columns) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-[#2d4734]/50">
+                {/* Row 2: Order Date, Billing Date, Due Date, Carrier, Tracking No */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-3 border-t border-[#2d4734]/50">
                   <div>
                     <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
                       วันที่สั่งซื้อ *
@@ -997,19 +1010,39 @@ export default function OrdersPage() {
                       required
                       value={orderDate}
                       onChange={(e) => setOrderDate(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
+                      className="w-full px-3 py-2 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1 text-emerald-400">
+                      วันที่วางบิล
+                    </label>
+                    <input
+                      type="date"
+                      value={billingDate}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setBillingDate(val);
+                        if (val && creditDays > 0) {
+                          const d = new Date(val);
+                          d.setDate(d.getDate() + creditDays);
+                          setDueDate(d.toISOString().split("T")[0]);
+                        }
+                      }}
+                      className="w-full px-3 py-2 rounded-xl bg-[#121c15] border border-[#98c9a3]/40 text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
                     />
                   </div>
 
                   <div>
                     <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
-                      กำหนดชำระ / วางบิล
+                      กำหนดชำระเงิน
                     </label>
                     <input
                       type="date"
                       value={dueDate}
                       onChange={(e) => setDueDate(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
+                      className="w-full px-3 py-2 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
                     />
                   </div>
 
@@ -1021,7 +1054,7 @@ export default function OrdersPage() {
                       type="text"
                       value={shippingCarrier}
                       onChange={(e) => setShippingCarrier(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
+                      className="w-full px-3 py-2 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
                       placeholder="Kerry, Flash, J&T, EMS"
                     />
                   </div>
@@ -1034,7 +1067,7 @@ export default function OrdersPage() {
                       type="text"
                       value={trackingNo}
                       onChange={(e) => setTrackingNo(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] font-mono focus:outline-none focus:border-[#98c9a3]"
+                      className="w-full px-3 py-2 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] font-mono focus:outline-none focus:border-[#98c9a3]"
                       placeholder="TH0123456789"
                     />
                   </div>
@@ -1373,6 +1406,31 @@ export default function OrdersPage() {
                 </select>
               </div>
 
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1 text-emerald-400">
+                    วันที่วางบิล
+                  </label>
+                  <input
+                    type="date"
+                    value={editBillingDate}
+                    onChange={(e) => setEditBillingDate(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-[#121c15] border border-[#98c9a3]/40 text-xs text-[#f3efe6]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
+                    กำหนดชำระเงิน
+                  </label>
+                  <input
+                    type="date"
+                    value={editDueDate}
+                    onChange={(e) => setEditDueDate(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6]"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
                   แนบหลักฐานชำระเงิน / สลิป (Attachment)
@@ -1477,8 +1535,13 @@ export default function OrdersPage() {
                   </h3>
                   <p className="text-xs font-mono font-bold text-gray-700">เลขที่: {printingOrder.orderNo}</p>
                   <p className="text-xs text-gray-600">
-                    วันที่: {new Date(printingOrder.orderDate).toLocaleDateString("th-TH")}
+                    วันที่สั่งซื้อ: {new Date(printingOrder.orderDate).toLocaleDateString("th-TH")}
                   </p>
+                  {printingOrder.billingDate && (
+                    <p className="text-xs font-bold text-emerald-800">
+                      วันที่วางบิล: {new Date(printingOrder.billingDate).toLocaleDateString("th-TH")}
+                    </p>
+                  )}
                   {printingOrder.dueDate && (
                     <p className="text-xs text-gray-600">
                       กำหนดชำระ: {new Date(printingOrder.dueDate).toLocaleDateString("th-TH")}

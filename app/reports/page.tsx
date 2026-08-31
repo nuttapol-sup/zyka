@@ -93,6 +93,7 @@ interface OrderReportItem {
   _id: string;
   orderNo: string;
   orderDate: string;
+  billingDate?: string;
   customerName: string;
   customerPhone?: string;
   deliveryStatus: string;
@@ -633,8 +634,13 @@ function ReportsPageContent() {
                             <td className="py-3.5 px-6 font-mono text-xs">
                               <span className="font-bold text-[#98c9a3] print:text-black">{o.orderNo}</span>
                               <span className="text-[#a39b8b] block text-[11px] print:text-gray-600">
-                                {new Date(o.orderDate).toLocaleDateString("th-TH")}
+                                สั่งซื้อ: {new Date(o.orderDate).toLocaleDateString("th-TH")}
                               </span>
+                              {o.billingDate && (
+                                <span className="text-[#98c9a3] block text-[11px] print:text-gray-800 font-medium">
+                                  วางบิล: {new Date(o.billingDate).toLocaleDateString("th-TH")}
+                                </span>
+                              )}
                             </td>
 
                             <td className="py-3.5 px-6">
