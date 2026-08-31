@@ -185,7 +185,18 @@ export default function Navbar() {
           if (!list.includes("positions")) list.push("positions");
           setDataRecordsSubOrder(list);
         }
-        if (data.manageSubOrder && Array.isArray(data.manageSubOrder)) setManageSubOrder(data.manageSubOrder);
+        if (data.manageSubOrder && Array.isArray(data.manageSubOrder)) {
+          const mList = [...data.manageSubOrder];
+          if (!mList.includes("manage-line")) {
+            const userLogIdx = mList.indexOf("user-logs");
+            if (userLogIdx !== -1) {
+              mList.splice(userLogIdx, 0, "manage-line");
+            } else {
+              mList.push("manage-line");
+            }
+          }
+          setManageSubOrder(mList);
+        }
         if (data.menuCustomLabels && typeof data.menuCustomLabels === "object") setMenuCustomLabels(data.menuCustomLabels);
       }
     } catch {
