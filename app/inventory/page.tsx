@@ -497,20 +497,29 @@ export default function InventoryPage() {
                       {/* Code & SubCategory */}
                       <td className="py-4 px-6 whitespace-nowrap">
                         <div className="space-y-1">
+                          {product.subCategoryId ? (
+                            <span className="px-2 py-0.5 rounded bg-[#121c15] text-[#98c9a3] font-mono text-[11px] border border-[#2d4734] block w-fit whitespace-nowrap">
+                              📁 {product.subCategoryId.name}
+                            </span>
+                          ) : (
+                            <span className="text-[11px] text-[#a39b8b] italic block whitespace-nowrap">
+                              - ไม่ได้ระบุหมวด -
+                            </span>
+                          )}
                           <span className="px-2.5 py-1 rounded-xl bg-[#1e3425] text-[#98c9a3] font-mono font-bold text-xs border border-[#98c9a3]/30 inline-block whitespace-nowrap">
                             {product.code}
                           </span>
-                          {product.subCategoryId && (
-                            <p className="text-[11px] text-[#a39b8b] whitespace-nowrap">
-                              หมวด: {product.subCategoryId.name}
-                            </p>
-                          )}
                         </div>
                       </td>
 
                       {/* Product Name */}
                       <td className="py-4 px-6 font-bold text-[#f3efe6] min-w-[180px]">
-                        {product.name}
+                        {product.subCategoryId && (
+                          <span className="text-[11px] text-[#98c9a3] font-semibold bg-[#121c15] px-2 py-0.5 rounded border border-[#2d4734] inline-block mb-1 whitespace-nowrap">
+                            📁 {product.subCategoryId.name}
+                          </span>
+                        )}
+                        <span className="font-bold text-[#f3efe6] block">{product.name}</span>
                       </td>
 
                       {/* Location Stock Breakdown */}
