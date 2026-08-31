@@ -12,7 +12,7 @@ export async function GET() {
     }
 
     await connectDB();
-    const setting = await Setting.findOne({ key: "app_settings" });
+    const setting = (await Setting.findOne({ key: "app_settings" })) || (await Setting.findOne({}));
 
     return NextResponse.json({
       lineChannelSecret: setting?.lineChannelSecret || process.env.LINE_CHANNEL_SECRET || "",
@@ -36,16 +36,31 @@ export async function POST(request: Request) {
     const { lineChannelSecret, lineChannelAccessToken, lineGroupId, lineEnabled } = await request.json();
 
     await connectDB();
-    const setting = await Setting.findOneAndUpdate(
-      { key: "app_settings" },
-      {
+    const settingDoc = (await Setting.findOne({ key: "app_settings" })) || (await Setting.findOne({}));
+    const docId = settingDoc ? settingDoc._id : undefined;
+
+    let setting;
+    if (docId) {
+      setting = await Setting.findByIdAndUpdate(
+        docId,
+        {
+          key: "app_settings",
+          lineChannelSecret: lineChannelSecret ? lineChannelSecret.trim() : "",
+          lineChannelAccessToken: lineChannelAccessToken ? lineChannelAccessToken.trim() : "",
+          lineGroupId: lineGroupId ? lineGroupId.trim() : "",
+          lineEnabled: Boolean(lineEnabled),
+        },
+        { new: true }
+      );
+    } else {
+      setting = await Setting.create({
+        key: "app_settings",
         lineChannelSecret: lineChannelSecret ? lineChannelSecret.trim() : "",
         lineChannelAccessToken: lineChannelAccessToken ? lineChannelAccessToken.trim() : "",
         lineGroupId: lineGroupId ? lineGroupId.trim() : "",
         lineEnabled: Boolean(lineEnabled),
-      },
-      { new: true, upsert: true }
-    );
+      });
+    }
 
     return NextResponse.json({
       message: "บันทึกตั้งค่า LINE Messaging API เรียบร้อยแล้ว",

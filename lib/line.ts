@@ -17,21 +17,21 @@ export async function getLineCredentials(): Promise<LineCredentials> {
 
   if (envSecret && envToken) {
     return {
-      channelSecret: envSecret,
-      channelAccessToken: envToken,
-      lineGroupId: envGroup || "",
+      channelSecret: envSecret.trim(),
+      channelAccessToken: envToken.trim(),
+      lineGroupId: envGroup ? envGroup.trim() : "",
       lineEnabled: true,
     };
   }
 
   try {
     await connectDB();
-    const setting = await Setting.findOne({ key: "app_settings" });
+    const setting = (await Setting.findOne({ key: "app_settings" })) || (await Setting.findOne({}));
     if (setting && setting.lineChannelSecret && setting.lineChannelAccessToken) {
       return {
-        channelSecret: setting.lineChannelSecret,
-        channelAccessToken: setting.lineChannelAccessToken,
-        lineGroupId: setting.lineGroupId || "",
+        channelSecret: setting.lineChannelSecret.trim(),
+        channelAccessToken: setting.lineChannelAccessToken.trim(),
+        lineGroupId: setting.lineGroupId ? setting.lineGroupId.trim() : "",
         lineEnabled: setting.lineEnabled !== false,
       };
     }
@@ -65,7 +65,14 @@ export async function replyLineMessage(
   messages: any[],
   accessToken: string
 ) {
-  if (!replyToken || !accessToken) return;
+  if (!replyToken || !accessToken) {
+    console.error("LINE reply cancelled: missing replyToken or accessToken", {
+      replyToken: replyToken ? "present" : "missing",
+      hasToken: !!accessToken,
+    });
+    return;
+  }
+
   try {
     const res = await fetch("https://api.line.me/v2/bot/message/reply", {
       method: "POST",
@@ -78,9 +85,30 @@ export async function replyLineMessage(
         messages,
       }),
     });
+
     if (!res.ok) {
       const errText = await res.text();
-      console.error("LINE reply error:", errText);
+      console.error("LINE reply error:", res.status, errText);
+
+      // Fallback: Send plain text message if flex message was rejected by LINE
+      if (messages.length > 0 && messages[0].type === "flex") {
+        await fetch("https://api.line.me/v2/bot/message/reply", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            replyToken,
+            messages: [
+              {
+                type: "text",
+                text: "🌱 Zyka ERP Assistant\n\nกรุณาพิมพ์ 'สต็อก' เพื่อเช็คสินค้า หรือ 'ติดตาม' เพื่อติดตามคำสั่งซื้อ",
+              },
+            ],
+          }),
+        });
+      }
     }
   } catch (err) {
     console.error("Failed to reply LINE message:", err);
@@ -127,10 +155,10 @@ export function buildStockFlexMessage(
 
   const statusColor = isOut ? "#ef4444" : isLow ? "#f59e0b" : "#10b981";
   const statusBadgeText = isOut
-    ? "🔴 สินค้าหมด (Out of Stock)"
+    ? "🔴 หมด (Out of Stock)"
     : isLow
-    ? "⚠️ สินค้าเหลือน้อย (Low Stock)"
-    : "🟢 สต็อกปกติ (In Stock)";
+    ? "⚠️ เหลือน้อย (Low Stock)"
+    : "🟢 ปกติ (In Stock)";
 
   // Format absolute image URL
   let fullImgUrl = product.imageUrl || "";
@@ -139,41 +167,42 @@ export function buildStockFlexMessage(
     fullImgUrl = `${baseUrl}${cleanPath}`;
   }
 
-  const locationContents = stockByLocation.length > 0
-    ? stockByLocation.map((loc) => ({
-        type: "box",
-        layout: "horizontal",
-        contents: [
-          {
-            type: "text",
-            text: `📍 ${loc.locationName}`,
-            size: "xs",
-            color: "#4b5563",
-            flex: 3,
-            wrap: true,
-          },
-          {
-            type: "text",
-            text: `${loc.quantity.toLocaleString()} ${product.unit || "ชิ้น"}`,
-            size: "xs",
-            color: "#111827",
-            weight: "bold",
-            align: "end",
-            flex: 2,
-          },
-        ],
-        margin: "md",
-      }))
-    : [
-        {
-          type: "text",
-          text: "ยังไม่ได้ระบุคลังสินค้า",
-          size: "xs",
-          color: "#9ca3af",
-          align: "center",
+  const locationContents =
+    stockByLocation.length > 0
+      ? stockByLocation.map((loc) => ({
+          type: "box",
+          layout: "horizontal",
+          contents: [
+            {
+              type: "text",
+              text: `📍 ${loc.locationName}`,
+              size: "xs",
+              color: "#4b5563",
+              flex: 3,
+              wrap: true,
+            },
+            {
+              type: "text",
+              text: `${loc.quantity.toLocaleString()} ${product.unit || "ชิ้น"}`,
+              size: "xs",
+              color: "#111827",
+              weight: "bold",
+              align: "end",
+              flex: 2,
+            },
+          ],
           margin: "md",
-        },
-      ];
+        }))
+      : [
+          {
+            type: "text",
+            text: "ยังไม่ได้ระบุคลังสินค้า",
+            size: "xs",
+            color: "#9ca3af",
+            align: "center",
+            margin: "md",
+          },
+        ];
 
   const bodyContents: any[] = [
     {
@@ -199,7 +228,7 @@ export function buildStockFlexMessage(
       contents: [
         {
           type: "text",
-          text: `รหัสสินค้า: ${product.code}`,
+          text: `รหัส: ${product.code}`,
           size: "xs",
           color: "#6b7280",
           flex: 1,
