@@ -467,7 +467,7 @@ export default function InventoryPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-[#121c15] border-b border-[#2d4734] text-xs font-semibold text-[#a39b8b] uppercase tracking-wider">
+                  <tr className="bg-[#121c15] border-b border-[#2d4734] text-xs font-semibold text-[#a39b8b] uppercase tracking-wider whitespace-nowrap">
                     <th className="py-4 px-4 text-center">ลำดับ</th>
                     <th className="py-4 px-6">รหัสสินค้า / หมวด</th>
                     <th className="py-4 px-6">ชื่อสินค้า</th>
@@ -490,18 +490,18 @@ export default function InventoryPage() {
                       }`}
                     >
                       {/* Seq */}
-                      <td className="py-4 px-4 text-center font-mono text-xs text-[#a39b8b]">
+                      <td className="py-4 px-4 text-center font-mono text-xs text-[#a39b8b] whitespace-nowrap">
                         #{product.seq}
                       </td>
 
                       {/* Code & SubCategory */}
-                      <td className="py-4 px-6">
+                      <td className="py-4 px-6 whitespace-nowrap">
                         <div className="space-y-1">
-                          <span className="px-2.5 py-0.5 rounded-xl bg-[#1e3425] text-[#98c9a3] font-mono font-bold text-xs border border-[#98c9a3]/30 inline-block">
+                          <span className="px-2.5 py-1 rounded-xl bg-[#1e3425] text-[#98c9a3] font-mono font-bold text-xs border border-[#98c9a3]/30 inline-block whitespace-nowrap">
                             {product.code}
                           </span>
                           {product.subCategoryId && (
-                            <p className="text-[11px] text-[#a39b8b]">
+                            <p className="text-[11px] text-[#a39b8b] whitespace-nowrap">
                               หมวด: {product.subCategoryId.name}
                             </p>
                           )}
@@ -509,14 +509,14 @@ export default function InventoryPage() {
                       </td>
 
                       {/* Product Name */}
-                      <td className="py-4 px-6 font-bold text-[#f3efe6]">
+                      <td className="py-4 px-6 font-bold text-[#f3efe6] min-w-[180px]">
                         {product.name}
                       </td>
 
                       {/* Location Stock Breakdown */}
                       <td className="py-4 px-6">
                         {itemInventories.length === 0 ? (
-                          <span className="text-xs text-[#a39b8b] italic">
+                          <span className="text-xs text-[#a39b8b] italic whitespace-nowrap">
                             - ยังไม่มีสถานที่จัดเก็บ -
                           </span>
                         ) : (
@@ -524,10 +524,10 @@ export default function InventoryPage() {
                             {itemInventories.map((inv) => (
                               <div
                                 key={inv._id}
-                                className="text-xs flex items-center justify-between gap-2 px-2 py-1 rounded-lg bg-[#121c15] border border-[#2d4734]"
+                                className="text-xs flex items-center justify-between gap-2 px-2.5 py-1 rounded-lg bg-[#121c15] border border-[#2d4734] whitespace-nowrap"
                               >
-                                <span className="text-[#e6dfd3] flex items-center gap-1">
-                                  <Warehouse className="w-3 h-3 text-[#98c9a3]" />
+                                <span className="text-[#e6dfd3] flex items-center gap-1.5">
+                                  <Warehouse className="w-3.5 h-3.5 text-[#98c9a3]" />
                                   {inv.locationId?.name || "คลังหลัก"}:
                                 </span>
                                 <span className="font-mono font-bold text-[#98c9a3]">
@@ -540,9 +540,9 @@ export default function InventoryPage() {
                       </td>
 
                       {/* Total Stock */}
-                      <td className="py-4 px-4 text-center">
+                      <td className="py-4 px-4 text-center whitespace-nowrap">
                         <span
-                          className={`px-3 py-1 rounded-xl font-mono font-extrabold text-sm border ${
+                          className={`px-3 py-1.5 rounded-xl font-mono font-extrabold text-xs border inline-block whitespace-nowrap ${
                             isLowStock
                               ? "bg-amber-950/60 text-amber-300 border-amber-600/50"
                               : "bg-[#1e3425] text-[#98c9a3] border-[#98c9a3]/30"
@@ -553,19 +553,19 @@ export default function InventoryPage() {
                       </td>
 
                       {/* Min Threshold */}
-                      <td className="py-4 px-4 text-center font-mono text-xs text-[#d4a373]">
+                      <td className="py-4 px-4 text-center font-mono text-xs text-[#d4a373] whitespace-nowrap">
                         {product.minQuantity} {product.unit || "ชิ้น"}
                       </td>
 
                       {/* Stock Status Badge */}
-                      <td className="py-4 px-4 text-center">
+                      <td className="py-4 px-4 text-center whitespace-nowrap">
                         {isLowStock ? (
-                          <span className="px-2.5 py-1 rounded-full bg-amber-950/60 text-amber-300 text-[11px] font-bold border border-amber-600/50 flex items-center justify-center gap-1">
+                          <span className="px-3 py-1 rounded-full bg-amber-950/60 text-amber-300 text-xs font-bold border border-amber-600/50 inline-flex items-center justify-center gap-1.5 whitespace-nowrap">
                             <AlertTriangle className="w-3.5 h-3.5" />
                             สต็อกเหลือน้อย
                           </span>
                         ) : (
-                          <span className="px-2.5 py-1 rounded-full bg-[#1e3425] text-[#98c9a3] text-[11px] font-semibold border border-[#98c9a3]/30 flex items-center justify-center gap-1">
+                          <span className="px-3 py-1 rounded-full bg-[#1e3425] text-[#98c9a3] text-xs font-bold border border-[#98c9a3]/30 inline-flex items-center justify-center gap-1.5 whitespace-nowrap">
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             ปกติ
                           </span>

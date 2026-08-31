@@ -395,7 +395,7 @@ export default function ProductsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-[#121c15] border-b border-[#2d4734] text-xs font-semibold text-[#a39b8b] uppercase tracking-wider">
+                <tr className="bg-[#121c15] border-b border-[#2d4734] text-xs font-semibold text-[#a39b8b] uppercase tracking-wider whitespace-nowrap">
                   <th className="py-4 px-4 text-center">ลำดับ</th>
                   <th className="py-4 px-4 text-center">รูปภาพ</th>
                   <th className="py-4 px-6">รหัสสินค้า</th>
@@ -412,7 +412,7 @@ export default function ProductsPage() {
                 {paginatedProducts.map((item) => (
                   <tr key={item._id} className="hover:bg-[#18241c]/60 transition-colors">
                     {/* Seq */}
-                    <td className="py-4 px-4 text-center font-mono text-xs text-[#a39b8b]">
+                    <td className="py-4 px-4 text-center font-mono text-xs text-[#a39b8b] whitespace-nowrap">
                       #{item.seq}
                     </td>
 
@@ -437,14 +437,14 @@ export default function ProductsPage() {
                     </td>
 
                     {/* Code */}
-                    <td className="py-4 px-6">
-                      <span className="px-3 py-1 rounded-xl bg-[#1e3425] text-[#98c9a3] font-mono font-bold text-xs border border-[#98c9a3]/30">
+                    <td className="py-4 px-6 whitespace-nowrap">
+                      <span className="px-3 py-1 rounded-xl bg-[#1e3425] text-[#98c9a3] font-mono font-bold text-xs border border-[#98c9a3]/30 inline-block whitespace-nowrap">
                         {item.code}
                       </span>
                     </td>
 
                     {/* Name & Description */}
-                    <td className="py-4 px-6">
+                    <td className="py-4 px-6 min-w-[200px]">
                       <span className="font-bold text-[#f3efe6] block">{item.name}</span>
                       {item.description && (
                         <p className="text-xs text-[#a39b8b] mt-0.5 line-clamp-1">
@@ -454,44 +454,44 @@ export default function ProductsPage() {
                     </td>
 
                     {/* Unit */}
-                    <td className="py-4 px-4 text-center">
-                      <span className="px-2.5 py-0.5 rounded-lg bg-[#121c15] text-[#e6dfd3] text-xs font-medium border border-[#2d4734]">
+                    <td className="py-4 px-4 text-center whitespace-nowrap">
+                      <span className="px-2.5 py-1 rounded-lg bg-[#121c15] text-[#e6dfd3] text-xs font-semibold border border-[#2d4734] inline-block whitespace-nowrap">
                         {item.unit || "ชิ้น"}
                       </span>
                     </td>
 
                     {/* Sub-Category */}
-                    <td className="py-4 px-6">
+                    <td className="py-4 px-6 whitespace-nowrap">
                       {item.subCategoryId ? (
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded bg-[#121c15] text-[#98c9a3] font-mono text-[11px] border border-[#2d4734]">
+                          <span className="px-2 py-0.5 rounded bg-[#121c15] text-[#98c9a3] font-mono text-[11px] border border-[#2d4734] whitespace-nowrap">
                             {item.subCategoryId.code}
                           </span>
-                          <span className="text-xs font-semibold text-[#e6dfd3]">
+                          <span className="text-xs font-semibold text-[#e6dfd3] whitespace-nowrap">
                             {item.subCategoryId.name}
                           </span>
                         </div>
                       ) : (
-                        <span className="text-xs text-[#a39b8b] italic">- ไม่ได้ระบุ -</span>
+                        <span className="text-xs text-[#a39b8b] italic whitespace-nowrap">- ไม่ได้ระบุ -</span>
                       )}
                     </td>
 
                     {/* Min Quantity */}
-                    <td className="py-4 px-4 text-center">
-                      <span className="px-3 py-1 rounded-xl bg-[#121c15] text-[#d4a373] font-mono font-bold text-xs border border-[#d4a373]/30 inline-flex items-center gap-1">
-                        <AlertTriangle className="w-3 h-3 text-[#d4a373]" />
+                    <td className="py-4 px-4 text-center whitespace-nowrap">
+                      <span className="px-3 py-1 rounded-xl bg-[#121c15] text-[#d4a373] font-mono font-bold text-xs border border-[#d4a373]/30 inline-flex items-center gap-1.5 whitespace-nowrap">
+                        <AlertTriangle className="w-3.5 h-3.5 text-[#d4a373]" />
                         {item.minQuantity} {item.unit || "ชิ้น"}
                       </span>
                     </td>
 
                     {/* Status */}
-                    <td className="py-4 px-4 text-center">
+                    <td className="py-4 px-4 text-center whitespace-nowrap">
                       {item.status === "active" ? (
-                        <span className="px-2.5 py-1 rounded-full bg-[#1e3425] text-[#98c9a3] text-[11px] font-semibold border border-[#98c9a3]/30">
+                        <span className="px-3 py-1 rounded-full bg-[#1e3425] text-[#98c9a3] text-xs font-bold border border-[#98c9a3]/30 inline-block whitespace-nowrap">
                           ใช้งาน
                         </span>
                       ) : (
-                        <span className="px-2.5 py-1 rounded-full bg-[#2a221e] text-[#a39b8b] text-[11px] font-medium border border-[#2d4734]">
+                        <span className="px-3 py-1 rounded-full bg-[#2a221e] text-[#a39b8b] text-xs font-medium border border-[#2d4734] inline-block whitespace-nowrap">
                           ปิดใช้งาน
                         </span>
                       )}
