@@ -118,6 +118,7 @@ export async function PUT(
     if (body.paymentStatus !== undefined) order.paymentStatus = body.paymentStatus;
     if (body.paymentMethod !== undefined) order.paymentMethod = body.paymentMethod;
     if (body.dueDate !== undefined) order.dueDate = body.dueDate ? new Date(body.dueDate) : undefined;
+    if (body.billingNo !== undefined) (order as any).billingNo = body.billingNo;
     if (body.billingDate !== undefined) order.billingDate = body.billingDate ? new Date(body.billingDate) : undefined;
     if (body.creditDays !== undefined) order.creditDays = body.creditDays;
     if (body.attachmentUrl !== undefined) order.attachmentUrl = body.attachmentUrl;

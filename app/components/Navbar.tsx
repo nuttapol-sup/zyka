@@ -284,13 +284,18 @@ export default function Navbar() {
 
   const getLabel = (key: string, fallback: string) => menuCustomLabels[key] || fallback;
 
-  // Never render Navbar on /login page
-  if (pathname === "/login" || pathname === "/zyka/login" || pathname?.endsWith("/login")) {
+  // Never render Navbar on /login page or /orders/print pages
+  if (
+    pathname === "/login" ||
+    pathname === "/zyka/login" ||
+    pathname?.endsWith("/login") ||
+    pathname?.includes("/orders/print")
+  ) {
     return null;
   }
 
   return (
-    <nav className="glass-earth-header sticky top-0 z-50 border-b border-[#2d4734]">
+    <nav className="glass-earth-header sticky top-0 z-50 border-b border-[#2d4734] print:hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left: Brand Logo & Desktop Navigation Links */}

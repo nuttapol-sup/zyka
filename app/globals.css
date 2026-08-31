@@ -88,59 +88,42 @@ body {
     print-color-adjust: exact !important;
   }
 
-  body {
-    background-color: #ffffff !important;
-    color: #111827 !important;
+  @page {
+    size: A4 portrait;
+    margin: 6mm 8mm 6mm 8mm;
   }
 
-  nav,
+  html,
+  body {
+    background: #ffffff !important;
+    background-image: none !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
   header,
-  .print\:hidden,
-  button {
+  nav,
+  .print\:hidden {
     display: none !important;
   }
 
   main {
-    max-width: 100% !important;
     padding: 0 !important;
     margin: 0 !important;
-  }
-
-  .glass-earth-card {
-    background: #ffffff !important;
-    border: 1px solid #e5e7eb !important;
-    box-shadow: none !important;
-    color: #111827 !important;
-    backdrop-filter: none !important;
-  }
-
-  .text-gradient-earth {
-    color: #111827 !important;
-    background: none !important;
-    -webkit-text-fill-color: initial !important;
-  }
-
-  table {
-    border-collapse: collapse !important;
+    max-width: 100% !important;
     width: 100% !important;
   }
 
-  tr {
-    page-break-inside: avoid !important;
-  }
-
-  th {
-    background-color: #f3f4f6 !important;
-    color: #111827 !important;
-    border-bottom: 2px solid #e5e7eb !important;
-  }
-
-  td {
-    border-bottom: 1px solid #e5e7eb !important;
-    color: #111827 !important;
-  }
-
-  circle[fill="#0f1712"] {
-    fill: #ffffff !important;
+  .page-break,
+  .break-before-page {
+    page-break-before: always !important;
+    break-before: page !important;
+    height: 0 !important;
+    display: block !important;
+    clear: both !important;
   }
 }

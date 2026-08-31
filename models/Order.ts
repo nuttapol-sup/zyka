@@ -23,6 +23,7 @@ export interface IOrder extends Document {
   salespersonName?: string;
   [key: string]: any;
   orderDate: Date;
+  billingNo?: string;
   billingDate?: Date;
   dueDate?: Date;
   creditDays?: number;
@@ -91,6 +92,7 @@ const OrderSchema: Schema<IOrder> = new Schema(
     },
     salespersonName: { type: String, trim: true, default: "" },
     orderDate: { type: Date, default: Date.now },
+    billingNo: { type: String, trim: true, default: "" },
     billingDate: { type: Date },
     dueDate: { type: Date },
     creditDays: { type: Number, default: 0 },

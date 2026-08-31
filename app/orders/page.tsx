@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   ShoppingBag,
   Plus,
@@ -31,6 +32,277 @@ import {
 } from "lucide-react";
 import Pagination from "@/app/components/Pagination";
 import { getApiPath } from "@/app/utils/apiPath";
+
+function arabicToThaiBaht(numbers: number, includeParentheses: boolean = false): string {
+  if (isNaN(numbers) || numbers === null || numbers === undefined) return "";
+  const numberText = ["ศูนย์", "หนึ่ง", "สอง", "สาม", "สี่", "ห้า", "หก", "เจ็ด", "แปด", "เก้า"];
+  const unitText = ["", "สิบ", "ร้อย", "พัน", "หมื่น", "แสน", "ล้าน"];
+
+  const numStr = Math.abs(numbers).toFixed(2);
+  const [bahtStr, satangStr] = numStr.split(".");
+
+  let bahtText = "";
+  const bahtLen = bahtStr.length;
+
+  for (let i = 0; i < bahtLen; i++) {
+    const digit = parseInt(bahtStr[i]);
+    const pos = bahtLen - 1 - i;
+
+    if (digit !== 0) {
+      if (pos % 6 === 1 && digit === 1) {
+        bahtText += "สิบ";
+      } else if (pos % 6 === 1 && digit === 2) {
+        bahtText += "ยี่สิบ";
+      } else if (pos % 6 === 0 && digit === 1 && i > 0 && bahtStr[i - 1] !== "0") {
+        bahtText += "เอ็ด";
+      } else {
+        bahtText += numberText[digit] + unitText[pos % 6];
+      }
+    } else if (pos % 6 === 0 && pos > 0 && bahtLen > 6) {
+      bahtText += "ล้าน";
+    }
+  }
+
+  if (!bahtText) bahtText = "ศูนย์";
+  bahtText += "บาท";
+
+  let satangText = "";
+  if (satangStr && satangStr !== "00") {
+    const d1 = parseInt(satangStr[0]);
+    const d2 = parseInt(satangStr[1]);
+
+    if (d1 !== 0) {
+      if (d1 === 1) satangText += "สิบ";
+      else if (d1 === 2) satangText += "ยี่สิบ";
+      else satangText += numberText[d1] + "สิบ";
+    }
+
+    if (d2 !== 0) {
+      if (d2 === 1 && d1 !== 0) satangText += "เอ็ด";
+      else satangText += numberText[d2];
+    }
+    satangText += "สตางค์";
+  } else {
+    satangText = "ถ้วน";
+  }
+
+  const result = `${bahtText}${satangText}`;
+  return includeParentheses ? `(${result})` : result;
+}
+
+function SingleStandardDocPage({
+  printingOrder,
+  docType,
+  pageType,
+}: {
+  printingOrder: any;
+  docType: "receipt" | "tax_invoice" | "delivery_order";
+  pageType: "ต้นฉบับ/ORIGINAL" | "สำเนา/COPY";
+}) {
+  const isReceipt = docType === "receipt";
+  const isTaxInvoice = docType === "tax_invoice";
+
+  const titleText = isReceipt
+    ? "ใบเสร็จรับเงิน"
+    : isTaxInvoice
+    ? "ใบกำกับภาษี"
+    : "ใบส่งสินค้า / ใบแจ้งหนี้";
+
+  const subtitleText = isReceipt
+    ? "RECEIPT"
+    : isTaxInvoice
+    ? "TAX INVOICE"
+    : "DELIVERY ORDER / INVOICE";
+
+  const subLabelText = isTaxInvoice ? "เอกสารออกเป็นชุด" : "เอกสารออกเป็นชุด (ไม่ใช่ใบกำกับภาษี)";
+
+  return (
+    <div className="space-y-3 text-xs font-sans relative z-10 text-black p-2 bg-white">
+      {/* Top Header: Logo + Company Info + Original/Copy Stamp */}
+      <div className="flex justify-between items-start pb-2 border-b border-black">
+        <div className="flex items-start gap-3">
+          <div className="w-12 h-12 rounded-full border border-[#284532] text-[#284532] flex flex-col items-center justify-center font-black text-xs shrink-0 p-1">
+            <span className="text-[9px] font-bold">บริษัท ไซกา</span>
+            <span className="text-base font-black leading-none">ZM</span>
+            <span className="text-[8px]">ZYKA MEDIC</span>
+          </div>
+          <div className="space-y-0.5 text-black">
+            <h2 className="text-base font-extrabold text-[#284532] leading-tight">บริษัท ไซกา เมดิค จำกัด</h2>
+            <h3 className="text-xs font-bold text-[#284532] tracking-wide">ZYKA MEDIC CO., LTD.</h3>
+            <p className="text-[10px] text-gray-700 leading-tight">
+              51 อาคารเมเจอร์ ทาวเวอร์ พระราม9-รามคำแหง ห้องเลขที่ 7 ชั้นที่ 7 ถนนพระราม 9 แขวงหัวหมาก เขตบางกะปิ กรุงเทพฯ 10240
+            </p>
+            <p className="text-[10px] text-gray-700 leading-tight">
+              Tel. 02-1151758 Fax 02-1151759 E-mail: contact@zykamedic.com
+            </p>
+          </div>
+        </div>
+
+        <div className="text-right space-y-1">
+          <div className={`px-2.5 py-1 rounded border text-xs font-bold inline-block ${
+            pageType.includes("ต้นฉบับ") ? "border-green-600 text-green-700 bg-green-50" : "border-gray-500 text-gray-700 bg-gray-50"
+          }`}>
+            {pageType}
+          </div>
+          <p className="text-[9px] text-gray-600 block">{subLabelText}</p>
+        </div>
+      </div>
+
+      {/* Title Banner */}
+      <div className="text-center my-1">
+        <div className={`inline-block px-6 py-1.5 rounded-full border font-bold text-center ${
+          isReceipt ? "border-green-600 bg-green-50 text-green-800" : "border-black bg-gray-100 text-black"
+        }`}>
+          <h1 className="text-base font-black leading-tight tracking-wide">{titleText}</h1>
+          <p className="text-[10px] font-bold tracking-widest uppercase">{subtitleText}</p>
+        </div>
+      </div>
+
+      {/* Tax ID Line */}
+      <div className="flex justify-between text-[11px] font-semibold text-black border-b border-black pb-1">
+        <span>เลขประจำตัวผู้เสียภาษี 010552058550 สำนักงานใหญ่</span>
+        <span>Tax ID. No. 010552058550</span>
+      </div>
+
+      {/* Metadata Table */}
+      <div className="border border-black text-[11px] text-black">
+        <div className="grid grid-cols-12 divide-x divide-black border-b border-black">
+          <div className="col-span-7 p-2 space-y-1">
+            <p><span className="font-bold">นามผู้ซื้อ / Sold To:</span> <span className="font-bold">{printingOrder.customerName}</span></p>
+            <p><span className="font-bold">ที่อยู่ / Address:</span> {printingOrder.customerAddress || "-"}</p>
+            <p><span className="font-bold">เลขประจำตัวผู้เสียภาษีอากร / Tax ID. No.:</span> {printingOrder.customerTaxId || "-"}</p>
+          </div>
+          <div className="col-span-5 p-2 space-y-1 font-mono">
+            <p><span className="font-bold font-sans">เลขที่ / Invoice No.:</span> <span className="font-bold">{printingOrder.orderNo}</span></p>
+            <p><span className="font-bold font-sans">วันที่ / Date:</span> {new Date(printingOrder.orderDate).toLocaleDateString("th-TH")}</p>
+            <p><span className="font-bold font-sans">พนักงานขาย / Salesman:</span> {printingOrder.createdByName || "-"}</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-4 divide-x divide-black text-center font-mono text-[10px] bg-gray-50 py-1">
+          <div>
+            <span className="font-bold font-sans block text-gray-700">เลขที่ใบสั่งซื้อของลูกค้า / P/O No.</span>
+            <span>-</span>
+          </div>
+          <div>
+            <span className="font-bold font-sans block text-gray-700">รหัสลูกค้า / Customer Code</span>
+            <span>-</span>
+          </div>
+          <div>
+            <span className="font-bold font-sans block text-gray-700">เงื่อนไขในการชำระเงิน / Term</span>
+            <span>-</span>
+          </div>
+          <div>
+            <span className="font-bold font-sans block text-gray-700">วันครบกำหนดชำระ / Due Date</span>
+            <span>{printingOrder.dueDate ? new Date(printingOrder.dueDate).toLocaleDateString("th-TH") : "-"}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Items Table */}
+      <table className="w-full text-left text-xs border-collapse border border-black">
+        <thead>
+          <tr className="bg-gray-100 font-bold border-b border-black text-black text-[11px]">
+            <th className="py-1.5 px-2 border-r border-black text-center w-12">ลำดับที่<br/><span className="text-[9px] font-normal">Item</span></th>
+            <th className="py-1.5 px-2 border-r border-black text-center w-24">รหัสสินค้า<br/><span className="text-[9px] font-normal">Product Code</span></th>
+            <th className="py-1.5 px-3 border-r border-black text-center">รายการ<br/><span className="text-[9px] font-normal">Description</span></th>
+            <th className="py-1.5 px-2 border-r border-black text-center w-16">จำนวน<br/><span className="text-[9px] font-normal">Quantity</span></th>
+            <th className="py-1.5 px-3 border-r border-black text-right w-24">หน่วยละ<br/><span className="text-[9px] font-normal">Unit Price</span></th>
+            <th className="py-1.5 px-3 text-right w-28">จำนวนเงิน<br/><span className="text-[9px] font-normal">Amount</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          {printingOrder.items.map((item: any, idx: number) => (
+            <tr key={idx} className="border-b border-black text-[11px]">
+              <td className="py-2 px-2 border-r border-black text-center font-mono">{idx + 1}</td>
+              <td className="py-2 px-2 border-r border-black text-center font-mono font-bold">{item.productCode || "-"}</td>
+              <td className="py-2 px-3 border-r border-black">
+                <span className="font-bold block">{item.productName}</span>
+              </td>
+              <td className="py-2 px-2 border-r border-black text-center font-mono">{item.quantity} {item.unit}</td>
+              <td className="py-2 px-3 border-r border-black text-right font-mono">
+                {item.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </td>
+              <td className="py-2 px-3 text-right font-mono font-bold">
+                {item.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Footer Table: Thai Baht Text & Totals */}
+      <table className="w-full text-left text-xs border-collapse border border-black font-mono">
+        <tbody>
+          <tr className="border-b border-black">
+            <td rowSpan={2} colSpan={3} className="py-2 px-4 border-r border-black bg-gray-100 text-center font-bold text-xs text-black align-middle font-sans">
+              {arabicToThaiBaht(printingOrder.grandTotal, true)}
+            </td>
+            <td className="py-1 px-3 border-r border-black font-bold text-black w-40 font-sans">รวมราคาสินค้า / Sub Total</td>
+            <td className="py-1 px-3 text-right font-bold text-black w-32">
+              {printingOrder.subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </td>
+          </tr>
+          <tr className="border-b border-black">
+            <td className="py-1 px-3 border-r border-black font-bold text-black font-sans">ภาษีมูลค่าเพิ่ม {printingOrder.taxRate}% / Vat</td>
+            <td className="py-1 px-3 text-right font-bold text-black">
+              {(printingOrder.taxAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </td>
+          </tr>
+          <tr>
+            <td colSpan={3} className="py-1 px-3 border-r border-black text-[10px] text-gray-600 font-sans">
+              โปรดชำระด้วยเช็คขีดคร่อมสั่งจ่ายในนามบัญชี "บริษัท ไซกา เมดิค จำกัด"
+            </td>
+            <td className="py-1.5 px-3 border-r border-black font-black text-black font-sans">รวมเงินทั้งสิ้น / Grand Total</td>
+            <td className="py-1.5 px-3 text-right font-black text-black text-sm">
+              {printingOrder.grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* Bottom Signatures & Payment Info */}
+      <div className="border border-black p-2.5 rounded grid grid-cols-2 gap-4 text-[10px]">
+        {isReceipt ? (
+          /* Receipt Bottom Left: Payment Method Checkboxes */
+          <div className="space-y-1.5 border-r border-black pr-2">
+            <p className="font-bold text-black">ได้รับชำระเงินโดย / Payment by</p>
+            <div className="flex gap-4 font-semibold">
+              <label className="flex items-center gap-1"><input type="checkbox" readOnly checked={printingOrder.paymentMethod === "CASH"} /> เงินสด Cash</label>
+              <label className="flex items-center gap-1"><input type="checkbox" readOnly checked={printingOrder.paymentMethod === "TRANSFER" || !printingOrder.paymentMethod} /> เงินโอน Transfer</label>
+              <label className="flex items-center gap-1"><input type="checkbox" readOnly checked={printingOrder.paymentMethod === "CHEQUE"} /> เช็คธนาคาร Cheque</label>
+            </div>
+            <p className="pt-1">เลขที่ No. .......................... วันที่ Date .......................... จำนวนเงิน ..........................</p>
+            <p className="text-[9px] text-gray-500 pt-1">ใบเสร็จนี้จะสมบูรณ์ต่อเมื่อมีลายมือชื่อผู้รับเงินและผู้มีอำนาจลงนามแทนบริษัทฯ</p>
+          </div>
+        ) : (
+          /* Tax Invoice & Delivery Order Bottom Left: Goods Received / Delivery */
+          <div className="grid grid-cols-2 gap-2 border-r border-black pr-2 text-center">
+            <div className="space-y-6 pt-4">
+              <p>.......................................................</p>
+              <p className="font-bold">ผู้รับสินค้า / Goods Received By</p>
+              <p className="text-[9px]">วันที่ / Date ......../......../........</p>
+            </div>
+            <div className="space-y-6 pt-4">
+              <p>.......................................................</p>
+              <p className="font-bold">ผู้ส่งสินค้า / Goods Delivery By</p>
+              <p className="text-[9px]">วันที่ / Date ......../......../........</p>
+            </div>
+          </div>
+        )}
+
+        {/* Right Side Signature (Shared across Receipt, Tax Invoice, Delivery Order) */}
+        <div className="text-center space-y-4 pt-2">
+          <p className="font-bold text-black">ในนาม บริษัท ไซกา เมดิค จำกัด / For ZYKA MEDIC CO., LTD.</p>
+          <div className="pt-2">
+            <p className="font-mono font-bold text-sm text-blue-900">Danupat P.</p>
+            <p className="border-t border-dashed border-black w-48 mx-auto pt-1 text-[9px] font-bold">ลายเซ็นผู้มีอำนาจลงนาม / Authorized Signature</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface CustomerItem {
   _id: string;
@@ -85,6 +357,7 @@ interface OrderData {
   salespersonId?: any;
   salespersonName?: string;
   orderDate: string;
+  billingNo?: string;
   billingDate?: string;
   dueDate?: string;
   creditDays?: number;
@@ -108,6 +381,11 @@ interface OrderData {
 }
 
 export default function OrdersPage() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [orders, setOrders] = useState<OrderData[]>([]);
   const [customers, setCustomers] = useState<CustomerItem[]>([]);
   const [products, setProducts] = useState<ProductItem[]>([]);
@@ -146,6 +424,7 @@ export default function OrdersPage() {
   const [isSalespersonPickerOpen, setIsSalespersonPickerOpen] = useState(false);
   const [salespersonSearchTerm, setSalespersonSearchTerm] = useState("");
   const [orderDate, setOrderDate] = useState(new Date().toISOString().split("T")[0]);
+  const [billingNo, setBillingNo] = useState("");
   const [billingDate, setBillingDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [creditDays, setCreditDays] = useState(0);
@@ -169,13 +448,14 @@ export default function OrdersPage() {
   // Edit Status Modal State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<OrderData | null>(null);
+  const [editBillingNo, setEditBillingNo] = useState("");
   const [editBillingDate, setEditBillingDate] = useState("");
   const [editDueDate, setEditDueDate] = useState("");
 
   // Print Receipt Modal State
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [printingOrder, setPrintingOrder] = useState<OrderData | null>(null);
-  const [docType, setDocType] = useState<"receipt" | "billing" | "order">("receipt");
+  const [docType, setDocType] = useState<"billing" | "receipt" | "tax_invoice" | "delivery_order">("billing");
 
   // Product Search Popup Modal State
   const [isProductPickerOpen, setIsProductPickerOpen] = useState(false);
@@ -292,6 +572,7 @@ export default function OrdersPage() {
     setSelectedSalespersonId("");
     setSelectedSalespersonName("");
     setOrderDate(new Date().toISOString().split("T")[0]);
+    setBillingNo("");
     setBillingDate("");
     setDueDate("");
     setCreditDays(0);
@@ -427,6 +708,7 @@ export default function OrdersPage() {
           salespersonId: selectedSalespersonId || undefined,
           salespersonName: selectedSalespersonName || "",
           orderDate,
+          billingNo,
           billingDate: billingDate || undefined,
           dueDate,
           creditDays,
@@ -471,6 +753,7 @@ export default function OrdersPage() {
     setTrackingNo(order.trackingNo || "");
     setPaymentStatus(order.paymentStatus);
     setPaymentMethod(order.paymentMethod || "TRANSFER");
+    setEditBillingNo(order.billingNo || "");
     setEditBillingDate(order.billingDate ? order.billingDate.split("T")[0] : "");
     setEditDueDate(order.dueDate ? order.dueDate.split("T")[0] : "");
     setAttachmentUrl(order.attachmentUrl || "");
@@ -499,6 +782,7 @@ export default function OrdersPage() {
           trackingNo,
           paymentStatus,
           paymentMethod,
+          billingNo: editBillingNo || undefined,
           billingDate: editBillingDate || undefined,
           dueDate: editDueDate || undefined,
           attachmentUrl,
@@ -539,14 +823,19 @@ export default function OrdersPage() {
     }
   };
 
-  const openPrintModal = (order: OrderData, type: "receipt" | "billing" | "order" = "receipt") => {
-    setPrintingOrder(order);
-    setDocType(type);
-    setIsPrintModalOpen(true);
+  const openPrintModal = (
+    order: OrderData,
+    type: "billing" | "receipt" | "tax_invoice" | "delivery_order" = "billing"
+  ) => {
+    window.open(getApiPath(`/orders/print/${order._id}`), "_blank");
   };
 
   const handleTriggerPrint = () => {
-    window.print();
+    if (printingOrder) {
+      window.open(getApiPath(`/orders/print/${printingOrder._id}`), "_blank");
+    } else {
+      window.print();
+    }
   };
 
   return (
@@ -760,6 +1049,11 @@ export default function OrdersPage() {
                       <span className="px-2.5 py-1 rounded-xl bg-[#1e3425] text-[#98c9a3] font-mono font-bold text-xs border border-[#98c9a3]/30 block w-fit mb-1">
                         {o.orderNo}
                       </span>
+                      {o.billingNo && (
+                        <span className="text-xs font-bold text-emerald-400 font-mono block">
+                          เลขที่วางบิล: {o.billingNo}
+                        </span>
+                      )}
                       <span className="text-xs text-[#a39b8b] block">
                         สั่งซื้อ: {new Date(o.orderDate).toLocaleDateString("th-TH")}
                       </span>
@@ -859,25 +1153,26 @@ export default function OrdersPage() {
                     <td className="py-4 px-6 text-center">
                       <div className="flex items-center justify-center gap-1.5">
                         <button
-                          onClick={() => openPrintModal(o, "receipt")}
-                          className="p-1.5 rounded-lg bg-[#1e3425] text-[#98c9a3] hover:bg-[#284532] border border-[#98c9a3]/30 transition-colors"
-                          title="พิมพ์ใบเสร็จ / ใบกำกับภาษี"
+                          onClick={() => openPrintModal(o, "billing")}
+                          className="px-3 py-1.5 rounded-lg bg-[#284532] text-[#98c9a3] hover:bg-[#345941] border border-[#98c9a3]/40 text-xs font-bold transition-all flex items-center gap-1.5 shrink-0"
+                          title="พิมพ์ใบวางบิล (Billing Note)"
                         >
-                          <Printer className="w-4 h-4" />
+                          <FileText className="w-4 h-4" />
+                          <span>พิมพ์ใบวางบิล</span>
                         </button>
                         <button
                           onClick={() => openEditModal(o)}
-                          className="p-1.5 rounded-lg bg-[#121c15] text-[#98c9a3] hover:bg-[#1c2d22] border border-[#2d4734] transition-colors"
+                          className="p-1.5 rounded-lg bg-[#121c15] text-[#98c9a3] hover:bg-[#1c2d22] border border-[#2d4734] transition-colors shrink-0"
                           title="อัปเดตสถานะจัดส่ง/การเงิน"
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDeleteOrder(o._id)}
-                          className="p-1.5 rounded-lg bg-[#121c15] text-red-400 hover:bg-red-950/40 border border-[#2d4734] transition-colors"
+                          className="p-1.5 rounded-lg bg-[#121c15] text-red-400 hover:bg-red-950/40 border border-[#2d4734] transition-colors shrink-0"
                           title="ลบคำสั่งซื้อ"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </td>
@@ -999,8 +1294,8 @@ export default function OrdersPage() {
                   </div>
                 </div>
 
-                {/* Row 2: Order Date, Billing Date, Due Date, Carrier, Tracking No */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-3 border-t border-[#2d4734]/50">
+                {/* Row 2: Order Date, Billing No, Billing Date, Due Date, Carrier, Tracking No */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 pt-3 border-t border-[#2d4734]/50">
                   <div>
                     <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
                       วันที่สั่งซื้อ *
@@ -1011,6 +1306,19 @@ export default function OrdersPage() {
                       value={orderDate}
                       onChange={(e) => setOrderDate(e.target.value)}
                       className="w-full px-3 py-2 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1 text-emerald-400">
+                      เลขที่ใบวางบิล
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="เช่น BIL-2026-0001"
+                      value={billingNo}
+                      onChange={(e) => setBillingNo(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-[#121c15] border border-[#98c9a3]/40 text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
                     />
                   </div>
 
@@ -1406,7 +1714,19 @@ export default function OrdersPage() {
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1 text-emerald-400">
+                    เลขที่ใบวางบิล
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="เช่น BIL-2026-0001"
+                    value={editBillingNo}
+                    onChange={(e) => setEditBillingNo(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-[#121c15] border border-[#98c9a3]/40 text-xs text-[#f3efe6]"
+                  />
+                </div>
                 <div>
                   <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1 text-emerald-400">
                     วันที่วางบิล
@@ -1463,43 +1783,23 @@ export default function OrdersPage() {
         </div>
       )}
 
-      {/* PRINT RECEIPT / INVOICE MODAL */}
+      {/* PRINT RECEIPT / INVOICE MODAL (SCREEN ONLY) */}
       {isPrintModalOpen && printingOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 overflow-y-auto">
-          <div className="max-w-3xl w-full bg-white text-black p-8 sm:p-12 rounded-2xl shadow-2xl space-y-6 relative print:shadow-none print:p-0 print:m-0 print:max-w-none print:w-full print:rounded-none">
-            {/* Screen Action Bar (Hidden when printing) */}
-            <div className="flex items-center justify-between border-b pb-4 print:hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 overflow-y-auto print:hidden">
+          <div className="max-w-4xl w-full bg-white text-black p-6 sm:p-8 rounded-2xl shadow-2xl space-y-4 relative">
+            {/* Screen Action Bar */}
+            <div className="flex items-center justify-between border-b pb-3">
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setDocType("receipt")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
-                    docType === "receipt" ? "bg-emerald-700 text-white" : "bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  ใบเสร็จรับเงิน / ใบกำกับภาษี
-                </button>
-                <button
-                  onClick={() => setDocType("billing")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
-                    docType === "billing" ? "bg-emerald-700 text-white" : "bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  ใบแจ้งหนี้ / ใบวางบิล
-                </button>
-                <button
-                  onClick={() => setDocType("order")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
-                    docType === "order" ? "bg-emerald-700 text-white" : "bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  ใบสั่งซื้อ (Order)
-                </button>
+                <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-800 text-white shadow flex items-center gap-1.5">
+                  <FileText className="w-4 h-4" />
+                  <span>ใบวางบิล (Billing Note) - 1 หน้า</span>
+                </span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={handleTriggerPrint}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow transition-all hover:scale-105"
+                  className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow transition-all hover:scale-105"
                   title="กดเพื่อส่งพิมพ์ หรือ เลือกบันทึกเป็นไฟล์ PDF (Save as PDF)"
                 >
                   <Printer className="w-4 h-4" />
@@ -1514,147 +1814,267 @@ export default function OrdersPage() {
               </div>
             </div>
 
-            {/* PRINTABLE A4 CONTENT BOX */}
-            <div ref={printRef} className="space-y-6 text-sm text-gray-800">
-              {/* Document Header */}
-              <div className="flex justify-between items-start border-b pb-6">
-                <div>
-                  <h2 className="text-2xl font-black text-emerald-900 tracking-wider">ZYKA MEDIC CO., LTD.</h2>
-                  <p className="text-xs text-gray-600">บริษัท ซีก้า เมดิค จำกัด (สำนักงานใหญ่)</p>
-                  <p className="text-xs text-gray-600">เลขที่ผู้เสียภาษี: 0105566000000 | โทร: 02-123-4567</p>
-                  <p className="text-xs text-gray-600">อีเมล: contact@zyka.co.th | www.zyka.co.th</p>
-                </div>
-
-                <div className="text-right">
-                  <h3 className="text-lg font-bold text-emerald-800">
-                    {docType === "receipt"
-                      ? "ใบเสร็จรับเงิน / ใบกำกับภาษี"
-                      : docType === "billing"
-                      ? "ใบแจ้งหนี้ / ใบวางบิล"
-                      : "ใบสั่งซื้อสินค้า"}
-                  </h3>
-                  <p className="text-xs font-mono font-bold text-gray-700">เลขที่: {printingOrder.orderNo}</p>
-                  <p className="text-xs text-gray-600">
-                    วันที่สั่งซื้อ: {new Date(printingOrder.orderDate).toLocaleDateString("th-TH")}
-                  </p>
-                  {printingOrder.billingDate && (
-                    <p className="text-xs font-bold text-emerald-800">
-                      วันที่วางบิล: {new Date(printingOrder.billingDate).toLocaleDateString("th-TH")}
-                    </p>
-                  )}
-                  {printingOrder.dueDate && (
-                    <p className="text-xs text-gray-600">
-                      กำหนดชำระ: {new Date(printingOrder.dueDate).toLocaleDateString("th-TH")}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Customer Info Box */}
-              <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200 text-xs">
-                <div>
-                  <p className="font-bold text-gray-900">ลูกค้า (Customer):</p>
-                  <p className="font-semibold text-gray-800">{printingOrder.customerName}</p>
-                  <p className="text-gray-600">ที่อยู่: {printingOrder.customerAddress || "-"}</p>
-                  <p className="text-gray-600">เลขผู้เสียภาษี: {printingOrder.customerTaxId || "-"}</p>
-                  <p className="text-gray-600">เบอร์โทรศัพท์: {printingOrder.customerPhone || "-"}</p>
-                </div>
-
-                <div className="text-right space-y-1">
-                  <p className="font-bold text-gray-900">รายละเอียดการขนส่ง & ชำระเงิน:</p>
-                  <p className="text-gray-700">ขนส่งโดย: {printingOrder.shippingCarrier || "-"}</p>
-                  <p className="font-mono text-gray-700">Tracking: {printingOrder.trackingNo || "-"}</p>
-                  <p className="text-gray-700">วิธีชำระเงิน: {printingOrder.paymentMethod || "โอนเงินเข้าบัญชี"}</p>
-                  <p className="font-bold text-emerald-700">
-                    สถานะ: {printingOrder.paymentStatus === "PAID" ? "ชำระเงินแล้ว (PAID)" : "รอชำระ / วางบิล"}
-                  </p>
-                </div>
-              </div>
-
-              {/* Items Table */}
-              <table className="w-full text-left text-xs border-collapse border border-gray-300">
-                <thead>
-                  <tr className="bg-emerald-950 text-white font-bold uppercase">
-                    <th className="py-2.5 px-3 border border-gray-400 text-center">ลำดับ</th>
-                    <th className="py-2.5 px-4 border border-gray-400">รายการสินค้า (Description)</th>
-                    <th className="py-2.5 px-3 border border-gray-400 text-center">จำนวน</th>
-                    <th className="py-2.5 px-3 border border-gray-400 text-center">หน่วย</th>
-                    <th className="py-2.5 px-4 border border-gray-400 text-right">ราคา/หน่วย</th>
-                    <th className="py-2.5 px-4 border border-gray-400 text-right">จำนวนเงิน (บาท)</th>
-                  </tr>
-                </thead>
-
-                <tbody className="divide-y divide-gray-300">
-                  {printingOrder.items.map((item, i) => (
-                    <tr key={i}>
-                      <td className="py-2 px-3 border border-gray-300 text-center font-mono">{i + 1}</td>
-                      <td className="py-2 px-4 border border-gray-300 font-medium">
-                        {item.productName} (รหัส: {item.productCode})
-                      </td>
-                      <td className="py-2 px-3 border border-gray-300 text-center font-mono">{item.quantity}</td>
-                      <td className="py-2 px-3 border border-gray-300 text-center">{item.unit}</td>
-                      <td className="py-2 px-4 border border-gray-300 text-right font-mono">
-                        ฿{item.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </td>
-                      <td className="py-2 px-4 border border-gray-300 text-right font-mono font-bold">
-                        ฿{item.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              {/* Money Totals & Summary */}
-              <div className="flex justify-between items-start pt-2">
-                <div className="text-xs text-gray-500 max-w-xs">
-                  {printingOrder.note && <p>หมายเหตุ: {printingOrder.note}</p>}
-                  <p className="mt-2 font-mono">ผู้ออกเอกสาร: {printingOrder.createdByName || "Admin"}</p>
-                </div>
-
-                <div className="w-64 space-y-1.5 text-xs font-mono">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">รวมเป็นเงิน:</span>
-                    <span>฿{printingOrder.subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                  </div>
-
-                  {printingOrder.discount > 0 && (
-                    <div className="flex justify-between text-red-600">
-                      <span>ส่วนลด:</span>
-                      <span>-฿{printingOrder.discount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+            {/* SCREEN PREVIEW CONTAINER */}
+            <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
+              <div className="space-y-3 text-xs font-sans text-black max-w-3xl mx-auto bg-white p-6 rounded shadow-sm border border-gray-300">
+                {/* Header */}
+                <div className="flex justify-between items-start pb-2 border-b border-gray-300">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <div className="w-7 h-7 rounded bg-[#284532] text-white flex items-center justify-center font-black text-xs shrink-0">ZM</div>
+                      <div>
+                        <h2 className="text-base font-extrabold text-black leading-tight">บริษัท ไซกา เมดิค จำกัด</h2>
+                        <p className="text-[11px] font-bold text-gray-800 tracking-wider">ZYKA MEDIC CO.,LTD</p>
+                      </div>
                     </div>
-                  )}
-
-                  <div className="flex justify-between text-gray-600">
-                    <span>
-                      ภาษีมูลค่าเพิ่ม ({printingOrder.taxRate && printingOrder.taxRate > 0 ? `VAT ${printingOrder.taxRate}%` : "ไม่มี VAT / ยกเว้นภาษี"}):
-                    </span>
-                    <span>฿{(printingOrder.taxAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                    <p className="text-[10px] text-gray-800 leading-tight">เลขที่ 51 อาคารเมเจอร์ ทาวเวอร์ พระราม9-รามคำแหง ห้องเลขที่ 7 ชั้นที่ 7 ถ.พระราม 9</p>
+                    <p className="text-[10px] text-gray-800 leading-tight">แขวงหัวหมาก เขตบางกะปิ กรุงเทพมหานคร 10240 โทร 02-1151758</p>
+                    <p className="text-[10px] text-gray-800 leading-tight">E-mail : contact@zykamedic.com Fax. 02 115 1759</p>
                   </div>
-
-                  <div className="flex justify-between font-extrabold text-sm border-t border-b border-gray-800 py-1.5 text-emerald-900">
-                    <span>จำนวนเงินสุทธิ:</span>
-                    <span>฿{printingOrder.grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                  <div className="text-right space-y-0.5">
+                    <h1 className="text-lg font-bold text-black tracking-wide">ใบวางบิล</h1>
+                    <p className="text-xs font-semibold text-gray-700">Billing Note</p>
                   </div>
                 </div>
+
+                {/* Metadata */}
+                <div className="space-y-0.5 text-xs text-black border-b border-gray-300 pb-1.5">
+                  <div className="flex justify-between">
+                    <div><span className="font-bold">เล่มที่</span> <span className="font-mono">01/2568</span></div>
+                    <div><span className="font-bold">เลขที่</span> <span className="font-mono font-bold">{printingOrder.billingNo || printingOrder.orderNo}</span></div>
+                  </div>
+                  <div className="flex justify-between">
+                    <div><span className="font-bold">ในนาม(ลูกค้า)</span> <span className="font-semibold">{printingOrder.customerName}</span></div>
+                    <div>
+                      <span className="font-bold">วันที่</span>{" "}
+                      {printingOrder.billingDate
+                        ? new Date(printingOrder.billingDate).toLocaleDateString("th-TH")
+                        : new Date(printingOrder.orderDate).toLocaleDateString("th-TH")}
+                    </div>
+                  </div>
+                  <div className="flex justify-between">
+                    <div><span className="font-bold">ที่อยู่</span> {printingOrder.customerAddress || "-"}</div>
+                    <div><span className="font-bold">เลขประจำตัวผู้เสียภาษี</span> <span className="font-mono">{printingOrder.customerTaxId || "-"}</span></div>
+                  </div>
+                </div>
+
+                <div className="py-1 px-3 text-center text-[11px] font-semibold text-black bg-gray-50 border border-black">
+                  ได้รับบิลเงินเชื่อหรือเงินสดไว้ เพื่อตรวจสอบและพร้อมที่จะชำระเงินให้ตามบิลต่อไปนี้
+                </div>
+
+                <table className="w-full text-left text-xs border-collapse border border-black">
+                  <thead>
+                    <tr className="bg-gray-100 font-bold border-b border-black text-black">
+                      <th className="py-1.5 px-2 border-r border-black text-center w-12">ลำดับที่</th>
+                      <th className="py-1.5 px-3 border-r border-black text-center">เลขที่ใบวางบิล / รายการสินค้า</th>
+                      <th className="py-1.5 px-3 border-r border-black text-center w-28">วันที่บิล</th>
+                      <th className="py-1.5 px-3 border-r border-black text-center w-28">วันครบรอบชำระ</th>
+                      <th className="py-1.5 px-4 text-right border-black w-32">จำนวนเงิน</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {printingOrder.items.map((item, idx) => (
+                      <tr key={idx} className="border-b border-black">
+                        <td className="py-1.5 px-2 border-r border-black text-center font-mono">{idx + 1}</td>
+                        <td className="py-1.5 px-3 border-r border-black">
+                          <span className="font-mono font-bold block text-black">{printingOrder.billingNo || printingOrder.orderNo}</span>
+                          <span className="text-[11px] font-semibold text-gray-800 block">{item.productName} ({item.quantity} {item.unit})</span>
+                        </td>
+                        <td className="py-1.5 px-3 border-r border-black text-center font-mono">{new Date(printingOrder.orderDate).toLocaleDateString("th-TH")}</td>
+                        <td className="py-1.5 px-3 border-r border-black text-center font-mono">{printingOrder.dueDate ? new Date(printingOrder.dueDate).toLocaleDateString("th-TH") : "-"}</td>
+                        <td className="py-1.5 px-4 text-right font-mono font-bold border-black">{item.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                <table className="w-full text-left text-xs border-collapse border border-black font-mono">
+                  <tbody>
+                    <tr className="border-b border-black">
+                      <td rowSpan={2} colSpan={3} className="py-1 px-3 border-r border-black bg-gray-200 text-center font-bold text-xs text-black align-middle font-sans">{arabicToThaiBaht(printingOrder.grandTotal, false)}</td>
+                      <td className="py-1 px-3 border-r border-black font-bold text-gray-900 w-28 font-sans">รวมเงิน</td>
+                      <td className="py-1 px-4 text-right font-bold text-black w-32">{printingOrder.subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    </tr>
+                    <tr className="border-b border-black">
+                      <td className="py-1 px-3 border-r border-black font-bold text-gray-900 font-sans">VAT {printingOrder.taxRate}%</td>
+                      <td className="py-1 px-4 text-right font-bold text-black">{(printingOrder.taxAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    </tr>
+                    <tr>
+                      <td colSpan={3} className="py-1 px-3 border-r border-black text-black font-sans font-medium">รวม ........{printingOrder.items.length}....... รายการ</td>
+                      <td className="py-1 px-3 border-r border-black font-extrabold text-black font-sans">จำนวนเงินทั้งสิ้น</td>
+                      <td className="py-1 px-4 text-right font-extrabold text-black text-sm">{printingOrder.grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+            {/* Signatures Section (Exact layout from PDF Page 1) */}
+            <div className="grid grid-cols-2 gap-8 pt-12 text-xs text-black">
+              <div className="space-y-3">
+                <p><span className="font-bold">ชื่อผู้รับวางบิล</span> .........................................................</p>
+                <p className="pt-1"><span className="font-bold">วันที่รับ</span> ......../......../........</p>
+                <p><span className="font-bold">วันที่ได้รับเงิน</span> ......../......../........</p>
               </div>
 
-              {/* Signatures Row */}
-              <div className="grid grid-cols-2 gap-8 pt-12 text-center text-xs">
-                <div className="space-y-8">
-                  <div className="border-b border-dashed border-gray-400 w-48 mx-auto" />
-                  <p>ลงชื่อ ........................................................... ผู้รับเงิน / ผู้แจ้งหนี้</p>
-                  <p className="text-gray-500">วันที่ .......... / .......... / .............</p>
-                </div>
-
-                <div className="space-y-8">
-                  <div className="border-b border-dashed border-gray-400 w-48 mx-auto" />
-                  <p>ลงชื่อ ........................................................... ผู้สั่งซื้อ / ผู้รับสินค้า</p>
-                  <p className="text-gray-500">วันที่ .......... / .......... / .............</p>
-                </div>
+              <div className="space-y-3 text-right">
+                <p><span className="font-bold">ชื่อผู้วางบิล</span> .........................................................</p>
+                <p className="pt-1"><span className="font-bold">วันที่</span> ......../......../........</p>
+              </div>
+            </div>
               </div>
             </div>
           </div>
         </div>
+      )}
+
+      {/* DIRECT BODY PRINT PORTAL (FOR PRINTING ONLY - CLEAN 1 PAGE A4) */}
+      {mounted && isPrintModalOpen && printingOrder && createPortal(
+        <div id="printable-document" ref={printRef} className="space-y-3 text-sm text-gray-900 bg-white p-0 relative overflow-hidden">
+          {/* Translucent Background Watermark */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5 z-0">
+            <div className="text-center font-black text-6xl text-emerald-900 rotate-[-20deg]">
+              ZYKA MEDIC
+            </div>
+          </div>
+
+          {/* OFFICIAL BILLING NOTE TEMPLATE (100% MATCHING PDF IMAGE 1 - EXACT 1 PAGE) */}
+          <div className="space-y-2 text-xs font-sans relative z-10 text-black">
+            {/* Header: Company Info + Document Title */}
+            <div className="flex justify-between items-start pb-1.5 border-b border-gray-300">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <div className="w-7 h-7 rounded bg-[#284532] text-white flex items-center justify-center font-black text-xs shrink-0">
+                    ZM
+                  </div>
+                  <div>
+                    <h2 className="text-base font-extrabold text-black leading-tight">บริษัท ไซกา เมดิค จำกัด</h2>
+                    <p className="text-[11px] font-bold text-gray-800 tracking-wider">ZYKA MEDIC CO.,LTD</p>
+                  </div>
+                </div>
+                <p className="text-[10px] text-gray-800 leading-tight">
+                  เลขที่ 51 อาคารเมเจอร์ ทาวเวอร์ พระราม9-รามคำแหง ห้องเลขที่ 7 ชั้นที่ 7 ถ.พระราม 9
+                </p>
+                <p className="text-[10px] text-gray-800 leading-tight">
+                  แขวงหัวหมาก เขตบางกะปิ กรุงเทพมหานคร 10240 โทร 02-1151758
+                </p>
+                <p className="text-[10px] text-gray-800 leading-tight">
+                  E-mail : contact@zykamedic.com Fax. 02 115 1759
+                </p>
+              </div>
+
+              <div className="text-right space-y-0.5">
+                <h1 className="text-lg font-bold text-black tracking-wide">ใบวางบิล</h1>
+                <p className="text-xs font-semibold text-gray-700">Billing Note</p>
+              </div>
+            </div>
+
+            {/* Metadata & Customer Info (Exact 4-row layout from PDF Page 1) */}
+            <div className="space-y-0.5 text-xs text-black border-b border-gray-300 pb-1.5">
+              <div className="flex justify-between">
+                <div><span className="font-bold">เล่มที่</span> <span className="font-mono">01/2568</span></div>
+                <div><span className="font-bold">เลขที่</span> <span className="font-mono font-bold">{printingOrder.billingNo || printingOrder.orderNo}</span></div>
+              </div>
+              <div className="flex justify-between">
+                <div><span className="font-bold">ในนาม(ลูกค้า)</span> <span className="font-semibold">{printingOrder.customerName}</span></div>
+                <div>
+                  <span className="font-bold">วันที่</span>{" "}
+                  {printingOrder.billingDate
+                    ? new Date(printingOrder.billingDate).toLocaleDateString("th-TH")
+                    : new Date(printingOrder.orderDate).toLocaleDateString("th-TH")}
+                </div>
+              </div>
+              <div className="flex justify-between">
+                <div><span className="font-bold">ที่อยู่</span> {printingOrder.customerAddress || "-"}</div>
+                <div><span className="font-bold">เลขประจำตัวผู้เสียภาษี</span> <span className="font-mono">{printingOrder.customerTaxId || "-"}</span></div>
+              </div>
+            </div>
+
+            {/* Notice Line */}
+            <div className="py-1 px-3 text-center text-[11px] font-semibold text-black bg-gray-50 border border-black">
+              ได้รับบิลเงินเชื่อหรือเงินสดไว้ เพื่อตรวจสอบและพร้อมที่จะชำระเงินให้ตามบิลต่อไปนี้
+            </div>
+
+            {/* Table Header & Rows (Black Borders matching PDF Page 1) */}
+            <table className="w-full text-left text-xs border-collapse border border-black">
+              <thead>
+                <tr className="bg-gray-100 font-bold border-b border-black text-black">
+                  <th className="py-1.5 px-2 border-r border-black text-center w-12">ลำดับที่</th>
+                  <th className="py-1.5 px-3 border-r border-black text-center">เลขที่ใบวางบิล / รายการสินค้า</th>
+                  <th className="py-1.5 px-3 border-r border-black text-center w-28">วันที่บิล</th>
+                  <th className="py-1.5 px-3 border-r border-black text-center w-28">วันครบรอบชำระ</th>
+                  <th className="py-1.5 px-4 text-right border-black w-32">จำนวนเงิน</th>
+                </tr>
+              </thead>
+              <tbody>
+                {printingOrder.items.map((item, idx) => (
+                  <tr key={idx} className="border-b border-black">
+                    <td className="py-1.5 px-2 border-r border-black text-center font-mono">{idx + 1}</td>
+                    <td className="py-1.5 px-3 border-r border-black">
+                      <span className="font-mono font-bold block text-black">{printingOrder.billingNo || printingOrder.orderNo}</span>
+                      <span className="text-[11px] font-semibold text-gray-800 block">
+                        {item.productName} ({item.quantity} {item.unit})
+                      </span>
+                    </td>
+                    <td className="py-1.5 px-3 border-r border-black text-center font-mono">
+                      {new Date(printingOrder.orderDate).toLocaleDateString("th-TH")}
+                    </td>
+                    <td className="py-1.5 px-3 border-r border-black text-center font-mono">
+                      {printingOrder.dueDate ? new Date(printingOrder.dueDate).toLocaleDateString("th-TH") : "-"}
+                    </td>
+                    <td className="py-1.5 px-4 text-right font-mono font-bold border-black">
+                      {item.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Footer Totals Table (Exact PDF Page 1 Grid Format) */}
+            <table className="w-full text-left text-xs border-collapse border border-black font-mono">
+              <tbody>
+                <tr className="border-b border-black">
+                  {/* Thai Baht Text Box */}
+                  <td rowSpan={2} colSpan={3} className="py-1 px-3 border-r border-black bg-gray-200 text-center font-bold text-xs text-black align-middle font-sans">
+                    {arabicToThaiBaht(printingOrder.grandTotal, false)}
+                  </td>
+                  <td className="py-1 px-3 border-r border-black font-bold text-gray-900 w-28 font-sans">รวมเงิน</td>
+                  <td className="py-1 px-4 text-right font-bold text-black w-32">
+                    {printingOrder.subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </td>
+                </tr>
+                <tr className="border-b border-black">
+                  <td className="py-1 px-3 border-r border-black font-bold text-gray-900 font-sans">VAT {printingOrder.taxRate}%</td>
+                  <td className="py-1 px-4 text-right font-bold text-black">
+                    {(printingOrder.taxAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </td>
+                </tr>
+                <tr>
+                  <td colSpan={3} className="py-1 px-3 border-r border-black text-black font-sans font-medium">
+                    รวม ........{printingOrder.items.length}....... รายการ
+                  </td>
+                  <td className="py-1 px-3 border-r border-black font-extrabold text-black font-sans">จำนวนเงินทั้งสิ้น</td>
+                  <td className="py-1 px-4 text-right font-extrabold text-black text-sm">
+                    {printingOrder.grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            {/* Signatures Section (Exact layout from PDF Page 1) */}
+            <div className="grid grid-cols-2 gap-8 pt-12 text-xs text-black">
+              <div className="space-y-3">
+                <p><span className="font-bold">ชื่อผู้รับวางบิล</span> .........................................................</p>
+                <p className="pt-1"><span className="font-bold">วันที่รับ</span> ......../......../........</p>
+                <p><span className="font-bold">วันที่ได้รับเงิน</span> ......../......../........</p>
+              </div>
+
+              <div className="space-y-3 text-right">
+                <p><span className="font-bold">ชื่อผู้วางบิล</span> .........................................................</p>
+                <p className="pt-1"><span className="font-bold">วันที่</span> ......../......../........</p>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* PRODUCT SEARCH POPUP MODAL (z-[70] to overlay cleanly above z-50 parent modal) */}
