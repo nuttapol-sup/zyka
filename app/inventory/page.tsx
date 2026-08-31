@@ -37,6 +37,7 @@ interface ProductItem {
   minQuantity: number;
   seq: number;
   subCategoryId?: SubCategoryRef;
+  description?: string;
 }
 
 interface LocationItem {
@@ -469,8 +470,8 @@ export default function InventoryPage() {
                 <thead>
                   <tr className="bg-[#121c15] border-b border-[#2d4734] text-xs font-semibold text-[#a39b8b] uppercase tracking-wider whitespace-nowrap">
                     <th className="py-4 px-4 text-center">ลำดับ</th>
-                    <th className="py-4 px-6">รหัสสินค้า / หมวด</th>
-                    <th className="py-4 px-6">ชื่อสินค้า</th>
+                    <th className="py-4 px-6">รหัสสินค้า</th>
+                    <th className="py-4 px-6">หมวดหมู่ / ชื่อสินค้า / รายละเอียด</th>
                     <th className="py-4 px-6">สถานที่เก็บสินค้า (Location)</th>
                     <th className="py-4 px-4 text-center">คงเหลือรวม</th>
                     <th className="py-4 px-4 text-center">เกณฑ์ขั้นต่ำ (min)</th>
@@ -494,32 +495,37 @@ export default function InventoryPage() {
                         #{product.seq}
                       </td>
 
-                      {/* Code & SubCategory */}
+                      {/* Code */}
                       <td className="py-4 px-6 whitespace-nowrap">
-                        <div className="space-y-1">
-                          {product.subCategoryId ? (
-                            <span className="px-2 py-0.5 rounded bg-[#121c15] text-[#98c9a3] font-mono text-[11px] border border-[#2d4734] block w-fit whitespace-nowrap">
-                              📁 {product.subCategoryId.name}
-                            </span>
-                          ) : (
-                            <span className="text-[11px] text-[#a39b8b] italic block whitespace-nowrap">
-                              - ไม่ได้ระบุหมวด -
-                            </span>
-                          )}
-                          <span className="px-2.5 py-1 rounded-xl bg-[#1e3425] text-[#98c9a3] font-mono font-bold text-xs border border-[#98c9a3]/30 inline-block whitespace-nowrap">
-                            {product.code}
-                          </span>
-                        </div>
+                        <span className="px-3 py-1 rounded-xl bg-[#1e3425] text-[#98c9a3] font-mono font-bold text-xs border border-[#98c9a3]/30 inline-block whitespace-nowrap">
+                          {product.code}
+                        </span>
                       </td>
 
-                      {/* Product Name */}
-                      <td className="py-4 px-6 font-bold text-[#f3efe6] min-w-[180px]">
-                        {product.subCategoryId && (
-                          <span className="text-[11px] text-[#98c9a3] font-semibold bg-[#121c15] px-2 py-0.5 rounded border border-[#2d4734] inline-block mb-1 whitespace-nowrap">
+                      {/* SubCategory, Name & Description (3-line layout) */}
+                      <td className="py-4 px-6 min-w-[240px]">
+                        {/* Line 1: Sub-Category */}
+                        {product.subCategoryId ? (
+                          <span className="text-[11px] font-semibold text-[#98c9a3] bg-[#121c15] px-2 py-0.5 rounded border border-[#2d4734] inline-block mb-1.5 whitespace-nowrap">
                             📁 {product.subCategoryId.name}
                           </span>
+                        ) : (
+                          <span className="text-[11px] text-[#a39b8b] italic block mb-1.5 whitespace-nowrap">
+                            - ไม่ได้ระบุหมวด -
+                          </span>
                         )}
-                        <span className="font-bold text-[#f3efe6] block">{product.name}</span>
+
+                        {/* Line 2: Product Name */}
+                        <span className="font-bold text-[#f3efe6] text-sm block leading-snug">
+                          {product.name}
+                        </span>
+
+                        {/* Line 3: Description */}
+                        {product.description && (
+                          <p className="text-xs text-[#a39b8b] mt-1 leading-relaxed">
+                            {product.description}
+                          </p>
+                        )}
                       </td>
 
                       {/* Location Stock Breakdown */}
