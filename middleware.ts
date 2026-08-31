@@ -121,7 +121,11 @@ export async function middleware(request: NextRequest) {
     const matchedPage = checkablePages.find((page) => cleanPath === page || cleanPath.startsWith(page + "/"));
 
     if (matchedPage) {
-      const hasPermission = payload.allowedPages && payload.allowedPages.includes(matchedPage);
+      let hasPermission = payload.allowedPages && payload.allowedPages.includes(matchedPage);
+      if (!hasPermission && matchedPage === "/reports" && Array.isArray(payload.allowedPages)) {
+        hasPermission = payload.allowedPages.some((p: string) => p.startsWith("/reports"));
+      }
+
       if (!hasPermission) {
         return createRedirect(`/unauthorized?page=${encodeURIComponent(matchedPage)}`, request);
       }

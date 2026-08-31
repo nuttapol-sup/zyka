@@ -72,6 +72,21 @@ const hasAccess = (user: UserProfile | null, path: string): boolean => {
   });
 };
 
+const isSubTabAllowed = (user: UserProfile | null, tabKey: string): boolean => {
+  if (!user) return false;
+  if (user.role === "admin") return true;
+  if (!Array.isArray(user.allowedPages)) return false;
+
+  // 1. If All Reports permission is granted ("/reports" in allowedPages)
+  if (user.allowedPages.includes("/reports")) return true;
+
+  // 2. Check exact sub-tab permission
+  return user.allowedPages.some((p) => {
+    const cleanP = String(p).replace(/^\/zyka/, "").toLowerCase();
+    return cleanP === `/reports?tab=${tabKey.toLowerCase()}`;
+  });
+};
+
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
@@ -449,12 +464,12 @@ export default function Navbar() {
               }
 
               if (key === "reports") {
-                const isSalesAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=sales");
-                const isChartsAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=charts");
-                const isCustomerAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=customer");
-                const isProductAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=product");
-                const isSalespersonAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=salesperson");
-                const isUserAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=user");
+                const isSalesAllowed = isSubTabAllowed(user, "sales");
+                const isChartsAllowed = isSubTabAllowed(user, "charts");
+                const isCustomerAllowed = isSubTabAllowed(user, "customer");
+                const isProductAllowed = isSubTabAllowed(user, "product");
+                const isSalespersonAllowed = isSubTabAllowed(user, "salesperson");
+                const isUserAllowed = isSubTabAllowed(user, "user");
                 const hasAnyReports = isSalesAllowed || isChartsAllowed || isCustomerAllowed || isProductAllowed || isSalespersonAllowed || isUserAllowed;
 
                 if (!hasAnyReports) return null;
@@ -1156,12 +1171,12 @@ function ReportsDropdown({
 
   const getLabel = (key: string, fallback: string) => menuCustomLabels[key] || fallback;
 
-  const isSalesAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=sales");
-  const isChartsAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=charts");
-  const isCustomerAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=customer");
-  const isProductAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=product");
-  const isSalespersonAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=salesperson");
-  const isUserAllowed = hasAccess(user, "/reports") || hasAccess(user, "/reports?tab=user");
+  const isSalesAllowed = isSubTabAllowed(user, "sales");
+  const isChartsAllowed = isSubTabAllowed(user, "charts");
+  const isCustomerAllowed = isSubTabAllowed(user, "customer");
+  const isProductAllowed = isSubTabAllowed(user, "product");
+  const isSalespersonAllowed = isSubTabAllowed(user, "salesperson");
+  const isUserAllowed = isSubTabAllowed(user, "user");
 
   const hasAnyAccess = isSalesAllowed || isChartsAllowed || isCustomerAllowed || isProductAllowed || isSalespersonAllowed || isUserAllowed;
 
