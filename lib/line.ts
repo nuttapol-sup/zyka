@@ -26,14 +26,17 @@ export async function getLineCredentials(): Promise<LineCredentials> {
 
   try {
     await connectDB();
-    const setting = (await Setting.findOne({ key: "app_settings" })) || (await Setting.findOne({}));
-    if (setting && setting.lineChannelSecret && setting.lineChannelAccessToken) {
-      return {
-        channelSecret: setting.lineChannelSecret.trim(),
-        channelAccessToken: setting.lineChannelAccessToken.trim().replace(/[\r\n\s]+/g, ""),
-        lineGroupId: setting.lineGroupId ? setting.lineGroupId.trim() : "",
-        lineEnabled: setting.lineEnabled !== false,
-      };
+    // Search all setting docs for any doc containing lineChannelAccessToken
+    const settings = await Setting.find({});
+    for (const s of settings) {
+      if (s.lineChannelAccessToken && s.lineChannelSecret) {
+        return {
+          channelSecret: s.lineChannelSecret.trim(),
+          channelAccessToken: s.lineChannelAccessToken.trim().replace(/[\r\n\s]+/g, ""),
+          lineGroupId: s.lineGroupId ? s.lineGroupId.trim() : "",
+          lineEnabled: s.lineEnabled !== false,
+        };
+      }
     }
   } catch (err) {
     console.error("Error loading LINE settings:", err);

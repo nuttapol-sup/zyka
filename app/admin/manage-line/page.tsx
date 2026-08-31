@@ -34,7 +34,8 @@ export default function ManageLinePage() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const origin = window.location.origin;
-      setWebhookUrl(getApiPath("/api/line/webhook"));
+      const path = getApiPath("/api/line/webhook");
+      setWebhookUrl(origin + (path.startsWith("/") ? path : "/" + path));
     }
     fetchSettings();
   }, []);

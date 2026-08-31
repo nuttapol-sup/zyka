@@ -12,7 +12,7 @@ export async function GET() {
     }
 
     await connectDB();
-    const setting = (await Setting.findOne({ key: "app_settings" })) || (await Setting.findOne({}));
+    const setting = (await Setting.findOne({ key: "app_settings" })) || (await Setting.findOne({ lineChannelAccessToken: { $exists: true } })) || (await Setting.findOne({}));
 
     return NextResponse.json({
       lineChannelSecret: setting?.lineChannelSecret || process.env.LINE_CHANNEL_SECRET || "",
@@ -36,27 +36,20 @@ export async function POST(request: Request) {
     const { lineChannelSecret, lineChannelAccessToken, lineGroupId, lineEnabled } = await request.json();
 
     await connectDB();
-    const settingDoc = (await Setting.findOne({ key: "app_settings" })) || (await Setting.findOne({}));
-    const docId = settingDoc ? settingDoc._id : undefined;
+    let setting = (await Setting.findOne({ key: "app_settings" })) || (await Setting.findOne({ lineChannelAccessToken: { $exists: true } })) || (await Setting.findOne({}));
 
-    let setting;
-    if (docId) {
-      setting = await Setting.findByIdAndUpdate(
-        docId,
-        {
-          key: "app_settings",
-          lineChannelSecret: lineChannelSecret ? lineChannelSecret.trim() : "",
-          lineChannelAccessToken: lineChannelAccessToken ? lineChannelAccessToken.trim() : "",
-          lineGroupId: lineGroupId ? lineGroupId.trim() : "",
-          lineEnabled: Boolean(lineEnabled),
-        },
-        { new: true }
-      );
+    if (setting) {
+      setting.key = "app_settings";
+      setting.lineChannelSecret = lineChannelSecret ? lineChannelSecret.trim() : "";
+      setting.lineChannelAccessToken = lineChannelAccessToken ? lineChannelAccessToken.trim().replace(/[\r\n\s]+/g, "") : "";
+      setting.lineGroupId = lineGroupId ? lineGroupId.trim() : "";
+      setting.lineEnabled = Boolean(lineEnabled);
+      await setting.save();
     } else {
       setting = await Setting.create({
         key: "app_settings",
         lineChannelSecret: lineChannelSecret ? lineChannelSecret.trim() : "",
-        lineChannelAccessToken: lineChannelAccessToken ? lineChannelAccessToken.trim() : "",
+        lineChannelAccessToken: lineChannelAccessToken ? lineChannelAccessToken.trim().replace(/[\r\n\s]+/g, "") : "",
         lineGroupId: lineGroupId ? lineGroupId.trim() : "",
         lineEnabled: Boolean(lineEnabled),
       });
