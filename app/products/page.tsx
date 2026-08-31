@@ -445,12 +445,10 @@ export default function ProductsPage() {
 
                     {/* Name, Description & SubCategory (3-line layout) */}
                     <td className="py-4 px-6 min-w-[240px]">
-                      {/* Line 1: Sub-Category Name (rendered when set) */}
-                      {item.subCategoryId && (
-                        <span className="text-[11px] font-semibold text-[#98c9a3] bg-[#121c15] px-2 py-0.5 rounded border border-[#2d4734] inline-block mb-1.5 whitespace-nowrap">
-                          🏷️ {item.subCategoryId.name}
-                        </span>
-                      )}
+                      {/* Line 1: Sub-Category Name */}
+                      <span className="text-[11px] font-semibold text-[#98c9a3] bg-[#121c15] px-2 py-0.5 rounded border border-[#2d4734] inline-block mb-1.5 whitespace-nowrap">
+                        🏷️ {item.subCategoryId?.name || "Clips"}
+                      </span>
 
                       {/* Line 2: Product Name */}
                       <span className="font-bold text-[#f3efe6] text-sm block leading-snug">
@@ -474,18 +472,9 @@ export default function ProductsPage() {
 
                     {/* Sub-Category */}
                     <td className="py-4 px-6 whitespace-nowrap">
-                      {item.subCategoryId ? (
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded bg-[#121c15] text-[#98c9a3] font-mono text-[11px] border border-[#2d4734] whitespace-nowrap">
-                            {item.subCategoryId.code}
-                          </span>
-                          <span className="text-xs font-semibold text-[#e6dfd3] whitespace-nowrap">
-                            {item.subCategoryId.name}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-[#a39b8b] italic whitespace-nowrap">- ไม่ได้ระบุ -</span>
-                      )}
+                      <span className="px-2.5 py-1 rounded-lg bg-[#121c15] text-[#98c9a3] text-xs font-semibold border border-[#2d4734] inline-block whitespace-nowrap">
+                        🏷️ {item.subCategoryId?.name || "Clips"}
+                      </span>
                     </td>
 
                     {/* Min Quantity */}
