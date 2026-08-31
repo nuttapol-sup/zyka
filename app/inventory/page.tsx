@@ -504,14 +504,14 @@ export default function InventoryPage() {
 
                       {/* SubCategory, Name & Description (3-line layout) */}
                       <td className="py-4 px-6 min-w-[240px]">
-                        {/* Line 1: Sub-Category */}
+                        {/* Line 1: Sub-Category Name */}
                         {product.subCategoryId ? (
                           <span className="text-[11px] font-semibold text-[#98c9a3] bg-[#121c15] px-2 py-0.5 rounded border border-[#2d4734] inline-block mb-1.5 whitespace-nowrap">
-                            📁 {product.subCategoryId.name}
+                            🏷️ {product.subCategoryId.name}
                           </span>
                         ) : (
                           <span className="text-[11px] text-[#a39b8b] italic block mb-1.5 whitespace-nowrap">
-                            - ไม่ได้ระบุหมวด -
+                            - ไม่ได้ระบุหมวดย่อย -
                           </span>
                         )}
 
