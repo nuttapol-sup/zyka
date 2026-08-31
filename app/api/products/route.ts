@@ -56,13 +56,20 @@ export async function GET() {
     await connectDB();
     const productsRaw = await Product.find().populate("subCategoryId").sort({ seq: 1 });
     const inventories = await Inventory.find({});
-    const categories = await Category.find({});
+    const categories = await Category.find({}).sort({ seq: 1, createdAt: 1 });
+    const subCategories = await SubCategory.find({});
 
     const categoryMap: Record<string, string> = {};
     categories.forEach((cat) => {
-      if (cat.code) {
-        categoryMap[cat.code.trim()] = cat.name;
-        categoryMap[String(cat.code).trim()] = cat.name;
+      if (cat.name) {
+        if (cat.code) {
+          categoryMap[cat.code.trim()] = cat.name;
+          categoryMap[String(cat.code).trim()] = cat.name;
+        }
+        categoryMap[cat._id.toString()] = cat.name;
+        if ((cat as any).seq !== undefined) {
+          categoryMap[String((cat as any).seq)] = cat.name;
+        }
       }
     });
 
@@ -74,11 +81,19 @@ export async function GET() {
       }
     });
 
+    const defaultCatName = categories.length > 0 ? categories[0].name : "ทดสอบ 1";
+    const defaultSubCat = subCategories.length > 0 ? subCategories[0] : null;
+
     const products = productsRaw.map((p) => {
       const obj = p.toObject();
-      const subCat: any = obj.subCategoryId;
+      let subCat: any = obj.subCategoryId;
+      if (!subCat && defaultSubCat) {
+        subCat = defaultSubCat;
+        (obj as any).subCategoryId = defaultSubCat;
+      }
+
       const catCode = subCat?.categoryCode ? String(subCat.categoryCode).trim() : "";
-      const categoryName = categoryMap[catCode] || catCode || "-";
+      const categoryName = categoryMap[catCode] || defaultCatName;
 
       return {
         ...obj,
