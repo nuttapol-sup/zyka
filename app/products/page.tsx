@@ -473,7 +473,7 @@ export default function ProductsPage() {
                     {/* Category (Red Bounding Box Column) */}
                     <td className="py-4 px-6 whitespace-nowrap">
                       <span className="px-2.5 py-1 rounded-lg bg-[#1e3425] text-[#98c9a3] text-xs font-bold border border-[#98c9a3]/30 inline-block whitespace-nowrap">
-                        📂 {(item as any).categoryName || item.subCategoryId?.categoryCode || "หมวดหลัก"}
+                        {(item as any).categoryName || "-"}
                       </span>
                     </td>
 

@@ -60,7 +60,10 @@ export async function GET() {
 
     const categoryMap: Record<string, string> = {};
     categories.forEach((cat) => {
-      categoryMap[cat.code] = cat.name;
+      if (cat.code) {
+        categoryMap[cat.code.trim()] = cat.name;
+        categoryMap[String(cat.code).trim()] = cat.name;
+      }
     });
 
     const stockMap: Record<string, number> = {};
@@ -74,8 +77,8 @@ export async function GET() {
     const products = productsRaw.map((p) => {
       const obj = p.toObject();
       const subCat: any = obj.subCategoryId;
-      const catCode = subCat?.categoryCode || "";
-      const categoryName = categoryMap[catCode] || catCode || "หมวดหลัก";
+      const catCode = subCat?.categoryCode ? String(subCat.categoryCode).trim() : "";
+      const categoryName = categoryMap[catCode] || catCode || "-";
 
       return {
         ...obj,
