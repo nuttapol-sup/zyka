@@ -112,6 +112,10 @@ export async function PUT(
 
     if (body.salespersonId !== undefined) (order as any).salespersonId = body.salespersonId || undefined;
     if (body.salespersonName !== undefined) (order as any).salespersonName = body.salespersonName;
+    if (body.poNo !== undefined) (order as any).poNo = body.poNo ? body.poNo.trim() : "";
+    if (body.expectedDeliveryDate !== undefined) (order as any).expectedDeliveryDate = body.expectedDeliveryDate ? new Date(body.expectedDeliveryDate) : undefined;
+    if (body.shippedDate !== undefined) (order as any).shippedDate = body.shippedDate ? new Date(body.shippedDate) : undefined;
+    if (body.senderName !== undefined) (order as any).senderName = body.senderName ? body.senderName.trim() : "";
     if (body.deliveryStatus !== undefined) order.deliveryStatus = body.deliveryStatus;
     if (body.shippingCarrier !== undefined) order.shippingCarrier = body.shippingCarrier;
     if (body.trackingNo !== undefined) order.trackingNo = body.trackingNo;

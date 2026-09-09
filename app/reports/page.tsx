@@ -89,6 +89,21 @@ interface SalespersonSales {
   }[];
 }
 
+interface DeliverySummary {
+  deliveredOrdersCount: number;
+  shippedOrdersCount: number;
+  pendingDeliveryCount: number;
+  cancelledOrdersCount: number;
+  dispatchers: {
+    senderName: string;
+    totalOrders: number;
+    deliveredCount: number;
+    shippedCount: number;
+    pendingCount: number;
+    grandTotal: number;
+  }[];
+}
+
 interface OrderReportItem {
   _id: string;
   orderNo: string;
@@ -100,6 +115,10 @@ interface OrderReportItem {
   paymentStatus: string;
   grandTotal: number;
   createdByName?: string;
+  poNo?: string;
+  expectedDeliveryDate?: string;
+  shippedDate?: string;
+  senderName?: string;
 }
 
 interface UserSummary {
@@ -135,7 +154,7 @@ function ReportsPageContent() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
 
-  const [activeTab, setActiveTab] = useState<"sales" | "charts" | "customer" | "product" | "salesperson" | "user">("sales");
+  const [activeTab, setActiveTab] = useState<"sales" | "customer" | "product" | "delivery" | "user">("sales");
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
@@ -163,7 +182,11 @@ function ReportsPageContent() {
   };
 
   useEffect(() => {
-    if (tabParam === "charts" || tabParam === "customer" || tabParam === "product" || tabParam === "salesperson" || tabParam === "user" || tabParam === "sales") {
+    if (tabParam === "charts" || tabParam === "sales") {
+      setActiveTab("sales");
+    } else if (tabParam === "salesperson" || tabParam === "delivery") {
+      setActiveTab("delivery");
+    } else if (tabParam === "customer" || tabParam === "product" || tabParam === "user") {
       if (tabParam === "user" && currentUser && !isTabAllowed("user")) {
         setActiveTab("sales");
       } else {
@@ -190,6 +213,13 @@ function ReportsPageContent() {
     paidOrdersCount: 0,
     pendingOrdersCount: 0,
     cancelledOrdersCount: 0,
+  });
+  const [deliverySummary, setDeliverySummary] = useState<DeliverySummary>({
+    deliveredOrdersCount: 0,
+    shippedOrdersCount: 0,
+    pendingDeliveryCount: 0,
+    cancelledOrdersCount: 0,
+    dispatchers: [],
   });
   const [dailySales, setDailySales] = useState<DailySales[]>([]);
   const [customerSales, setCustomerSales] = useState<CustomerSales[]>([]);
@@ -221,6 +251,15 @@ function ReportsPageContent() {
         const data = await res.json();
         setDateRange(data.dateRange || {});
         setSalesSummary(data.summary || {});
+        setDeliverySummary(
+          data.deliverySummary || {
+            deliveredOrdersCount: 0,
+            shippedOrdersCount: 0,
+            pendingDeliveryCount: 0,
+            cancelledOrdersCount: 0,
+            dispatchers: [],
+          }
+        );
         setDailySales(data.dailySales || []);
         setCustomerSales(data.customerSales || []);
         setProductSales(data.productSales || []);
@@ -303,6 +342,71 @@ function ReportsPageContent() {
           <Printer className="w-4 h-4" />
           <span>📄 บันทึกเป็น PDF / พิมพ์รายงาน (Print & Export PDF)</span>
         </button>
+      </div>
+
+      {/* Streamlined Executive Segmented Control Tabs (Print Hidden) */}
+      <div className="bg-[#121c15] p-1.5 rounded-2xl border border-[#2d4734] flex items-center gap-1.5 overflow-x-auto print:hidden shadow-inner">
+        <button
+          onClick={() => setActiveTab("sales")}
+          className={`px-4 py-2.5 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all shrink-0 ${
+            activeTab === "sales"
+              ? "bg-[#98c9a3] text-[#0f1712] shadow-md scale-[1.01]"
+              : "text-[#a39b8b] hover:text-[#f3efe6] hover:bg-[#18241c]"
+          }`}
+        >
+          <BarChart3 className="w-4 h-4" />
+          <span>📊 ภาพรวมผู้บริหาร & กราฟยอดขาย</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("customer")}
+          className={`px-4 py-2.5 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all shrink-0 ${
+            activeTab === "customer"
+              ? "bg-[#98c9a3] text-[#0f1712] shadow-md scale-[1.01]"
+              : "text-[#a39b8b] hover:text-[#f3efe6] hover:bg-[#18241c]"
+          }`}
+        >
+          <Users className="w-4 h-4" />
+          <span>🏥 ลูกค้า & โรงพยาบาล</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("product")}
+          className={`px-4 py-2.5 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all shrink-0 ${
+            activeTab === "product"
+              ? "bg-[#98c9a3] text-[#0f1712] shadow-md scale-[1.01]"
+              : "text-[#a39b8b] hover:text-[#f3efe6] hover:bg-[#18241c]"
+          }`}
+        >
+          <Package className="w-4 h-4" />
+          <span>📦 สินค้าขายดี</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("delivery")}
+          className={`px-4 py-2.5 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all shrink-0 ${
+            activeTab === "delivery"
+              ? "bg-[#98c9a3] text-[#0f1712] shadow-md scale-[1.01]"
+              : "text-[#a39b8b] hover:text-[#f3efe6] hover:bg-[#18241c]"
+          }`}
+        >
+          <Truck className="w-4 h-4" />
+          <span>🚚 ทีมจัดส่ง & พนักงานขาย</span>
+        </button>
+
+        {isTabAllowed("user") && (
+          <button
+            onClick={() => setActiveTab("user")}
+            className={`px-4 py-2.5 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all shrink-0 ${
+              activeTab === "user"
+                ? "bg-[#98c9a3] text-[#0f1712] shadow-md scale-[1.01]"
+                : "text-[#a39b8b] hover:text-[#f3efe6] hover:bg-[#18241c]"
+            }`}
+          >
+            <Activity className="w-4 h-4" />
+            <span>🔒 Log ระบบ</span>
+          </button>
+        )}
       </div>
 
       {/* Period & Filter Control Bar (Print Hidden) */}
@@ -534,10 +638,7 @@ function ReportsPageContent() {
           </div>
         )}
 
-        {/* TAB: VISUAL SALES CHARTS */}
-        {activeTab === "charts" && <SalesDashboardCharts />}
-
-        {/* TAB 1: SALES SUMMARY & ORDERS LIST */}
+        {/* TAB 1: EXECUTIVE SALES DASHBOARD & CHARTS */}
         {activeTab === "sales" && (
           <div className="space-y-6">
             {/* Visual Payment Collection Ratio Progress Bar */}
@@ -571,6 +672,9 @@ function ReportsPageContent() {
                 </span>
               </div>
             </div>
+
+            {/* Embedded Visual Analytics Charts */}
+            <SalesDashboardCharts />
 
             {/* Orders Detailed Table */}
             <div className="glass-earth-card rounded-3xl overflow-hidden border border-[#2d4734] print:border-black">
@@ -1041,74 +1145,203 @@ function ReportsPageContent() {
           </div>
         )}
 
-        {/* TAB: SALESPERSON SALES SUMMARY REPORT */}
-        {activeTab === "salesperson" && (
-          <div className="glass-earth-card rounded-3xl overflow-hidden border border-[#2d4734] print:border-black">
-            <div className="p-4 sm:p-6 border-b border-[#2d4734] flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:border-black">
-              <div>
-                <h3 className="text-lg font-bold text-[#f3efe6] print:text-black">
-                  รายงานสรุปยอดขายแยกตามเซล / พนักงานขาย (Salesperson Performance Report)
-                </h3>
-                <p className="text-xs text-[#a39b8b] print:text-gray-600">
-                  แสดงยอดขายรวม จำนวนคำสั่งซื้อ ยอดชำระแล้ว และยอดค้างชำระของพนักงานขายแต่ละคน
-                </p>
+        {/* TAB 4: DELIVERY & SALESPERSON OPERATIONS REPORT */}
+        {activeTab === "delivery" && (
+          <div className="space-y-6">
+            {/* Delivery KPI Summary Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:hidden">
+              <div className="glass-earth-card p-5 rounded-2xl border border-emerald-800/40 bg-emerald-950/20 flex items-center justify-between">
+                <div>
+                  <span className="text-xs text-emerald-400 font-medium block uppercase">
+                    ส่งมอบสำเร็จ (Delivered)
+                  </span>
+                  <span className="text-2xl font-extrabold text-emerald-300 font-mono">
+                    {deliverySummary.deliveredOrdersCount} <span className="text-xs font-normal text-emerald-400/80">บิล</span>
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-emerald-900/40 border border-emerald-600/40 flex items-center justify-center text-emerald-300">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+              </div>
+
+              <div className="glass-earth-card p-5 rounded-2xl border border-blue-800/40 bg-blue-950/20 flex items-center justify-between">
+                <div>
+                  <span className="text-xs text-blue-400 font-medium block uppercase">
+                    กำลังจัดส่ง (Shipped)
+                  </span>
+                  <span className="text-2xl font-extrabold text-blue-300 font-mono">
+                    {deliverySummary.shippedOrdersCount} <span className="text-xs font-normal text-blue-400/80">บิล</span>
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-blue-900/40 border border-blue-600/40 flex items-center justify-center text-blue-300">
+                  <Truck className="w-5 h-5" />
+                </div>
+              </div>
+
+              <div className="glass-earth-card p-5 rounded-2xl border border-amber-800/40 bg-amber-950/20 flex items-center justify-between">
+                <div>
+                  <span className="text-xs text-amber-400 font-medium block uppercase">
+                    รอจัดส่ง (Pending)
+                  </span>
+                  <span className="text-2xl font-extrabold text-amber-300 font-mono">
+                    {deliverySummary.pendingDeliveryCount} <span className="text-xs font-normal text-amber-400/80">บิล</span>
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-amber-900/40 border border-amber-600/40 flex items-center justify-center text-amber-300">
+                  <Clock className="w-5 h-5" />
+                </div>
+              </div>
+
+              <div className="glass-earth-card p-5 rounded-2xl border border-red-800/40 bg-red-950/20 flex items-center justify-between">
+                <div>
+                  <span className="text-xs text-red-400 font-medium block uppercase">
+                    ยกเลิกคำสั่งซื้อ (Cancelled)
+                  </span>
+                  <span className="text-2xl font-extrabold text-red-300 font-mono">
+                    {deliverySummary.cancelledOrdersCount} <span className="text-xs font-normal text-red-400/80">บิล</span>
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-red-900/40 border border-red-600/40 flex items-center justify-center text-red-300">
+                  <XCircle className="w-5 h-5" />
+                </div>
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse print:text-xs">
-                <thead>
-                  <tr className="bg-[#121c15] border-b border-[#2d4734] text-xs font-semibold text-[#a39b8b] uppercase print:bg-gray-100 print:text-black">
-                    <th className="py-3.5 px-6">#</th>
-                    <th className="py-3.5 px-6">พนักงานขาย (SALE)</th>
-                    <th className="py-3.5 px-4 text-center">จำนวนคำสั่งซื้อ</th>
-                    <th className="py-3.5 px-6 text-right">ยอดชำระแล้ว (PAID)</th>
-                    <th className="py-3.5 px-6 text-right">ยอดรอเก็บเงิน (PENDING)</th>
-                    <th className="py-3.5 px-6 text-right">ยอดขายรวมสุทธิ</th>
-                  </tr>
-                </thead>
+            {/* Dispatcher Performance Summary Table */}
+            <div className="glass-earth-card rounded-3xl overflow-hidden border border-[#2d4734] print:border-black">
+              <div className="p-4 sm:p-6 border-b border-[#2d4734] print:border-black">
+                <h3 className="text-lg font-bold text-[#f3efe6] print:text-black">
+                  สรุปผลงานตามผู้ส่งสินค้า / สายส่ง (Dispatcher & Fulfillment Performance)
+                </h3>
+                <p className="text-xs text-[#a39b8b] print:text-gray-600">
+                  แสดงจำนวนรายการคำสั่งซื้อและสถานะจัดส่งแยกตามผู้ส่งสินค้าหรือหน่วยจัดส่ง
+                </p>
+              </div>
 
-                <tbody className="divide-y divide-[#2d4734]/50 text-sm print:divide-gray-300 print:text-black">
-                  {salespersonSales.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="p-8 text-center text-[#a39b8b]">
-                        ไม่พบข้อมูลสรุปยอดขายของพนักงานขาย
-                      </td>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse print:text-xs">
+                  <thead>
+                    <tr className="bg-[#121c15] border-b border-[#2d4734] text-xs font-semibold text-[#a39b8b] uppercase print:bg-gray-100 print:text-black">
+                      <th className="py-3.5 px-6">#</th>
+                      <th className="py-3.5 px-6">ผู้ส่งสินค้า / สายส่ง (Dispatcher)</th>
+                      <th className="py-3.5 px-4 text-center">จำนวนบิลทั้งหมด</th>
+                      <th className="py-3.5 px-4 text-center">ส่งมอบแล้ว</th>
+                      <th className="py-3.5 px-4 text-center">กำลังส่ง</th>
+                      <th className="py-3.5 px-4 text-center">รอจัดส่ง</th>
+                      <th className="py-3.5 px-6 text-right">มูลค่าสินค้ารวม</th>
                     </tr>
-                  ) : (
-                    salespersonSales.map((sp, i) => (
-                      <tr key={i} className="hover:bg-[#18241c]/50 transition-colors">
-                        <td className="py-3.5 px-6 font-mono text-xs text-[#a39b8b] print:text-black">{i + 1}</td>
-                        <td className="py-3.5 px-6">
-                          <span className="font-bold text-[#f3efe6] flex items-center gap-2 print:text-black">
-                            <UserCheck className="w-4 h-4 text-[#98c9a3]" />
-                            {sp.salespersonName}
-                          </span>
-                        </td>
-                        <td className="py-3.5 px-4 text-center font-mono">
-                          <span className="px-3 py-1 rounded-xl bg-[#1e3425] text-[#98c9a3] font-bold text-xs border border-[#98c9a3]/30 inline-block">
-                            {sp.totalOrders} รายการ
-                          </span>
-                        </td>
-                        <td className="py-3.5 px-6 text-right font-mono text-emerald-400 print:text-black">
-                          ฿{sp.paidAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                        </td>
-                        <td className="py-3.5 px-6 text-right font-mono text-amber-400 print:text-black">
-                          ฿{sp.pendingAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                        </td>
-                        <td className="py-3.5 px-6 text-right font-mono font-extrabold text-[#98c9a3] print:text-black">
-                          ฿{sp.totalSales.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  </thead>
+
+                  <tbody className="divide-y divide-[#2d4734]/50 text-sm print:divide-gray-300 print:text-black">
+                    {deliverySummary.dispatchers.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="p-8 text-center text-[#a39b8b]">
+                          ไม่พบข้อมูลสายส่งสินค้า
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      deliverySummary.dispatchers.map((disp, i) => (
+                        <tr key={i} className="hover:bg-[#18241c]/50 transition-colors">
+                          <td className="py-3.5 px-6 font-mono text-xs text-[#a39b8b] print:text-black">{i + 1}</td>
+                          <td className="py-3.5 px-6">
+                            <span className="font-bold text-[#f3efe6] flex items-center gap-2 print:text-black">
+                              <Truck className="w-4 h-4 text-[#98c9a3]" />
+                              {disp.senderName}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 text-center font-mono">
+                            <span className="px-3 py-1 rounded-xl bg-[#1e3425] text-[#98c9a3] font-bold text-xs border border-[#98c9a3]/30 inline-block">
+                              {disp.totalOrders} บิล
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 text-center font-mono text-emerald-400 font-bold">
+                            {disp.deliveredCount}
+                          </td>
+                          <td className="py-3.5 px-4 text-center font-mono text-blue-400 font-bold">
+                            {disp.shippedCount}
+                          </td>
+                          <td className="py-3.5 px-4 text-center font-mono text-amber-400 font-bold">
+                            {disp.pendingCount}
+                          </td>
+                          <td className="py-3.5 px-6 text-right font-mono font-extrabold text-[#98c9a3] print:text-black">
+                            ฿{disp.grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Salesperson Performance Summary Table */}
+            <div className="glass-earth-card rounded-3xl overflow-hidden border border-[#2d4734] print:border-black">
+              <div className="p-4 sm:p-6 border-b border-[#2d4734] flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:border-black">
+                <div>
+                  <h3 className="text-lg font-bold text-[#f3efe6] print:text-black">
+                    สรุปยอดขายแยกตามเซล / พนักงานขาย (Salesperson Performance)
+                  </h3>
+                  <p className="text-xs text-[#a39b8b] print:text-gray-600">
+                    แสดงยอดขายรวม จำนวนคำสั่งซื้อ ยอดชำระแล้ว และยอดค้างชำระของพนักงานขายแต่ละคน
+                  </p>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse print:text-xs">
+                  <thead>
+                    <tr className="bg-[#121c15] border-b border-[#2d4734] text-xs font-semibold text-[#a39b8b] uppercase print:bg-gray-100 print:text-black">
+                      <th className="py-3.5 px-6">#</th>
+                      <th className="py-3.5 px-6">พนักงานขาย (SALE)</th>
+                      <th className="py-3.5 px-4 text-center">จำนวนคำสั่งซื้อ</th>
+                      <th className="py-3.5 px-6 text-right">ยอดชำระแล้ว (PAID)</th>
+                      <th className="py-3.5 px-6 text-right">ยอดรอเก็บเงิน (PENDING)</th>
+                      <th className="py-3.5 px-6 text-right">ยอดขายรวมสุทธิ</th>
+                    </tr>
+                  </thead>
+
+                  <tbody className="divide-y divide-[#2d4734]/50 text-sm print:divide-gray-300 print:text-black">
+                    {salespersonSales.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="p-8 text-center text-[#a39b8b]">
+                          ไม่พบข้อมูลสรุปยอดขายของพนักงานขาย
+                        </td>
+                      </tr>
+                    ) : (
+                      salespersonSales.map((sp, i) => (
+                        <tr key={i} className="hover:bg-[#18241c]/50 transition-colors">
+                          <td className="py-3.5 px-6 font-mono text-xs text-[#a39b8b] print:text-black">{i + 1}</td>
+                          <td className="py-3.5 px-6">
+                            <span className="font-bold text-[#f3efe6] flex items-center gap-2 print:text-black">
+                              <UserCheck className="w-4 h-4 text-[#98c9a3]" />
+                              {sp.salespersonName}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 text-center font-mono">
+                            <span className="px-3 py-1 rounded-xl bg-[#1e3425] text-[#98c9a3] font-bold text-xs border border-[#98c9a3]/30 inline-block">
+                              {sp.totalOrders} รายการ
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-6 text-right font-mono text-emerald-400 print:text-black">
+                            ฿{sp.paidAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                          </td>
+                          <td className="py-3.5 px-6 text-right font-mono text-amber-400 print:text-black">
+                            ฿{sp.pendingAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                          </td>
+                          <td className="py-3.5 px-6 text-right font-mono font-extrabold text-[#98c9a3] print:text-black">
+                            ฿{sp.totalSales.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
 
-        {/* TAB 4: USER USAGE LOGS */}
+        {/* TAB 7: USER USAGE LOGS */}
         {activeTab === "user" && (
           <div className="glass-earth-card rounded-3xl overflow-hidden border border-[#2d4734] print:border-black">
             <div className="p-4 sm:p-6 border-b border-[#2d4734] print:border-black">

@@ -3,6 +3,7 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 export interface IStockMovement extends Document {
   productId: mongoose.Types.ObjectId | string;
   locationId?: mongoose.Types.ObjectId | string;
+  zoneId?: mongoose.Types.ObjectId | string;
   type: "IN" | "OUT" | "ADJUST";
   quantity: number;
   balanceBefore: number;
@@ -25,6 +26,10 @@ const StockMovementSchema: Schema<IStockMovement> = new Schema(
     locationId: {
       type: Schema.Types.ObjectId,
       ref: "StorageLocation",
+    },
+    zoneId: {
+      type: Schema.Types.ObjectId,
+      ref: "Zone",
     },
     type: {
       type: String,

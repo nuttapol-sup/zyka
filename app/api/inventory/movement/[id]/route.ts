@@ -37,7 +37,8 @@ export async function PUT(
 
     const updated = await StockMovement.findById(id)
       .populate("productId")
-      .populate("locationId");
+      .populate("locationId")
+      .populate("zoneId");
 
     return NextResponse.json({
       message: "อัปเดตข้อมูลประวัติการเคลื่อนไหวสำเร็จ",
@@ -74,10 +75,11 @@ export async function DELETE(
       return NextResponse.json({ error: "ไม่พบรายการประวัติที่ต้องการลบ" }, { status: 404 });
     }
 
-    // Revert inventory stock balance according to movement type
+    // Revert inventory stock balance according to movement type and exact product+location+zone filter
     const inventory = await Inventory.findOne({
       productId: movement.productId,
       locationId: movement.locationId || null,
+      zoneId: movement.zoneId || null,
     });
 
     if (inventory) {
@@ -98,11 +100,11 @@ export async function DELETE(
     await StockMovement.findByIdAndDelete(id);
 
     return NextResponse.json({
-      message: "ลบรายการประวัติสำเร็จ และปรับคำนวณยอดยกมาในสต็อกเรียบร้อยแล้ว",
+      message: "ลบรายการประวัติและปรับปรุงยอดสต็อกเรียบร้อยแล้ว",
     });
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || "เกิดข้อผิดพลาดในการลบข้อมูล" },
+      { error: error.message || "เกิดข้อผิดพลาดในการลบรายการประวัติ" },
       { status: 500 }
     );
   }

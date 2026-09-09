@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/db";
 import Inventory from "@/models/Inventory";
 import Product from "@/models/Product";
 import StorageLocation from "@/models/StorageLocation";
+import Zone from "@/models/Zone";
 import StockMovement from "@/models/StockMovement";
 import { getSession } from "@/lib/auth";
 
@@ -18,7 +19,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "ไม่มีสิทธิ์ปรับปรุงสต็อกสินค้า" }, { status: 403 });
     }
 
-    const { productId, locationId, type, quantity, refDoc, attachmentUrl, attachmentName, note } = await request.json();
+    const { productId, locationId, zoneId, type, quantity, refDoc, attachmentUrl, attachmentName, note } = await request.json();
 
     if (!productId) {
       return NextResponse.json({ error: "กรุณาเลือกสินค้า" }, { status: 400 });
@@ -49,10 +50,18 @@ export async function POST(request: Request) {
       }
     }
 
-    // Find or initialize inventory record
+    if (zoneId) {
+      const zone = await Zone.findById(zoneId);
+      if (!zone) {
+        return NextResponse.json({ error: "ไม่พบข้อมูลโซนสินค้า" }, { status: 404 });
+      }
+    }
+
+    // Find or initialize inventory record for exact product + location + zone combination
     const filter = {
       productId,
       locationId: locationId || null,
+      zoneId: zoneId || null,
     };
 
     let inventory = await Inventory.findOne(filter);
@@ -60,6 +69,7 @@ export async function POST(request: Request) {
       inventory = new Inventory({
         productId,
         locationId: locationId || undefined,
+        zoneId: zoneId || undefined,
         quantity: 0,
       });
     }
@@ -95,6 +105,7 @@ export async function POST(request: Request) {
     const movement = await StockMovement.create({
       productId,
       locationId: locationId || undefined,
+      zoneId: zoneId || undefined,
       type,
       quantity: moveQty,
       balanceBefore,
@@ -108,7 +119,8 @@ export async function POST(request: Request) {
 
     const populatedMovement = await StockMovement.findById(movement._id)
       .populate("productId")
-      .populate("locationId");
+      .populate("locationId")
+      .populate("zoneId");
 
     return NextResponse.json({
       message:

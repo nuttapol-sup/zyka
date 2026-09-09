@@ -110,10 +110,19 @@ export async function GET(request: Request) {
     let cancelledOrdersCount = 0;
     let totalItemsSold = 0;
 
+    let deliveredOrdersCount = 0;
+    let shippedOrdersCount = 0;
+    let pendingDeliveryCount = 0;
+
     const monthlyMap: Record<number, number> = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0 };
     const categoryMap: Record<string, number> = {};
     const subCategoryMap: Record<string, number> = {};
     const locationMap: Record<string, number> = {};
+
+    const dispatcherMap: Record<
+      string,
+      { senderName: string; totalOrders: number; deliveredCount: number; shippedCount: number; pendingCount: number; grandTotal: number }
+    > = {};
 
     const customerMap: Record<
       string,
@@ -159,6 +168,21 @@ export async function GET(request: Request) {
         pendingSales += gTotal;
         pendingOrdersCount++;
       }
+
+      const deliv = o.deliveryStatus || "PENDING";
+      if (deliv === "DELIVERED") deliveredOrdersCount++;
+      else if (deliv === "SHIPPED") shippedOrdersCount++;
+      else if (deliv === "PENDING") pendingDeliveryCount++;
+
+      const sender = (o as any).senderName || "ไม่ระบุผู้ส่ง";
+      if (!dispatcherMap[sender]) {
+        dispatcherMap[sender] = { senderName: sender, totalOrders: 0, deliveredCount: 0, shippedCount: 0, pendingCount: 0, grandTotal: 0 };
+      }
+      dispatcherMap[sender].totalOrders += 1;
+      dispatcherMap[sender].grandTotal += gTotal;
+      if (deliv === "DELIVERED") dispatcherMap[sender].deliveredCount += 1;
+      else if (deliv === "SHIPPED") dispatcherMap[sender].shippedCount += 1;
+      else if (deliv === "PENDING") dispatcherMap[sender].pendingCount += 1;
 
       // Monthly Trend
       const oDate = new Date(o.orderDate);
@@ -320,6 +344,7 @@ export async function GET(request: Request) {
     const productSales = Object.values(productMap).sort((a, b) => b.totalAmount - a.totalAmount);
     const dailySales = Object.values(dailyMap).sort((a, b) => a.date.localeCompare(b.date));
     const salespersonSales = Object.values(salespersonMap).sort((a, b) => b.totalSales - a.totalSales);
+    const dispatchers = Object.values(dispatcherMap).sort((a, b) => b.totalOrders - a.totalOrders);
 
     return NextResponse.json({
       dateRange: {
@@ -336,6 +361,13 @@ export async function GET(request: Request) {
         pendingOrdersCount,
         cancelledOrdersCount,
         totalItemsSold,
+      },
+      deliverySummary: {
+        deliveredOrdersCount,
+        shippedOrdersCount,
+        pendingDeliveryCount,
+        cancelledOrdersCount,
+        dispatchers,
       },
       monthlySales,
       categorySales,

@@ -36,7 +36,7 @@ export async function connectDB() {
 
     cached!.promise = mongoose.connect(MONGODB_URI, opts).then(async (mongooseInstance) => {
       try {
-        // Drop legacy email index if it exists in MongoDB collection
+        // Drop legacy indexes if they exist in MongoDB collections
         const db = mongooseInstance.connection.db;
         if (db) {
           const collections = await db.listCollections({ name: "users" }).toArray();
@@ -46,6 +46,16 @@ export async function connectDB() {
             if (indexes.some((idx) => idx.name === "email_1")) {
               await usersCol.dropIndex("email_1");
               console.log("🧹 Dropped legacy email_1 index");
+            }
+          }
+
+          const invCollections = await db.listCollections({ name: "inventories" }).toArray();
+          if (invCollections.length > 0) {
+            const invCol = db.collection("inventories");
+            const invIndexes = await invCol.indexes();
+            if (invIndexes.some((idx) => idx.name === "productId_1_locationId_1")) {
+              await invCol.dropIndex("productId_1_locationId_1");
+              console.log("🧹 Dropped legacy productId_1_locationId_1 index");
             }
           }
         }

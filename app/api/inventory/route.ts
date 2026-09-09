@@ -3,16 +3,17 @@ import { connectDB } from "@/lib/db";
 import Inventory from "@/models/Inventory";
 import Product from "@/models/Product";
 import StorageLocation from "@/models/StorageLocation";
+import Zone from "@/models/Zone";
 import StockMovement from "@/models/StockMovement";
 import SubCategory from "@/models/SubCategory";
 import { getSession } from "@/lib/auth";
 
 // Ensure models registered for population
-if (!Product || !StorageLocation || !SubCategory || !StockMovement) {
+if (!Product || !StorageLocation || !Zone || !SubCategory || !StockMovement) {
   // Models registered
 }
 
-// GET /api/inventory - Get stock balances, products, locations, and movements
+// GET /api/inventory - Get stock balances, products, locations, zones, and movements
 export async function GET() {
   try {
     const session = await getSession();
@@ -26,20 +27,25 @@ export async function GET() {
 
     await connectDB();
 
-    // Fetch all active products
+    // Fetch all active products, locations, and zones
     const products = await Product.find({ status: "active" }).populate("subCategoryId").sort({ seq: 1 });
     const locations = await StorageLocation.find({ status: "active" }).sort({ createdAt: 1 });
+    const zones = await Zone.find({ status: "active" }).sort({ name: 1 });
 
     // Fetch existing inventory balances
-    const inventories = await Inventory.find().populate({
-      path: "productId",
-      populate: { path: "subCategoryId" },
-    }).populate("locationId");
+    const inventories = await Inventory.find()
+      .populate({
+        path: "productId",
+        populate: { path: "subCategoryId" },
+      })
+      .populate("locationId")
+      .populate("zoneId");
 
     // Fetch recent 50 stock movements
     const movements = await StockMovement.find()
       .populate("productId")
       .populate("locationId")
+      .populate("zoneId")
       .sort({ createdAt: -1 })
       .limit(50);
 
@@ -61,6 +67,7 @@ export async function GET() {
       inventories,
       products,
       locations,
+      zones,
       movements,
       productStockMap,
       lowStockAlertCount: lowStockAlerts.length,

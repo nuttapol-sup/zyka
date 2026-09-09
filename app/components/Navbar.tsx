@@ -33,6 +33,7 @@ import {
   UserCheck,
   Briefcase,
   MessageSquare,
+  Layers,
 } from "lucide-react";
 import { getApiPath } from "@/app/utils/apiPath";
 
@@ -134,6 +135,7 @@ export default function Navbar() {
     "orders",
     "products",
     "inventory",
+    "zones",
     "categories",
     "sub-categories",
     "locations",
@@ -600,11 +602,12 @@ export default function Navbar() {
                 const isSubCategoriesAllowed = hasAccess(user, "/sub-categories");
                 const isProductsAllowed = hasAccess(user, "/products");
                 const isInventoryAllowed = hasAccess(user, "/inventory");
+                const isZonesAllowed = hasAccess(user, "/zones");
                 const isLocationsAllowed = hasAccess(user, "/locations");
                 const isPersonnelAllowed = hasAccess(user, "/personnel");
                 const isPositionsAllowed = hasAccess(user, "/positions");
                 const isCustomersAllowed = hasAccess(user, "/customers");
-                const hasAnyData = isOrdersAllowed || isCategoriesAllowed || isSubCategoriesAllowed || isProductsAllowed || isInventoryAllowed || isLocationsAllowed || isPersonnelAllowed || isPositionsAllowed || isCustomersAllowed;
+                const hasAnyData = isOrdersAllowed || isCategoriesAllowed || isSubCategoriesAllowed || isProductsAllowed || isInventoryAllowed || isZonesAllowed || isLocationsAllowed || isPersonnelAllowed || isPositionsAllowed || isCustomersAllowed;
 
                 if (!hasAnyData) return null;
 
@@ -624,7 +627,7 @@ export default function Navbar() {
                     {mobileDataOpen && (
                       <div className="p-2 space-y-1 bg-[#18241c]/80 border-t border-[#2d4734]/40">
                         {(() => {
-                          const ALL_DATA = ["orders", "products", "inventory", "categories", "sub-categories", "locations", "personnel", "positions", "customers"];
+                          const ALL_DATA = ["orders", "products", "inventory", "zones", "categories", "sub-categories", "locations", "personnel", "positions", "customers"];
                           const effectiveMobileDataOrder = [...dataRecordsSubOrder];
                           ALL_DATA.forEach((k) => {
                             if (!effectiveMobileDataOrder.includes(k)) effectiveMobileDataOrder.push(k);
@@ -667,6 +670,14 @@ export default function Navbar() {
                               <Link key="m-inventory" href="/inventory" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
                                 <Boxes className="w-3.5 h-3.5 text-[#98c9a3]" />
                                 <span>{getLabel("inventory", "Inventory (จัดการสต็อกสินค้า)")}</span>
+                              </Link>
+                            );
+                          }
+                          if (subKey === "zones" && isZonesAllowed) {
+                            return (
+                              <Link key="m-zones" href="/zones" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                                <Layers className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("zones", "Zones (บันทึก Zone / โซนสินค้า)")}</span>
                               </Link>
                             );
                           }
@@ -855,14 +866,15 @@ function DataRecordsDropdown({
   const isSubCategoriesAllowed = hasAccess(user, "/sub-categories");
   const isProductsAllowed = hasAccess(user, "/products");
   const isInventoryAllowed = hasAccess(user, "/inventory");
+  const isZonesAllowed = hasAccess(user, "/zones");
   const isLocationsAllowed = hasAccess(user, "/locations");
   const isPersonnelAllowed = hasAccess(user, "/personnel");
   const isPositionsAllowed = hasAccess(user, "/positions");
   const isCustomersAllowed = hasAccess(user, "/customers");
 
-  const hasAnyAccess = isOrdersAllowed || isCategoriesAllowed || isSubCategoriesAllowed || isProductsAllowed || isInventoryAllowed || isLocationsAllowed || isPersonnelAllowed || isPositionsAllowed || isCustomersAllowed;
+  const hasAnyAccess = isOrdersAllowed || isCategoriesAllowed || isSubCategoriesAllowed || isProductsAllowed || isInventoryAllowed || isZonesAllowed || isLocationsAllowed || isPersonnelAllowed || isPositionsAllowed || isCustomersAllowed;
 
-  const isDataActive = pathname === "/orders" || pathname === "/categories" || pathname === "/sub-categories" || pathname === "/products" || pathname === "/inventory" || pathname === "/locations" || pathname === "/personnel" || pathname === "/positions" || pathname === "/customers";
+  const isDataActive = pathname === "/orders" || pathname === "/categories" || pathname === "/sub-categories" || pathname === "/products" || pathname === "/inventory" || pathname === "/zones" || pathname === "/locations" || pathname === "/personnel" || pathname === "/positions" || pathname === "/customers";
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -874,7 +886,7 @@ function DataRecordsDropdown({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const ALL_DATA_KEYS = ["orders", "products", "inventory", "categories", "sub-categories", "locations", "personnel", "positions", "customers"];
+  const ALL_DATA_KEYS = ["orders", "products", "inventory", "zones", "categories", "sub-categories", "locations", "personnel", "positions", "customers"];
   const effectiveSubOrder = Array.isArray(subOrder) ? [...subOrder] : ALL_DATA_KEYS;
   ALL_DATA_KEYS.forEach((k) => {
     if (!effectiveSubOrder.includes(k)) {
@@ -976,6 +988,21 @@ function DataRecordsDropdown({
                 >
                   <Boxes className="w-4 h-4 text-[#98c9a3]" />
                   <span>{getLabel("inventory", "Inventory (จัดการสต็อกสินค้า)")}</span>
+                </Link>
+              );
+            }
+            if (key === "zones" && isZonesAllowed) {
+              return (
+                <Link
+                  key="zones"
+                  href="/zones"
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
+                    pathname === "/zones" ? "bg-[#1f3025] text-[#98c9a3] border border-[#98c9a3]/30 font-semibold" : "text-[#e6dfd3] hover:bg-[#18241c] hover:text-[#98c9a3]"
+                  }`}
+                >
+                  <Layers className="w-4 h-4 text-[#98c9a3]" />
+                  <span>{getLabel("zones", "Zones (บันทึก Zone / โซนสินค้า)")}</span>
                 </Link>
               );
             }

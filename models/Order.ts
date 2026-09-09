@@ -21,6 +21,10 @@ export interface IOrder extends Document {
   customerTaxId?: string;
   salespersonId?: mongoose.Types.ObjectId | string;
   salespersonName?: string;
+  poNo?: string;
+  expectedDeliveryDate?: Date;
+  shippedDate?: Date;
+  senderName?: string;
   [key: string]: any;
   orderDate: Date;
   billingNo?: string;
@@ -91,6 +95,10 @@ const OrderSchema: Schema<IOrder> = new Schema(
       ref: "Personnel",
     },
     salespersonName: { type: String, trim: true, default: "" },
+    poNo: { type: String, trim: true, default: "" },
+    expectedDeliveryDate: { type: Date },
+    shippedDate: { type: Date },
+    senderName: { type: String, trim: true, default: "" },
     orderDate: { type: Date, default: Date.now },
     billingNo: { type: String, trim: true, default: "" },
     billingDate: { type: Date },

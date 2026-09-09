@@ -182,7 +182,7 @@ function SingleStandardDocPage({
         <div className="grid grid-cols-4 divide-x divide-black text-center font-mono text-[10px] bg-gray-50 py-1">
           <div>
             <span className="font-bold font-sans block text-gray-700">เลขที่ใบสั่งซื้อของลูกค้า / P/O No.</span>
-            <span>-</span>
+            <span className="font-bold">{printingOrder.poNo || "-"}</span>
           </div>
           <div>
             <span className="font-bold font-sans block text-gray-700">รหัสลูกค้า / Customer Code</span>
@@ -349,6 +349,10 @@ interface PersonnelItem {
 interface OrderData {
   _id: string;
   orderNo: string;
+  poNo?: string;
+  expectedDeliveryDate?: string;
+  shippedDate?: string;
+  senderName?: string;
   customerId: CustomerItem;
   customerName: string;
   customerPhone?: string;
@@ -423,6 +427,10 @@ export default function OrdersPage() {
   const [selectedSalespersonName, setSelectedSalespersonName] = useState("");
   const [isSalespersonPickerOpen, setIsSalespersonPickerOpen] = useState(false);
   const [salespersonSearchTerm, setSalespersonSearchTerm] = useState("");
+  const [poNo, setPoNo] = useState("");
+  const [expectedDeliveryDate, setExpectedDeliveryDate] = useState("");
+  const [shippedDate, setShippedDate] = useState("");
+  const [senderName, setSenderName] = useState("");
   const [orderDate, setOrderDate] = useState(new Date().toISOString().split("T")[0]);
   const [billingNo, setBillingNo] = useState("");
   const [billingDate, setBillingDate] = useState("");
@@ -451,6 +459,10 @@ export default function OrdersPage() {
   const [editBillingNo, setEditBillingNo] = useState("");
   const [editBillingDate, setEditBillingDate] = useState("");
   const [editDueDate, setEditDueDate] = useState("");
+  const [editPoNo, setEditPoNo] = useState("");
+  const [editExpectedDeliveryDate, setEditExpectedDeliveryDate] = useState("");
+  const [editShippedDate, setEditShippedDate] = useState("");
+  const [editSenderName, setEditSenderName] = useState("");
 
   // Print Receipt Modal State
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
@@ -571,6 +583,10 @@ export default function OrdersPage() {
     setSelectedCustomerId(customers[0]?._id || "");
     setSelectedSalespersonId("");
     setSelectedSalespersonName("");
+    setPoNo("");
+    setExpectedDeliveryDate("");
+    setShippedDate("");
+    setSenderName("");
     setOrderDate(new Date().toISOString().split("T")[0]);
     setBillingNo("");
     setBillingDate("");
@@ -707,6 +723,10 @@ export default function OrdersPage() {
           customerId: selectedCustomerId,
           salespersonId: selectedSalespersonId || undefined,
           salespersonName: selectedSalespersonName || "",
+          poNo: poNo || undefined,
+          expectedDeliveryDate: expectedDeliveryDate || undefined,
+          shippedDate: shippedDate || undefined,
+          senderName: senderName || undefined,
           orderDate,
           billingNo,
           billingDate: billingDate || undefined,
@@ -756,6 +776,10 @@ export default function OrdersPage() {
     setEditBillingNo(order.billingNo || "");
     setEditBillingDate(order.billingDate ? order.billingDate.split("T")[0] : "");
     setEditDueDate(order.dueDate ? order.dueDate.split("T")[0] : "");
+    setEditPoNo(order.poNo || "");
+    setEditExpectedDeliveryDate(order.expectedDeliveryDate ? order.expectedDeliveryDate.split("T")[0] : "");
+    setEditShippedDate(order.shippedDate ? order.shippedDate.split("T")[0] : "");
+    setEditSenderName(order.senderName || "");
     setAttachmentUrl(order.attachmentUrl || "");
     setAttachmentName(order.attachmentName || "");
     setNote(order.note || "");
@@ -785,6 +809,10 @@ export default function OrdersPage() {
           billingNo: editBillingNo || undefined,
           billingDate: editBillingDate || undefined,
           dueDate: editDueDate || undefined,
+          poNo: editPoNo || undefined,
+          expectedDeliveryDate: editExpectedDeliveryDate || undefined,
+          shippedDate: editShippedDate || undefined,
+          senderName: editSenderName || undefined,
           attachmentUrl,
           attachmentName,
           note,
@@ -1044,11 +1072,18 @@ export default function OrdersPage() {
                   .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                   .map((o) => (
                   <tr key={o._id} className="hover:bg-[#18241c]/60 transition-colors">
-                    {/* Order No & Date */}
+                    {/* Order No & Date & PO */}
                     <td className="py-4 px-6">
-                      <span className="px-2.5 py-1 rounded-xl bg-[#1e3425] text-[#98c9a3] font-mono font-bold text-xs border border-[#98c9a3]/30 block w-fit mb-1">
-                        {o.orderNo}
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                        <span className="px-2.5 py-0.5 rounded-xl bg-[#1e3425] text-[#98c9a3] font-mono font-bold text-xs border border-[#98c9a3]/30 inline-block">
+                          {o.orderNo}
+                        </span>
+                        {o.poNo && (
+                          <span className="px-2 py-0.5 rounded-lg bg-[#121c15] text-[#d4a373] font-mono font-bold text-[11px] border border-[#d4a373]/40 inline-block" title="เลขที่ PO">
+                            PO: {o.poNo}
+                          </span>
+                        )}
+                      </div>
                       {o.billingNo && (
                         <span className="text-xs font-bold text-emerald-400 font-mono block">
                           เลขที่วางบิล: {o.billingNo}
@@ -1057,6 +1092,11 @@ export default function OrdersPage() {
                       <span className="text-xs text-[#a39b8b] block">
                         สั่งซื้อ: {new Date(o.orderDate).toLocaleDateString("th-TH")}
                       </span>
+                      {o.expectedDeliveryDate && (
+                        <span className="text-[11px] text-amber-300 font-semibold block">
+                          ⏳ กำหนดส่ง (ไม่เกิน): {new Date(o.expectedDeliveryDate).toLocaleDateString("th-TH")}
+                        </span>
+                      )}
                       {o.billingDate && (
                         <span className="text-[11px] text-[#98c9a3] font-medium block">
                           📄 วางบิล: {new Date(o.billingDate).toLocaleDateString("th-TH")}
@@ -1087,18 +1127,30 @@ export default function OrdersPage() {
                       )}
                     </td>
 
-                    {/* Shipping Carrier & Tracking */}
+                    {/* Shipping Carrier, Sender & Tracking */}
                     <td className="py-4 px-6 text-xs space-y-1">
-                      <span className="text-[#e6dfd3] flex items-center gap-1 font-medium">
-                        <Truck className="w-3.5 h-3.5 text-[#98c9a3]" />
-                        {o.shippingCarrier || "ขนส่งเอกชน"}
-                      </span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[#e6dfd3] flex items-center gap-1 font-medium">
+                          <Truck className="w-3.5 h-3.5 text-[#98c9a3]" />
+                          {o.shippingCarrier || "ขนส่งเอกชน"}
+                        </span>
+                        {o.senderName && (
+                          <span className="px-1.5 py-0.5 rounded bg-[#121c15] text-[#98c9a3] font-semibold text-[10px] border border-[#2d4734]">
+                            ผู้ส่ง: {o.senderName}
+                          </span>
+                        )}
+                      </div>
+                      {o.shippedDate && (
+                        <span className="text-[11px] text-blue-300 font-medium block">
+                          🚚 ส่งเมื่อ: {new Date(o.shippedDate).toLocaleDateString("th-TH")}
+                        </span>
+                      )}
                       {o.trackingNo ? (
                         <span className="px-2 py-0.5 rounded bg-[#121c15] text-[#98c9a3] font-mono border border-[#2d4734] inline-block">
                           Track: {o.trackingNo}
                         </span>
                       ) : (
-                        <span className="text-[#a39b8b] italic">- ยังไม่ได้ใส่เลขพัสดุ -</span>
+                        <span className="text-[#a39b8b] italic block">- ยังไม่ได้ใส่เลขพัสดุ -</span>
                       )}
                     </td>
 
@@ -1294,8 +1346,21 @@ export default function OrdersPage() {
                   </div>
                 </div>
 
-                {/* Row 2: Order Date, Billing No, Billing Date, Due Date, Carrier, Tracking No */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 pt-3 border-t border-[#2d4734]/50">
+                {/* Row 2: PO No, Order Date, Billing No, Billing Date, Due Date */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-[#2d4734]/50">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#98c9a3] uppercase mb-1">
+                      เลขที่ PO (PO NO.)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="เช่น 4500047080"
+                      value={poNo}
+                      onChange={(e) => setPoNo(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-[#121c15] border border-[#98c9a3]/40 text-xs text-[#f3efe6] font-mono focus:outline-none focus:border-[#98c9a3]"
+                    />
+                  </div>
+
                   <div>
                     <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
                       วันที่สั่งซื้อ *
@@ -1315,7 +1380,7 @@ export default function OrdersPage() {
                     </label>
                     <input
                       type="text"
-                      placeholder="เช่น BIL-2026-0001"
+                      placeholder="เช่น IVN680360"
                       value={billingNo}
                       onChange={(e) => setBillingNo(e.target.value)}
                       className="w-full px-3 py-2 rounded-xl bg-[#121c15] border border-[#98c9a3]/40 text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
@@ -1341,16 +1406,31 @@ export default function OrdersPage() {
                       className="w-full px-3 py-2 rounded-xl bg-[#121c15] border border-[#98c9a3]/40 text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
                     />
                   </div>
+                </div>
 
+                {/* Row 3: Expected Delivery, Shipped Date, Carrier, Sender Name, Tracking No */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-3 border-t border-[#2d4734]/50">
                   <div>
-                    <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
-                      กำหนดชำระเงิน
+                    <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1 text-amber-300">
+                      กำหนดส่งสินค้า (ไม่เกิน)
                     </label>
                     <input
                       type="date"
-                      value={dueDate}
-                      onChange={(e) => setDueDate(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
+                      value={expectedDeliveryDate}
+                      onChange={(e) => setExpectedDeliveryDate(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-[#121c15] border border-amber-600/40 text-xs text-[#f3efe6] focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1 text-blue-300">
+                      วันที่จัดส่งจริง
+                    </label>
+                    <input
+                      type="date"
+                      value={shippedDate}
+                      onChange={(e) => setShippedDate(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-[#121c15] border border-blue-600/40 text-xs text-[#f3efe6] focus:outline-none focus:border-blue-400"
                     />
                   </div>
 
@@ -1363,7 +1443,20 @@ export default function OrdersPage() {
                       value={shippingCarrier}
                       onChange={(e) => setShippingCarrier(e.target.value)}
                       className="w-full px-3 py-2 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
-                      placeholder="Kerry, Flash, J&T, EMS"
+                      placeholder="ไซกา, KERRY, IT, FLASH"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
+                      ผู้ส่ง (DISPATCHER)
+                    </label>
+                    <input
+                      type="text"
+                      value={senderName}
+                      onChange={(e) => setSenderName(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
+                      placeholder="เช่น คุณแต้, คุณแดน, คุณนิก"
                     />
                   </div>
 
@@ -1694,6 +1787,58 @@ export default function OrdersPage() {
                     onChange={(e) => setTrackingNo(e.target.value)}
                     className="px-3 py-2 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] font-mono"
                     placeholder="Tracking No."
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-semibold text-[#98c9a3] uppercase mb-1">
+                    เลขที่ PO (PO NO.)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="เช่น 4500047080"
+                    value={editPoNo}
+                    onChange={(e) => setEditPoNo(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-[#121c15] border border-[#98c9a3]/40 text-xs text-[#f3efe6] font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
+                    ผู้ส่ง (DISPATCHER)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="เช่น คุณแต้, คุณแดน"
+                    value={editSenderName}
+                    onChange={(e) => setEditSenderName(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1 text-amber-300">
+                    กำหนดส่งสินค้า (ไม่เกิน)
+                  </label>
+                  <input
+                    type="date"
+                    value={editExpectedDeliveryDate}
+                    onChange={(e) => setEditExpectedDeliveryDate(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-[#121c15] border border-amber-600/40 text-xs text-[#f3efe6]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1 text-blue-300">
+                    วันที่จัดส่งจริง
+                  </label>
+                  <input
+                    type="date"
+                    value={editShippedDate}
+                    onChange={(e) => setEditShippedDate(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-[#121c15] border border-blue-600/40 text-xs text-[#f3efe6]"
                   />
                 </div>
               </div>

@@ -29,6 +29,13 @@ interface SubCategoryRef {
   name: string;
 }
 
+interface ZoneItem {
+  _id: string;
+  code: string;
+  name: string;
+  status?: string;
+}
+
 interface ProductItem {
   _id: string;
   code: string;
@@ -50,6 +57,7 @@ interface InventoryItem {
   _id: string;
   productId: ProductItem;
   locationId?: LocationItem;
+  zoneId?: ZoneItem;
   quantity: number;
   updatedAt: string;
 }
@@ -58,6 +66,7 @@ interface MovementItem {
   _id: string;
   productId: ProductItem;
   locationId?: LocationItem;
+  zoneId?: ZoneItem;
   type: "IN" | "OUT" | "ADJUST";
   quantity: number;
   balanceBefore: number;
@@ -74,6 +83,7 @@ export default function InventoryPage() {
   const [inventories, setInventories] = useState<InventoryItem[]>([]);
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [locations, setLocations] = useState<LocationItem[]>([]);
+  const [zones, setZones] = useState<ZoneItem[]>([]);
   const [movements, setMovements] = useState<MovementItem[]>([]);
   const [productStockMap, setProductStockMap] = useState<Record<string, number>>({});
   const [lowStockAlertCount, setLowStockAlertCount] = useState(0);
@@ -82,6 +92,7 @@ export default function InventoryPage() {
   const [activeTab, setActiveTab] = useState<"balances" | "movements">("balances");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterLocation, setFilterLocation] = useState("all");
+  const [filterZone, setFilterZone] = useState("all");
   const [filterMinAlert, setFilterMinAlert] = useState(false);
 
   // Pagination State
@@ -90,13 +101,14 @@ export default function InventoryPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, filterLocation, filterMinAlert, activeTab]);
+  }, [searchTerm, filterLocation, filterZone, filterMinAlert, activeTab]);
 
   // Movement Modal State (Create)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<"IN" | "OUT" | "ADJUST">("IN");
   const [selectedProductId, setSelectedProductId] = useState("");
   const [selectedLocationId, setSelectedLocationId] = useState("");
+  const [selectedZoneId, setSelectedZoneId] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [refDoc, setRefDoc] = useState("");
   const [attachmentUrl, setAttachmentUrl] = useState("");
@@ -121,6 +133,7 @@ export default function InventoryPage() {
         setInventories(data.inventories || []);
         setProducts(data.products || []);
         setLocations(data.locations || []);
+        setZones(data.zones || []);
         setMovements(data.movements || []);
         setProductStockMap(data.productStockMap || {});
         setLowStockAlertCount(data.lowStockAlertCount || 0);
@@ -139,11 +152,13 @@ export default function InventoryPage() {
   const openMovementModal = (
     type: "IN" | "OUT" | "ADJUST",
     prodId?: string,
-    locId?: string
+    locId?: string,
+    zoneId?: string
   ) => {
     setModalType(type);
     setSelectedProductId(prodId || products[0]?._id || "");
     setSelectedLocationId(locId || locations[0]?._id || "");
+    setSelectedZoneId(zoneId || "");
     setQuantity(1);
     setRefDoc("");
     setAttachmentUrl("");
@@ -214,6 +229,7 @@ export default function InventoryPage() {
         body: JSON.stringify({
           productId: selectedProductId,
           locationId: selectedLocationId || undefined,
+          zoneId: selectedZoneId || undefined,
           type: modalType,
           quantity,
           refDoc,
@@ -292,7 +308,10 @@ export default function InventoryPage() {
   const combinedStockRows = products.map((p) => {
     const totalStock = productStockMap[p._id] || 0;
     const isLowStock = totalStock <= (p.minQuantity || 0);
-    const itemInventories = inventories.filter((inv) => inv.productId?._id === p._id);
+    const itemInventories = inventories.filter((inv) => {
+      const invProdId = typeof inv.productId === "object" && inv.productId ? inv.productId._id : inv.productId;
+      return invProdId === p._id;
+    });
 
     return {
       product: p,
@@ -312,9 +331,21 @@ export default function InventoryPage() {
 
     const matchesLocation =
       filterLocation === "all" ||
-      itemInventories.some((inv) => inv.locationId?._id === filterLocation);
+      itemInventories.some((inv) => {
+        const locId = typeof inv.locationId === "object" && inv.locationId ? inv.locationId._id : inv.locationId;
+        return locId === filterLocation;
+      });
 
-    return matchesSearch && matchesMin && matchesLocation;
+    const matchesZone =
+      filterZone === "all" ||
+      (filterZone === "none"
+        ? itemInventories.some((inv) => !inv.zoneId) || itemInventories.length === 0
+        : itemInventories.some((inv) => {
+            const zId = typeof inv.zoneId === "object" && inv.zoneId ? inv.zoneId._id : inv.zoneId;
+            return zId === filterZone;
+          }));
+
+    return matchesSearch && matchesMin && matchesLocation && matchesZone;
   });
 
   const filteredMovements = movements.filter((m) => {
@@ -322,7 +353,19 @@ export default function InventoryPage() {
     const prodName = m.productId?.name?.toLowerCase() || "";
     const prodCode = m.productId?.code?.toLowerCase() || "";
     const refDoc = m.refDoc?.toLowerCase() || "";
-    return prodName.includes(query) || prodCode.includes(query) || refDoc.includes(query);
+    const matchesSearch = prodName.includes(query) || prodCode.includes(query) || refDoc.includes(query);
+
+    const matchesZone =
+      filterZone === "all" ||
+      (filterZone === "none"
+        ? !m.zoneId
+        : (typeof m.zoneId === "object" && m.zoneId ? m.zoneId._id : m.zoneId) === filterZone);
+
+    const matchesLocation =
+      filterLocation === "all" ||
+      (typeof m.locationId === "object" && m.locationId ? m.locationId._id : m.locationId) === filterLocation;
+
+    return matchesSearch && matchesZone && matchesLocation;
   });
 
   return (
@@ -421,7 +464,7 @@ export default function InventoryPage() {
           </button>
         </div>
 
-        {/* Search & Location Filter */}
+        {/* Search & Location/Zone Filters */}
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative max-w-xs w-full">
             <Search className="w-4 h-4 text-[#a39b8b] absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -434,20 +477,32 @@ export default function InventoryPage() {
             />
           </div>
 
-          {activeTab === "balances" && (
-            <select
-              value={filterLocation}
-              onChange={(e) => setFilterLocation(e.target.value)}
-              className="bg-[#121c15] text-[#f3efe6] text-xs px-3 py-2 rounded-xl border border-[#2d4734] focus:outline-none focus:border-[#98c9a3]"
-            >
-              <option value="all">ทุกสถานที่เก็บสินค้า</option>
-              {locations.map((loc) => (
-                <option key={loc._id} value={loc._id}>
-                  {loc.name} (รหัส: {loc.code})
-                </option>
-              ))}
-            </select>
-          )}
+          <select
+            value={filterLocation}
+            onChange={(e) => setFilterLocation(e.target.value)}
+            className="bg-[#121c15] text-[#f3efe6] text-xs px-3 py-2 rounded-xl border border-[#2d4734] focus:outline-none focus:border-[#98c9a3]"
+          >
+            <option value="all">ทุกสถานที่เก็บสินค้า</option>
+            {locations.map((loc) => (
+              <option key={loc._id} value={loc._id}>
+                {loc.name} (รหัส: {loc.code})
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={filterZone}
+            onChange={(e) => setFilterZone(e.target.value)}
+            className="bg-[#121c15] text-[#f3efe6] text-xs px-3 py-2 rounded-xl border border-[#2d4734] focus:outline-none focus:border-[#98c9a3]"
+          >
+            <option value="all">ทุกโซน (Zone)</option>
+            <option value="none">ไม่ระบุโซน (Unassigned)</option>
+            {zones.map((z) => (
+              <option key={z._id} value={z._id}>
+                {z.name} (รหัส: {z.code})
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -472,7 +527,7 @@ export default function InventoryPage() {
                     <th className="py-4 px-4 text-center">ลำดับ</th>
                     <th className="py-4 px-6">รหัสสินค้า</th>
                     <th className="py-4 px-6">หมวดหมู่ / ชื่อสินค้า / รายละเอียด</th>
-                    <th className="py-4 px-6">สถานที่เก็บสินค้า (Location)</th>
+                    <th className="py-4 px-6">สถานที่เก็บสินค้า (Location / Zone)</th>
                     <th className="py-4 px-4 text-center">คงเหลือรวม</th>
                     <th className="py-4 px-4 text-center">เกณฑ์ขั้นต่ำ (min)</th>
                     <th className="py-4 px-4 text-center">สถานะสต็อก</th>
@@ -522,7 +577,7 @@ export default function InventoryPage() {
                         )}
                       </td>
 
-                      {/* Location Stock Breakdown */}
+                      {/* Location & Zone Stock Breakdown */}
                       <td className="py-4 px-6">
                         {itemInventories.length === 0 ? (
                           <span className="text-xs text-[#a39b8b] italic whitespace-nowrap">
@@ -535,9 +590,15 @@ export default function InventoryPage() {
                                 key={inv._id}
                                 className="text-xs flex items-center justify-between gap-2 px-2.5 py-1 rounded-lg bg-[#121c15] border border-[#2d4734] whitespace-nowrap"
                               >
-                                <span className="text-[#e6dfd3] flex items-center gap-1.5">
+                                <span className="text-[#e6dfd3] flex items-center gap-1.5 flex-wrap">
                                   <Warehouse className="w-3.5 h-3.5 text-[#98c9a3]" />
-                                  {inv.locationId?.name || "คลังหลัก"}:
+                                  {inv.locationId?.name || "คลังหลัก"}
+                                  {inv.zoneId && (
+                                    <span className="px-1.5 py-0.5 rounded bg-[#1e3425] text-[#98c9a3] text-[10px] font-medium border border-[#98c9a3]/30">
+                                      📍 {inv.zoneId.name}
+                                    </span>
+                                  )}
+                                  :
                                 </span>
                                 <span className="font-mono font-bold text-[#98c9a3]">
                                   {inv.quantity} {product.unit || "ชิ้น"}
@@ -683,9 +744,14 @@ export default function InventoryPage() {
                         </span>
                       </td>
 
-                      {/* Location */}
+                      {/* Location & Zone */}
                       <td className="py-4 px-6 text-xs text-[#e6dfd3]">
-                        {m.locationId ? `${m.locationId.name} (${m.locationId.code})` : "คลังหลัก"}
+                        <div>{m.locationId ? `${m.locationId.name} (${m.locationId.code})` : "คลังหลัก"}</div>
+                        {m.zoneId && (
+                          <div className="text-[11px] text-[#98c9a3] mt-0.5 font-medium">
+                            📍 โซน: {m.zoneId.name} ({m.zoneId.code})
+                          </div>
+                        )}
                       </td>
 
                       {/* Quantity */}
@@ -867,6 +933,25 @@ export default function InventoryPage() {
                   {locations.map((loc) => (
                     <option key={loc._id} value={loc._id}>
                       {loc.name} (รหัส: {loc.code})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Zone Selection */}
+              <div>
+                <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
+                  โซนสินค้า (ZONE)
+                </label>
+                <select
+                  value={selectedZoneId}
+                  onChange={(e) => setSelectedZoneId(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
+                >
+                  <option value="">-- ไม่ระบุโซน / ทุกโซน --</option>
+                  {zones.map((z) => (
+                    <option key={z._id} value={z._id}>
+                      {z.name} (รหัส: {z.code})
                     </option>
                   ))}
                 </select>
