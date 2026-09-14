@@ -77,6 +77,10 @@ const StockMovementSchema: Schema<IStockMovement> = new Schema(
   }
 );
 
+if (process.env.NODE_ENV === "development" && mongoose.models.StockMovement) {
+  delete mongoose.models.StockMovement;
+}
+
 const StockMovement: Model<IStockMovement> =
   mongoose.models.StockMovement ||
   mongoose.model<IStockMovement>("StockMovement", StockMovementSchema);

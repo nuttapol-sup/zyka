@@ -15,6 +15,10 @@ import {
   Package,
   Truck,
   ExternalLink,
+  BarChart3,
+  TrendingUp,
+  Sparkles,
+  DollarSign,
 } from "lucide-react";
 import { getApiPath } from "@/app/utils/apiPath";
 
@@ -26,6 +30,7 @@ export default function ManageLinePage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [sendingReport, setSendingReport] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [copied, setCopied] = useState(false);
@@ -85,6 +90,30 @@ export default function ManageLinePage() {
       setError(err.message);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSendReportNotification = async (reportType: string) => {
+    setSendingReport(reportType);
+    setError("");
+    setSuccess("");
+
+    try {
+      const res = await fetch(getApiPath("/api/admin/line/notify"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reportType }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "เกิดข้อผิดพลาดในการส่งแจ้งเตือนเข้า LINE");
+
+      setSuccess("ส่งการแจ้งเตือนรายงานเข้ากลุ่ม LINE เรียบร้อยแล้ว!");
+      setTimeout(() => setSuccess(""), 4000);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSendingReport(null);
     }
   };
 
@@ -260,6 +289,81 @@ export default function ManageLinePage() {
             </button>
           </div>
         </form>
+      </div>
+
+      {/* Report Notifications Push Section */}
+      <div className="glass-earth-card p-6 sm:p-8 rounded-3xl border border-[#00b900]/30 space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-[#00b900]/20 border border-[#00b900]/40 flex items-center justify-center text-[#00b900]">
+            <Bell className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-[#f3efe6]">
+              ส่งรายงานแจ้งเตือนเข้ากลุ่ม LINE (Manual Report Push)
+            </h2>
+            <p className="text-xs text-[#a39b8b]">
+              กดปุ่มด้านล่างเพื่อส่งรายงานสรุปยอดขาย (สัปดาห์/เดือน/ปี) หรือรายงานยอดเก็บเงินเข้ากลุ่ม LINE ทันที
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
+          <button
+            type="button"
+            disabled={!!sendingReport}
+            onClick={() => handleSendReportNotification("sales_weekly")}
+            className="p-3.5 rounded-2xl bg-[#1e3425] hover:bg-[#274530] text-[#98c9a3] border border-[#98c9a3]/40 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all shadow-md disabled:opacity-50"
+          >
+            {sendingReport === "sales_weekly" ? (
+              <RefreshCw className="w-4 h-4 animate-spin text-[#98c9a3]" />
+            ) : (
+              <BarChart3 className="w-4 h-4" />
+            )}
+            <span>📊 ยอดขายรายสัปดาห์</span>
+          </button>
+
+          <button
+            type="button"
+            disabled={!!sendingReport}
+            onClick={() => handleSendReportNotification("sales_monthly")}
+            className="p-3.5 rounded-2xl bg-[#1e3425] hover:bg-[#274530] text-[#98c9a3] border border-[#98c9a3]/40 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all shadow-md disabled:opacity-50"
+          >
+            {sendingReport === "sales_monthly" ? (
+              <RefreshCw className="w-4 h-4 animate-spin text-[#98c9a3]" />
+            ) : (
+              <TrendingUp className="w-4 h-4" />
+            )}
+            <span>📅 ยอดขายรายเดือน</span>
+          </button>
+
+          <button
+            type="button"
+            disabled={!!sendingReport}
+            onClick={() => handleSendReportNotification("sales_yearly")}
+            className="p-3.5 rounded-2xl bg-[#1e3425] hover:bg-[#274530] text-[#98c9a3] border border-[#98c9a3]/40 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all shadow-md disabled:opacity-50"
+          >
+            {sendingReport === "sales_yearly" ? (
+              <RefreshCw className="w-4 h-4 animate-spin text-[#98c9a3]" />
+            ) : (
+              <Sparkles className="w-4 h-4" />
+            )}
+            <span>🏆 ยอดขายรายปี</span>
+          </button>
+
+          <button
+            type="button"
+            disabled={!!sendingReport}
+            onClick={() => handleSendReportNotification("payment_monthly")}
+            className="p-3.5 rounded-2xl bg-[#00b900]/20 hover:bg-[#00b900]/30 text-[#00b900] border border-[#00b900]/40 text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all shadow-md disabled:opacity-50"
+          >
+            {sendingReport === "payment_monthly" ? (
+              <RefreshCw className="w-4 h-4 animate-spin text-[#00b900]" />
+            ) : (
+              <DollarSign className="w-4 h-4" />
+            )}
+            <span>💰 ยอดเก็บเงินรายเดือน</span>
+          </button>
+        </div>
       </div>
 
       {/* Feature Showcase Grid */}

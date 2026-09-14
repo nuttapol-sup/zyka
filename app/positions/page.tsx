@@ -12,15 +12,24 @@ import {
   Trash2,
   X,
   AlertTriangle,
+  Building2,
 } from "lucide-react";
 import Pagination from "@/app/components/Pagination";
 import { getApiPath } from "@/app/utils/apiPath";
+
+interface DepartmentItem {
+  _id: string;
+  code?: string;
+  name: string;
+  status: string;
+}
 
 interface PositionData {
   _id: string;
   code?: string;
   name: string;
   description?: string;
+  departmentId?: DepartmentItem | string | null;
   status: "active" | "inactive";
   createdAt: string;
   updatedAt: string;
@@ -28,9 +37,11 @@ interface PositionData {
 
 export default function PositionsPage() {
   const [positions, setPositions] = useState<PositionData[]>([]);
+  const [departmentsList, setDepartmentsList] = useState<DepartmentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [departmentFilter, setDepartmentFilter] = useState("all");
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -44,12 +55,25 @@ export default function PositionsPage() {
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [deptId, setDeptId] = useState("");
   const [status, setStatus] = useState<"active" | "inactive">("active");
 
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  const fetchDepartments = async () => {
+    try {
+      const res = await fetch(getApiPath("/api/departments?status=active"), { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        setDepartmentsList(data.departments || []);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchPositions = async () => {
     setLoading(true);
@@ -69,17 +93,19 @@ export default function PositionsPage() {
 
   useEffect(() => {
     fetchPositions();
+    fetchDepartments();
   }, [searchTerm, statusFilter]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, statusFilter]);
+  }, [searchTerm, statusFilter, departmentFilter]);
 
   const openCreateModal = () => {
     setEditingPosition(null);
     setCode("");
     setName("");
     setDescription("");
+    setDeptId("");
     setStatus("active");
     setError("");
     setIsModalOpen(true);
@@ -90,6 +116,8 @@ export default function PositionsPage() {
     setCode(pos.code || "");
     setName(pos.name);
     setDescription(pos.description || "");
+    const dId = typeof pos.departmentId === "object" && pos.departmentId ? pos.departmentId._id : (typeof pos.departmentId === "string" ? pos.departmentId : "");
+    setDeptId(dId);
     setStatus(pos.status);
     setError("");
     setIsModalOpen(true);
@@ -116,6 +144,7 @@ export default function PositionsPage() {
           code,
           name,
           description,
+          departmentId: deptId || null,
           status,
         }),
       });
@@ -248,17 +277,35 @@ export default function PositionsPage() {
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-[#a39b8b]">สถานะ:</span>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-[#121c15] text-[#f3efe6] text-xs px-3 py-1.5 rounded-xl border border-[#2d4734] focus:outline-none focus:border-[#98c9a3]"
-          >
-            <option value="all">ทุกสถานะ</option>
-            <option value="active">เปิดใช้งาน (Active)</option>
-            <option value="inactive">ปิดใช้งาน (Inactive)</option>
-          </select>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-[#a39b8b]">แผนก:</span>
+            <select
+              value={departmentFilter}
+              onChange={(e) => setDepartmentFilter(e.target.value)}
+              className="bg-[#121c15] text-[#f3efe6] text-xs px-3 py-1.5 rounded-xl border border-[#2d4734] focus:outline-none focus:border-[#98c9a3]"
+            >
+              <option value="all">ทุกแผนก</option>
+              {departmentsList.map((d) => (
+                <option key={d._id} value={d._id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-[#a39b8b]">สถานะ:</span>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="bg-[#121c15] text-[#f3efe6] text-xs px-3 py-1.5 rounded-xl border border-[#2d4734] focus:outline-none focus:border-[#98c9a3]"
+            >
+              <option value="all">ทุกสถานะ</option>
+              <option value="active">เปิดใช้งาน (Active)</option>
+              <option value="inactive">ปิดใช้งาน (Inactive)</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -281,6 +328,7 @@ export default function PositionsPage() {
                   <th className="py-4 px-6">#</th>
                   <th className="py-4 px-6">รหัสตำแหน่ง</th>
                   <th className="py-4 px-6">ชื่อตำแหน่งงาน</th>
+                  <th className="py-4 px-6">แผนกที่สังกัด</th>
                   <th className="py-4 px-6">รายละเอียดเพิ่มเติม</th>
                   <th className="py-4 px-4 text-center">สถานะ</th>
                   <th className="py-4 px-6 text-right">วันที่สร้าง</th>
@@ -290,6 +338,12 @@ export default function PositionsPage() {
 
               <tbody className="divide-y divide-[#2d4734]/50 text-sm">
                 {positions
+                  .filter((pos) => {
+                    if (departmentFilter === "all") return true;
+                    if (!pos.departmentId) return false;
+                    const dId = typeof pos.departmentId === "object" ? pos.departmentId._id : pos.departmentId;
+                    return dId === departmentFilter;
+                  })
                   .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                   .map((pos, idx) => (
                     <tr key={pos._id} className="hover:bg-[#18241c]/60 transition-colors">
@@ -303,6 +357,17 @@ export default function PositionsPage() {
 
                       <td className="py-4 px-6 font-bold text-[#f3efe6]">
                         {pos.name}
+                      </td>
+
+                      <td className="py-4 px-6 text-xs text-[#98c9a3] font-medium">
+                        {typeof pos.departmentId === "object" && pos.departmentId ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#1a2e21] border border-[#98c9a3]/30">
+                            <Building2 className="w-3.5 h-3.5 text-[#98c9a3]" />
+                            {pos.departmentId.name}
+                          </span>
+                        ) : (
+                          <span className="text-[#a39b8b]">-</span>
+                        )}
                       </td>
 
                       <td className="py-4 px-6 text-xs text-[#a39b8b]">
@@ -426,6 +491,24 @@ export default function PositionsPage() {
                   placeholder="เช่น พนักงานขาย, ผู้จัดการฝ่ายขาย, บัญชี"
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
+                  แผนกที่สังกัด (Department)
+                </label>
+                <select
+                  value={deptId}
+                  onChange={(e) => setDeptId(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
+                >
+                  <option value="">-- ไม่ระบุแผนก / ทุกแผนก --</option>
+                  {departmentsList.map((d) => (
+                    <option key={d._id} value={d._id}>
+                      {d.name} {d.code ? `(${d.code})` : ""}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>

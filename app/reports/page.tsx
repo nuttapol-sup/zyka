@@ -546,17 +546,23 @@ function ReportsPageContent() {
       {/* PRINT AREA CONTAINER */}
       <div ref={printRef} className="space-y-6 print:text-black">
         {/* Print Only Title Header */}
-        <div className="hidden print:block border-b-2 border-black pb-4 mb-6">
-          <div className="flex justify-between items-center">
+        <div className="hidden print:block border-b-2 border-black pb-4 mb-6 text-black">
+          <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-2xl font-bold text-black uppercase">รายงานสรุปยอดขายและการชำระเงิน</h1>
-              <p className="text-xs text-gray-600 mt-1">
-                ช่วงเวลาข้อมูล: {dateRange.startDate} ถึง {dateRange.endDate} (พรีเซ็ต: {dateRange.preset})
+              <h1 className="text-2xl font-bold text-black uppercase tracking-wide">
+                {activeTab === "sales" && "รายงานสรุปภาพรวมยอดขาย & สถิติการวิเคราะห์ (Sales & Analytics)"}
+                {activeTab === "customer" && "รายงานสรุปยอดซื้อและยอดค้างชำระแยกตามลูกค้า (Sales by Customer)"}
+                {activeTab === "product" && "รายงานสรุปยอดขายแยกตามรายการสินค้า (Sales by Product)"}
+                {activeTab === "delivery" && "รายงานสรุปสถานะการจัดส่ง & ยอดขายพนักงาน (Delivery & Salesperson)"}
+                {activeTab === "user" && "รายงานประวัติการเข้าใช้งานระบบ (User Access Logs)"}
+              </h1>
+              <p className="text-xs text-gray-700 mt-1">
+                ระบบจัดการ ZYKA Access Control | ช่วงเวลาข้อมูล: {dateRange.startDate || "ทั้งหมด"} ถึง {dateRange.endDate || "ปัจจุบัน"} ({preset === "7days" ? "7 วันย้อนหลัง" : preset === "this_month" ? "เดือนนี้" : preset === "this_year" ? "ปีนี้" : preset})
               </p>
             </div>
-            <div className="text-right text-xs text-gray-500">
-              <p>วันที่พิมพ์: {new Date().toLocaleDateString("th-TH")}</p>
-              <p>ผู้ออกรายงาน: Admin</p>
+            <div className="text-right text-xs text-gray-700 font-mono">
+              <p>วันที่พิมพ์: {new Date().toLocaleDateString("th-TH", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
+              <p>ผู้พิมพ์รายงาน: {currentUser?.name || currentUser?.username || "Admin"}</p>
             </div>
           </div>
         </div>

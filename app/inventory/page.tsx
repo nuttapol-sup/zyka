@@ -31,8 +31,9 @@ interface SubCategoryRef {
 
 interface ZoneItem {
   _id: string;
-  code: string;
+  code?: string;
   name: string;
+  locationId?: { _id: string; name: string; code: string } | string;
   status?: string;
 }
 
@@ -479,7 +480,24 @@ export default function InventoryPage() {
 
           <select
             value={filterLocation}
-            onChange={(e) => setFilterLocation(e.target.value)}
+            onChange={(e) => {
+              const newLocId = e.target.value;
+              setFilterLocation(newLocId);
+              if (newLocId !== "all") {
+                const validZones = zones.filter((z) => {
+                  const locId =
+                    typeof z.locationId === "object" ? z.locationId?._id : z.locationId;
+                  return locId === newLocId;
+                });
+                if (
+                  filterZone !== "all" &&
+                  filterZone !== "none" &&
+                  !validZones.some((z) => z._id === filterZone)
+                ) {
+                  setFilterZone("all");
+                }
+              }
+            }}
             className="bg-[#121c15] text-[#f3efe6] text-xs px-3 py-2 rounded-xl border border-[#2d4734] focus:outline-none focus:border-[#98c9a3]"
           >
             <option value="all">ทุกสถานที่เก็บสินค้า</option>
@@ -497,9 +515,16 @@ export default function InventoryPage() {
           >
             <option value="all">ทุกโซน (Zone)</option>
             <option value="none">ไม่ระบุโซน (Unassigned)</option>
-            {zones.map((z) => (
+            {(filterLocation === "all"
+              ? zones
+              : zones.filter((z) => {
+                  const locId =
+                    typeof z.locationId === "object" ? z.locationId?._id : z.locationId;
+                  return locId === filterLocation;
+                })
+            ).map((z) => (
               <option key={z._id} value={z._id}>
-                {z.name} (รหัส: {z.code})
+                {z.name}{z.code ? ` (รหัส: ${z.code})` : ""}
               </option>
             ))}
           </select>
@@ -926,7 +951,20 @@ export default function InventoryPage() {
                 <select
                   required
                   value={selectedLocationId}
-                  onChange={(e) => setSelectedLocationId(e.target.value)}
+                  onChange={(e) => {
+                    const newLocId = e.target.value;
+                    setSelectedLocationId(newLocId);
+                    if (newLocId) {
+                      const validZones = zones.filter((z) => {
+                        const locId =
+                          typeof z.locationId === "object" ? z.locationId?._id : z.locationId;
+                        return locId === newLocId;
+                      });
+                      if (selectedZoneId && !validZones.some((z) => z._id === selectedZoneId)) {
+                        setSelectedZoneId("");
+                      }
+                    }
+                  }}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
                 >
                   <option value="">-- เลือก --</option>
@@ -949,9 +987,16 @@ export default function InventoryPage() {
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
                 >
                   <option value="">-- ไม่ระบุโซน / ทุกโซน --</option>
-                  {zones.map((z) => (
+                  {(!selectedLocationId
+                    ? zones
+                    : zones.filter((z) => {
+                        const locId =
+                          typeof z.locationId === "object" ? z.locationId?._id : z.locationId;
+                        return locId === selectedLocationId;
+                      })
+                  ).map((z) => (
                     <option key={z._id} value={z._id}>
-                      {z.name} (รหัส: {z.code})
+                      {z.name}{z.code ? ` (รหัส: ${z.code})` : ""}
                     </option>
                   ))}
                 </select>

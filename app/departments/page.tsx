@@ -2,46 +2,39 @@
 
 import { useEffect, useState } from "react";
 import {
-  Layers,
+  FolderTree,
   Plus,
   Search,
   RefreshCw,
   Edit,
   Trash2,
   CheckCircle2,
+  XCircle,
   AlertCircle,
   X,
 } from "lucide-react";
 import Pagination from "@/app/components/Pagination";
 import { getApiPath } from "@/app/utils/apiPath";
 
-interface StorageLocationItem {
-  _id: string;
-  code: string;
-  name: string;
-  status: string;
-}
-
-interface ZoneItem {
+interface DepartmentItem {
   _id: string;
   code?: string;
   name: string;
-  locationId?: { _id: string; name: string; code: string } | string;
   description?: string;
+  seq: number;
   status: "active" | "inactive";
   createdAt: string;
 }
 
-export default function ZonesPage() {
-  const [zones, setZones] = useState<ZoneItem[]>([]);
-  const [locations, setLocations] = useState<StorageLocationItem[]>([]);
+export default function DepartmentsPage() {
+  const [departments, setDepartments] = useState<DepartmentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -49,26 +42,26 @@ export default function ZonesPage() {
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<ZoneItem | null>(null);
+  const [editingItem, setEditingItem] = useState<DepartmentItem | null>(null);
 
   // Form State
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
-  const [locationId, setLocationId] = useState("");
   const [description, setDescription] = useState("");
+  const [seq, setSeq] = useState<number>(0);
   const [status, setStatus] = useState<"active" | "inactive">("active");
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const fetchZones = async () => {
+  const fetchDepartments = async () => {
     setLoading(true);
     try {
-      const res = await fetch(getApiPath("/api/zones"), { cache: "no-store" });
+      const res = await fetch(getApiPath("/api/departments"), { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
-        setZones(data.zones || []);
+        setDepartments(data.departments || []);
       }
     } catch (err) {
       console.error(err);
@@ -77,44 +70,27 @@ export default function ZonesPage() {
     }
   };
 
-  const fetchLocations = async () => {
-    try {
-      const res = await fetch(getApiPath("/api/locations"), { cache: "no-store" });
-      if (res.ok) {
-        const data = await res.json();
-        setLocations(data.locations?.filter((l: any) => l.status === "active") || []);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   useEffect(() => {
-    fetchZones();
-    fetchLocations();
+    fetchDepartments();
   }, []);
 
   const handleOpenCreateModal = () => {
     setEditingItem(null);
     setCode("");
     setName("");
-    setLocationId("");
     setDescription("");
+    setSeq(departments.length + 1);
     setStatus("active");
     setError("");
     setIsModalOpen(true);
   };
 
-  const handleOpenEditModal = (item: ZoneItem) => {
+  const handleOpenEditModal = (item: DepartmentItem) => {
     setEditingItem(item);
     setCode(item.code || "");
     setName(item.name);
-    setLocationId(
-      typeof item.locationId === "object"
-        ? item.locationId?._id || ""
-        : item.locationId || ""
-    );
     setDescription(item.description || "");
+    setSeq(item.seq || 0);
     setStatus(item.status);
     setError("");
     setIsModalOpen(true);
@@ -125,7 +101,7 @@ export default function ZonesPage() {
     setError("");
 
     if (!name.trim()) {
-      setError("กรุณากรอกชื่อโซนสินค้า");
+      setError("กรุณากรอกชื่อแผนก");
       return;
     }
 
@@ -133,8 +109,8 @@ export default function ZonesPage() {
 
     try {
       const url = editingItem
-        ? getApiPath(`/api/zones/${editingItem._id}`)
-        : getApiPath("/api/zones");
+        ? getApiPath(`/api/departments/${editingItem._id}`)
+        : getApiPath("/api/departments");
       const method = editingItem ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -143,8 +119,8 @@ export default function ZonesPage() {
         body: JSON.stringify({
           code: code.trim(),
           name: name.trim(),
-          locationId: locationId || null,
           description: description.trim(),
+          seq,
           status,
         }),
       });
@@ -155,10 +131,10 @@ export default function ZonesPage() {
       }
 
       setSuccess(
-        editingItem ? "อัปเดตข้อมูลโซนสินค้าสำเร็จ!" : "เพิ่มโซนสินค้าใหม่สำเร็จ!"
+        editingItem ? "อัปเดตข้อมูลแผนกสำเร็จ!" : "เพิ่มข้อมูลแผนกใหม่สำเร็จ!"
       );
       setIsModalOpen(false);
-      fetchZones();
+      fetchDepartments();
       setTimeout(() => setSuccess(""), 3500);
     } catch (err: any) {
       setError(err.message);
@@ -167,40 +143,37 @@ export default function ZonesPage() {
     }
   };
 
-  const handleDelete = async (id: string, zoneName: string) => {
-    if (!confirm(`คุณต้องการลบโซนสินค้า "${zoneName}" ใช่หรือไม่?`)) return;
+  const handleDelete = async (id: string, deptName: string) => {
+    if (!confirm(`คุณต้องการลบแผนก "${deptName}" ใช่หรือไม่?`)) return;
 
     try {
-      const res = await fetch(getApiPath(`/api/zones/${id}`), { method: "DELETE" });
+      const res = await fetch(getApiPath(`/api/departments/${id}`), { method: "DELETE" });
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || "ไม่สามารถลบโซนสินค้าได้");
+        throw new Error(data.error || "ไม่สามารถลบแผนกได้");
       }
 
-      setSuccess("ลบโซนสินค้าสำเร็จ");
-      fetchZones();
+      setSuccess("ลบข้อมูลแผนกสำเร็จ");
+      fetchDepartments();
       setTimeout(() => setSuccess(""), 3500);
     } catch (err: any) {
       alert(err.message);
     }
   };
 
-  const filteredZones = zones.filter((z) => {
-    const locName =
-      typeof z.locationId === "object" && z.locationId?.name ? z.locationId.name : "";
+  const filteredDepartments = departments.filter((d) => {
     const matchesSearch =
-      z.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (z.code && z.code.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      locName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (z.description && z.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (d.code && d.code.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (d.description && d.description.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    const matchesStatus = filterStatus === "all" || z.status === filterStatus;
+    const matchesStatus = filterStatus === "all" || d.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
 
-  const totalPages = Math.ceil(filteredZones.length / itemsPerPage);
-  const paginatedZones = filteredZones.slice(
+  const totalPages = Math.ceil(filteredDepartments.length / itemsPerPage);
+  const paginatedDepartments = filteredDepartments.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -211,21 +184,21 @@ export default function ZonesPage() {
       <div className="glass-earth-card p-6 rounded-3xl border border-[#98c9a3]/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#446e50] to-[#1f3627] border border-[#98c9a3]/40 flex items-center justify-center">
-            <Layers className="w-6 h-6 text-[#98c9a3]" />
+            <FolderTree className="w-6 h-6 text-[#98c9a3]" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gradient-earth">
-              บันทึก Zone สินค้า (Zone Master)
+              บันทึกข้อมูลแผนก (Department Master)
             </h1>
             <p className="text-xs text-[#a39b8b]">
-              จัดการข้อมูลโซนสินค้า / โซนจัดเก็บ ในคลังสินค้าสำหรับระบุในสต็อก
+              จัดการข้อมูลรายชื่อแผนกงานภายในองค์กร สำหรับผูกข้อมูลตำแหน่งและบุคลากร
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           <button
-            onClick={fetchZones}
+            onClick={fetchDepartments}
             className="p-2.5 rounded-xl bg-[#121c15] text-[#a39b8b] hover:text-[#f3efe6] border border-[#2d4734] transition-colors"
             title="รีเฟรชข้อมูล"
           >
@@ -237,7 +210,7 @@ export default function ZonesPage() {
             className="btn-earth-primary px-4 py-2.5 rounded-2xl text-xs font-bold flex items-center gap-2 shadow-lg"
           >
             <Plus className="w-4 h-4" />
-            <span>เพิ่ม Zone ใหม่</span>
+            <span>เพิ่มแผนกใหม่</span>
           </button>
         </div>
       </div>
@@ -250,13 +223,50 @@ export default function ZonesPage() {
         </div>
       )}
 
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="glass-earth-card p-4 rounded-2xl border border-[#2d4734] flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-[#1e3425] text-[#98c9a3] border border-[#98c9a3]/30 flex items-center justify-center">
+            <FolderTree className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-xs text-[#a39b8b]">แผนกทั้งหมด</p>
+            <p className="text-xl font-bold text-[#f3efe6] font-mono">{departments.length} รายการ</p>
+          </div>
+        </div>
+
+        <div className="glass-earth-card p-4 rounded-2xl border border-emerald-900/40 bg-emerald-950/20 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-emerald-900/40 text-emerald-300 border border-emerald-600/40 flex items-center justify-center">
+            <CheckCircle2 className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-xs text-emerald-300/80">สถานะเปิดใช้งาน</p>
+            <p className="text-xl font-bold text-emerald-300 font-mono">
+              {departments.filter((d) => d.status === "active").length} แผนก
+            </p>
+          </div>
+        </div>
+
+        <div className="glass-earth-card p-4 rounded-2xl border border-rose-900/40 bg-rose-950/20 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-rose-900/40 text-rose-300 border border-rose-600/40 flex items-center justify-center">
+            <XCircle className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-xs text-rose-300/80">สถานะปิดใช้งาน</p>
+            <p className="text-xl font-bold text-rose-300 font-mono">
+              {departments.filter((d) => d.status === "inactive").length} แผนก
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Search & Filter Bar */}
       <div className="glass-earth-card p-4 rounded-2xl border border-[#2d4734] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-[#a39b8b] absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="ค้นหาตามรหัสโซน / ชื่อโซน / สถานที่เก็บ / รายละเอียด..."
+            placeholder="ค้นหาตามรหัสแผนก / ชื่อแผนก / รายละเอียด..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] placeholder-[#a39b8b]/50 focus:outline-none focus:border-[#98c9a3]"
@@ -282,26 +292,26 @@ export default function ZonesPage() {
         {loading ? (
           <div className="p-12 text-center text-[#a39b8b]">
             <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-[#98c9a3]" />
-            กำลังโหลดข้อมูล Zone...
+            กำลังโหลดข้อมูลแผนก...
           </div>
-        ) : filteredZones.length === 0 ? (
-          <div className="p-12 text-center text-[#a39b8b]">ไม่พบข้อมูล Zone สินค้า</div>
+        ) : filteredDepartments.length === 0 ? (
+          <div className="p-12 text-center text-[#a39b8b]">ไม่พบข้อมูลแผนก</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-[#121c15] border-b border-[#2d4734] text-xs font-semibold text-[#a39b8b] uppercase tracking-wider">
-                  <th className="py-4 px-6">รหัส Zone</th>
-                  <th className="py-4 px-6">ชื่อ Zone</th>
-                  <th className="py-4 px-6">สถานที่เก็บสินค้า</th>
+                  <th className="py-4 px-6">รหัส</th>
+                  <th className="py-4 px-6">ชื่อแผนก</th>
                   <th className="py-4 px-6">รายละเอียด</th>
+                  <th className="py-4 px-4 text-center">ลำดับ</th>
                   <th className="py-4 px-4 text-center">สถานะ</th>
                   <th className="py-4 px-6 text-center">จัดการ</th>
                 </tr>
               </thead>
 
               <tbody className="divide-y divide-[#2d4734]/50 text-sm">
-                {paginatedZones.map((item) => (
+                {paginatedDepartments.map((item) => (
                   <tr key={item._id} className="hover:bg-[#18241c]/60 transition-colors">
                     <td className="py-4 px-6 font-mono text-xs font-bold text-[#98c9a3]">
                       {item.code || "-"}
@@ -309,23 +319,17 @@ export default function ZonesPage() {
 
                     <td className="py-4 px-6">
                       <span className="font-bold text-[#f3efe6] flex items-center gap-2">
-                        <Layers className="w-4 h-4 text-[#98c9a3]" />
+                        <FolderTree className="w-4 h-4 text-[#98c9a3]" />
                         {item.name}
                       </span>
                     </td>
 
-                    <td className="py-4 px-6">
-                      {typeof item.locationId === "object" && item.locationId?.name ? (
-                        <span className="px-2.5 py-1 rounded-full bg-[#172b1d] text-[#98c9a3] text-xs font-semibold border border-[#98c9a3]/30 flex items-center gap-1 w-fit">
-                          📍 {item.locationId.name}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-[#a39b8b]">-</span>
-                      )}
-                    </td>
-
                     <td className="py-4 px-6 text-xs text-[#a39b8b]">
                       {item.description || "-"}
+                    </td>
+
+                    <td className="py-4 px-4 text-center font-mono text-xs text-[#a39b8b]">
+                      {item.seq}
                     </td>
 
                     <td className="py-4 px-4 text-center">
@@ -345,14 +349,14 @@ export default function ZonesPage() {
                         <button
                           onClick={() => handleOpenEditModal(item)}
                           className="p-1.5 rounded-lg bg-[#121c15] text-[#98c9a3] hover:bg-[#1c2d22] border border-[#2d4734] transition-colors"
-                          title="แก้ไขโซน"
+                          title="แก้ไขแผนก"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(item._id, item.name)}
                           className="p-1.5 rounded-lg bg-[#121c15] text-red-400 hover:bg-red-950/40 border border-[#2d4734] transition-colors"
-                          title="ลบโซน"
+                          title="ลบแผนก"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -370,7 +374,7 @@ export default function ZonesPage() {
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
-            totalItems={filteredZones.length}
+            totalItems={filteredDepartments.length}
             itemsPerPage={itemsPerPage}
             onPageChange={(page) => setCurrentPage(page)}
             onItemsPerPageChange={(size) => setItemsPerPage(size)}
@@ -378,14 +382,14 @@ export default function ZonesPage() {
         </div>
       </div>
 
-      {/* Modal Form for Create / Edit Zone */}
+      {/* Modal Form for Create / Edit Department */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
           <div className="max-w-md w-full glass-earth-card p-6 sm:p-8 rounded-3xl border border-[#98c9a3]/30 space-y-6 relative overflow-hidden">
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-[#2d4734] pb-4">
               <h3 className="text-xl font-bold text-[#f3efe6]">
-                {editingItem ? "แก้ไขโซนสินค้า (Edit Zone)" : "เพิ่ม Zone สินค้าใหม่ (New Zone)"}
+                {editingItem ? "แก้ไขข้อมูลแผนก (Edit Department)" : "เพิ่มแผนกใหม่ (New Department)"}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -408,21 +412,21 @@ export default function ZonesPage() {
               {/* Code */}
               <div>
                 <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
-                  รหัสโซน (Zone Code)
+                  รหัสแผนก (Department Code)
                 </label>
                 <input
                   type="text"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] font-mono focus:outline-none focus:border-[#98c9a3]"
-                  placeholder="เช่น Z-01 (ไม่ระบุก็ได้)"
+                  placeholder="เช่น D-01 (ไม่ระบุก็ได้)"
                 />
               </div>
 
               {/* Name */}
               <div>
                 <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
-                  ชื่อโซนสินค้า (Zone Name) *
+                  ชื่อแผนก (Department Name) *
                 </label>
                 <input
                   type="text"
@@ -430,27 +434,8 @@ export default function ZonesPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
-                  placeholder="เช่น โซน A (สินค้าทั่วไป), โซนเย็น"
+                  placeholder="เช่น ฝ่ายขาย, ฝ่ายผลิต, ฝ่ายจัดซื้อ"
                 />
-              </div>
-
-              {/* Location */}
-              <div>
-                <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
-                  สถานที่เก็บสินค้า (Storage Location)
-                </label>
-                <select
-                  value={locationId}
-                  onChange={(e) => setLocationId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
-                >
-                  <option value="">-- ไม่ระบุสถานที่เก็บสินค้า --</option>
-                  {locations.map((loc) => (
-                    <option key={loc._id} value={loc._id}>
-                      {loc.name} (รหัส: {loc.code})
-                    </option>
-                  ))}
-                </select>
               </div>
 
               {/* Description */}
@@ -463,7 +448,21 @@ export default function ZonesPage() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
-                  placeholder="ระบุรายละเอียดเพิ่มเติมของโซน..."
+                  placeholder="ระบุรายละเอียดเพิ่มเติม..."
+                />
+              </div>
+
+              {/* Sequence */}
+              <div>
+                <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
+                  ลำดับการแสดงผล (Seq)
+                </label>
+                <input
+                  type="number"
+                  value={seq}
+                  onChange={(e) => setSeq(parseInt(e.target.value, 10) || 0)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] font-mono focus:outline-none focus:border-[#98c9a3]"
+                  placeholder="1"
                 />
               </div>
 
@@ -497,7 +496,7 @@ export default function ZonesPage() {
                   className="btn-earth-primary px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg disabled:opacity-50"
                 >
                   {saving && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
-                  <span>{editingItem ? "บันทึกการแก้ไข" : "สร้างโซนสินค้า"}</span>
+                  <span>{editingItem ? "บันทึกการแก้ไข" : "สร้างข้อมูลแผนก"}</span>
                 </button>
               </div>
             </form>

@@ -155,3 +155,29 @@ export function buildMenuFlexMessage() {
     text: "🌱 Zyka ERP Assistant\nพิมพ์ 'สต็อก' หรือ 'ติดตาม'",
   };
 }
+
+// Fetch LINE User Profile (Display Name & Picture)
+export async function getLineUserProfile(
+  userId: string,
+  accessToken: string
+): Promise<{ displayName: string; pictureUrl?: string } | null> {
+  const cleanToken = (accessToken || "").trim().replace(/[\r\n\s]+/g, "");
+  if (!userId || !cleanToken) return null;
+  try {
+    const res = await fetch(`https://api.line.me/v2/bot/profile/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${cleanToken}`,
+      },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return {
+        displayName: data.displayName || "",
+        pictureUrl: data.pictureUrl || "",
+      };
+    }
+  } catch (err) {
+    console.error("Failed to fetch LINE user profile:", err);
+  }
+  return null;
+}

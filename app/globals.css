@@ -86,11 +86,13 @@ body {
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
   }
 
   @page {
     size: A4 portrait;
-    margin: 6mm 8mm 6mm 8mm;
+    margin: 8mm 10mm 8mm 10mm;
   }
 
   html,
@@ -116,6 +118,78 @@ body {
     margin: 0 !important;
     max-width: 100% !important;
     width: 100% !important;
+  }
+
+  /* Force all cards, containers, and backgrounds to crisp white with thin dark gray border */
+  .glass-earth-card,
+  .glass-earth-header,
+  div[class*="bg-[#121c15]"],
+  div[class*="bg-[#18241c]"],
+  div[class*="bg-[#1e3425]"],
+  div[class*="bg-[#0f1712]"],
+  div[class*="bg-[#253529]"],
+  div[class*="bg-[#1a2b1f]"] {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+    border-color: #d1d5db !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Force all text colors to high-contrast black or charcoal gray */
+  .text-gradient-earth,
+  h1, h2, h3, h4, h5, h6,
+  span, p, td, th, label, strong, b, div, a {
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+  }
+
+  /* Tables formatting for print */
+  table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+
+  th {
+    background-color: #f3f4f6 !important;
+    color: #000000 !important;
+    border: 1px solid #9ca3af !important;
+    font-weight: 700 !important;
+  }
+
+  td {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #d1d5db !important;
+  }
+
+  tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .glass-earth-card,
+  .break-inside-avoid {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Progress bar and chart backgrounds for print */
+  div[class*="h-4 rounded-lg bg-[#18241c]"],
+  div[class*="h-4 rounded-full bg-[#121c15]"] {
+    background-color: #e5e7eb !important;
+    border-color: #9ca3af !important;
+  }
+
+  /* Badges top of chart bars */
+  div[class*="absolute -top-7"],
+  span[class*="text-[10px] font-mono font-extrabold"] {
+    background-color: #f3f4f6 !important;
+    color: #000000 !important;
+    border: 1px solid #9ca3af !important;
   }
 
   .page-break,

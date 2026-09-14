@@ -34,6 +34,9 @@ import {
   Briefcase,
   MessageSquare,
   Layers,
+  Ruler,
+  Building2,
+  Truck,
 } from "lucide-react";
 import { getApiPath } from "@/app/utils/apiPath";
 
@@ -125,10 +128,9 @@ export default function Navbar() {
   ]);
   const [reportsSubOrder, setReportsSubOrder] = useState<string[]>([
     "sales",
-    "charts",
     "customer",
     "product",
-    "salesperson",
+    "delivery",
     "user",
   ]);
   const [dataRecordsSubOrder, setDataRecordsSubOrder] = useState<string[]>([
@@ -136,6 +138,7 @@ export default function Navbar() {
     "products",
     "inventory",
     "zones",
+    "units",
     "categories",
     "sub-categories",
     "locations",
@@ -181,7 +184,19 @@ export default function Navbar() {
       if (res.ok) {
         const data = await res.json();
         if (data.menuOrder && Array.isArray(data.menuOrder)) setMenuOrder(data.menuOrder);
-        if (data.reportsSubOrder && Array.isArray(data.reportsSubOrder)) setReportsSubOrder(data.reportsSubOrder);
+        if (data.reportsSubOrder && Array.isArray(data.reportsSubOrder)) {
+          const rList: string[] = [];
+          data.reportsSubOrder.forEach((k: string) => {
+            let key = k;
+            if (key === "charts") key = "sales";
+            if (key === "salesperson") key = "delivery";
+            if (!rList.includes(key)) rList.push(key);
+          });
+          ["sales", "customer", "product", "delivery", "user"].forEach((k) => {
+            if (!rList.includes(k)) rList.push(k);
+          });
+          setReportsSubOrder(rList);
+        }
         if (data.dataRecordsSubOrder && Array.isArray(data.dataRecordsSubOrder)) {
           const list = [...data.dataRecordsSubOrder];
           if (!list.includes("positions")) list.push("positions");
@@ -484,13 +499,12 @@ export default function Navbar() {
               }
 
               if (key === "reports") {
-                const isSalesAllowed = isSubTabAllowed(user, "sales");
-                const isChartsAllowed = isSubTabAllowed(user, "charts");
+                const isSalesAllowed = isSubTabAllowed(user, "sales") || isSubTabAllowed(user, "charts");
                 const isCustomerAllowed = isSubTabAllowed(user, "customer");
                 const isProductAllowed = isSubTabAllowed(user, "product");
-                const isSalespersonAllowed = isSubTabAllowed(user, "salesperson");
+                const isDeliveryAllowed = isSubTabAllowed(user, "delivery") || isSubTabAllowed(user, "salesperson");
                 const isUserAllowed = isSubTabAllowed(user, "user");
-                const hasAnyReports = isSalesAllowed || isChartsAllowed || isCustomerAllowed || isProductAllowed || isSalespersonAllowed || isUserAllowed;
+                const hasAnyReports = isSalesAllowed || isCustomerAllowed || isProductAllowed || isDeliveryAllowed || isUserAllowed;
 
                 if (!hasAnyReports) return null;
 
@@ -510,7 +524,7 @@ export default function Navbar() {
                     {mobileReportsOpen && (
                       <div className="p-2 space-y-1 bg-[#18241c]/80 border-t border-[#2d4734]/40">
                         {reportsSubOrder.map((subKey) => {
-                          if (subKey === "sales" && isSalesAllowed) {
+                          if ((subKey === "sales" || subKey === "charts") && isSalesAllowed) {
                             return (
                               <Link
                                 key="m-sales"
@@ -519,20 +533,7 @@ export default function Navbar() {
                                 className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]"
                               >
                                 <TrendingUp className="w-3.5 h-3.5 text-[#98c9a3]" />
-                                <span>{getLabel("sales", "📊 สรุปยอดขาย (Sales Summary)")}</span>
-                              </Link>
-                            );
-                          }
-                          if (subKey === "charts" && isChartsAllowed) {
-                            return (
-                              <Link
-                                key="m-charts"
-                                href="/reports?tab=charts"
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]"
-                              >
-                                <BarChart3 className="w-3.5 h-3.5 text-[#98c9a3]" />
-                                <span>{getLabel("charts", "📈 กราฟวิเคราะห์ (Sales Charts)")}</span>
+                                <span>{getLabel("sales", "📊 ภาพรวม & กราฟยอดขาย")}</span>
                               </Link>
                             );
                           }
@@ -545,7 +546,7 @@ export default function Navbar() {
                                 className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]"
                               >
                                 <Users className="w-3.5 h-3.5 text-[#98c9a3]" />
-                                <span>{getLabel("customer", "👥 สรุปตามลูกค้า (Sales by Customer)")}</span>
+                                <span>{getLabel("customer", "👥 สรุปตามลูกค้า")}</span>
                               </Link>
                             );
                           }
@@ -558,20 +559,20 @@ export default function Navbar() {
                                 className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]"
                               >
                                 <Package className="w-3.5 h-3.5 text-[#98c9a3]" />
-                                <span>{getLabel("product", "📦 สรุปตามสินค้า (Sales by Product)")}</span>
+                                <span>{getLabel("product", "📦 สรุปตามสินค้า")}</span>
                               </Link>
                             );
                           }
-                          if (subKey === "salesperson" && isSalespersonAllowed) {
+                          if ((subKey === "delivery" || subKey === "salesperson") && isDeliveryAllowed) {
                             return (
                               <Link
-                                key="m-salesperson"
-                                href="/reports?tab=salesperson"
+                                key="m-delivery"
+                                href="/reports?tab=delivery"
                                 onClick={() => setIsMobileMenuOpen(false)}
                                 className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]"
                               >
-                                <UserCheck className="w-3.5 h-3.5 text-[#98c9a3]" />
-                                <span>{getLabel("salesperson", "👔 สรุปตามพนักงานขาย (Salesperson)")}</span>
+                                <Truck className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("delivery", "🚚 สรุปการจัดส่ง & พนักงานขาย")}</span>
                               </Link>
                             );
                           }
@@ -603,11 +604,13 @@ export default function Navbar() {
                 const isProductsAllowed = hasAccess(user, "/products");
                 const isInventoryAllowed = hasAccess(user, "/inventory");
                 const isZonesAllowed = hasAccess(user, "/zones");
+                const isUnitsAllowed = hasAccess(user, "/units");
                 const isLocationsAllowed = hasAccess(user, "/locations");
+                const isDepartmentsAllowed = hasAccess(user, "/departments");
                 const isPersonnelAllowed = hasAccess(user, "/personnel");
                 const isPositionsAllowed = hasAccess(user, "/positions");
                 const isCustomersAllowed = hasAccess(user, "/customers");
-                const hasAnyData = isOrdersAllowed || isCategoriesAllowed || isSubCategoriesAllowed || isProductsAllowed || isInventoryAllowed || isZonesAllowed || isLocationsAllowed || isPersonnelAllowed || isPositionsAllowed || isCustomersAllowed;
+                const hasAnyData = isOrdersAllowed || isCategoriesAllowed || isSubCategoriesAllowed || isProductsAllowed || isInventoryAllowed || isZonesAllowed || isUnitsAllowed || isLocationsAllowed || isDepartmentsAllowed || isPersonnelAllowed || isPositionsAllowed || isCustomersAllowed;
 
                 if (!hasAnyData) return null;
 
@@ -627,7 +630,7 @@ export default function Navbar() {
                     {mobileDataOpen && (
                       <div className="p-2 space-y-1 bg-[#18241c]/80 border-t border-[#2d4734]/40">
                         {(() => {
-                          const ALL_DATA = ["orders", "products", "inventory", "zones", "categories", "sub-categories", "locations", "personnel", "positions", "customers"];
+                          const ALL_DATA = ["orders", "products", "inventory", "zones", "units", "categories", "sub-categories", "locations", "departments", "personnel", "positions", "customers"];
                           const effectiveMobileDataOrder = [...dataRecordsSubOrder];
                           ALL_DATA.forEach((k) => {
                             if (!effectiveMobileDataOrder.includes(k)) effectiveMobileDataOrder.push(k);
@@ -681,11 +684,27 @@ export default function Navbar() {
                               </Link>
                             );
                           }
+                          if (subKey === "units" && isUnitsAllowed) {
+                            return (
+                              <Link key="m-units" href="/units" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                                <Ruler className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("units", "Units (บันทึกหน่วยนับ / หน่วยสินค้า)")}</span>
+                              </Link>
+                            );
+                          }
                           if (subKey === "locations" && isLocationsAllowed) {
                             return (
                               <Link key="m-locations" href="/locations" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
                                 <Warehouse className="w-3.5 h-3.5 text-[#98c9a3]" />
                                 <span>{getLabel("locations", "Locations (สถานที่เก็บสินค้า)")}</span>
+                              </Link>
+                            );
+                          }
+                          if (subKey === "departments" && isDepartmentsAllowed) {
+                            return (
+                              <Link key="m-departments" href="/departments" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-[#e6dfd3] hover:text-[#98c9a3]">
+                                <Building2 className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                <span>{getLabel("departments", "Departments (บันทึกข้อมูลแผนก)")}</span>
                               </Link>
                             );
                           }
@@ -867,14 +886,16 @@ function DataRecordsDropdown({
   const isProductsAllowed = hasAccess(user, "/products");
   const isInventoryAllowed = hasAccess(user, "/inventory");
   const isZonesAllowed = hasAccess(user, "/zones");
+  const isUnitsAllowed = hasAccess(user, "/units");
   const isLocationsAllowed = hasAccess(user, "/locations");
+  const isDepartmentsAllowed = hasAccess(user, "/departments");
   const isPersonnelAllowed = hasAccess(user, "/personnel");
   const isPositionsAllowed = hasAccess(user, "/positions");
   const isCustomersAllowed = hasAccess(user, "/customers");
 
-  const hasAnyAccess = isOrdersAllowed || isCategoriesAllowed || isSubCategoriesAllowed || isProductsAllowed || isInventoryAllowed || isZonesAllowed || isLocationsAllowed || isPersonnelAllowed || isPositionsAllowed || isCustomersAllowed;
+  const hasAnyAccess = isOrdersAllowed || isCategoriesAllowed || isSubCategoriesAllowed || isProductsAllowed || isInventoryAllowed || isZonesAllowed || isUnitsAllowed || isLocationsAllowed || isDepartmentsAllowed || isPersonnelAllowed || isPositionsAllowed || isCustomersAllowed;
 
-  const isDataActive = pathname === "/orders" || pathname === "/categories" || pathname === "/sub-categories" || pathname === "/products" || pathname === "/inventory" || pathname === "/zones" || pathname === "/locations" || pathname === "/personnel" || pathname === "/positions" || pathname === "/customers";
+  const isDataActive = pathname === "/orders" || pathname === "/categories" || pathname === "/sub-categories" || pathname === "/products" || pathname === "/inventory" || pathname === "/zones" || pathname === "/units" || pathname === "/locations" || pathname === "/departments" || pathname === "/personnel" || pathname === "/positions" || pathname === "/customers";
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -886,7 +907,7 @@ function DataRecordsDropdown({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const ALL_DATA_KEYS = ["orders", "products", "inventory", "zones", "categories", "sub-categories", "locations", "personnel", "positions", "customers"];
+  const ALL_DATA_KEYS = ["orders", "products", "inventory", "zones", "units", "categories", "sub-categories", "locations", "departments", "personnel", "positions", "customers"];
   const effectiveSubOrder = Array.isArray(subOrder) ? [...subOrder] : ALL_DATA_KEYS;
   ALL_DATA_KEYS.forEach((k) => {
     if (!effectiveSubOrder.includes(k)) {
@@ -1006,6 +1027,21 @@ function DataRecordsDropdown({
                 </Link>
               );
             }
+            if (key === "units" && isUnitsAllowed) {
+              return (
+                <Link
+                  key="units"
+                  href="/units"
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
+                    pathname === "/units" ? "bg-[#1f3025] text-[#98c9a3] border border-[#98c9a3]/30 font-semibold" : "text-[#e6dfd3] hover:bg-[#18241c] hover:text-[#98c9a3]"
+                  }`}
+                >
+                  <Ruler className="w-4 h-4 text-[#98c9a3]" />
+                  <span>{getLabel("units", "Units (บันทึกหน่วยนับ / หน่วยสินค้า)")}</span>
+                </Link>
+              );
+            }
             if (key === "locations" && isLocationsAllowed) {
               return (
                 <Link
@@ -1018,6 +1054,21 @@ function DataRecordsDropdown({
                 >
                   <Warehouse className="w-4 h-4 text-[#98c9a3]" />
                   <span>{getLabel("locations", "Locations (สถานที่เก็บสินค้า)")}</span>
+                </Link>
+              );
+            }
+            if (key === "departments" && isDepartmentsAllowed) {
+              return (
+                <Link
+                  key="departments"
+                  href="/departments"
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
+                    pathname === "/departments" ? "bg-[#1f3025] text-[#98c9a3] border border-[#98c9a3]/30 font-semibold" : "text-[#e6dfd3] hover:bg-[#18241c] hover:text-[#98c9a3]"
+                  }`}
+                >
+                  <Building2 className="w-4 h-4 text-[#98c9a3]" />
+                  <span>{getLabel("departments", "Departments (บันทึกข้อมูลแผนก)")}</span>
                 </Link>
               );
             }
@@ -1226,7 +1277,7 @@ function AdminManageDropdown({
 function ReportsDropdown({
   pathname,
   user,
-  subOrder = ["sales", "charts", "customer", "product", "salesperson", "user"],
+  subOrder = ["sales", "customer", "product", "delivery", "user"],
   menuCustomLabels = {},
 }: {
   pathname: string;
@@ -1239,14 +1290,13 @@ function ReportsDropdown({
 
   const getLabel = (key: string, fallback: string) => menuCustomLabels[key] || fallback;
 
-  const isSalesAllowed = isSubTabAllowed(user, "sales");
-  const isChartsAllowed = isSubTabAllowed(user, "charts");
+  const isSalesAllowed = isSubTabAllowed(user, "sales") || isSubTabAllowed(user, "charts");
   const isCustomerAllowed = isSubTabAllowed(user, "customer");
   const isProductAllowed = isSubTabAllowed(user, "product");
-  const isSalespersonAllowed = isSubTabAllowed(user, "salesperson");
+  const isDeliveryAllowed = isSubTabAllowed(user, "delivery") || isSubTabAllowed(user, "salesperson");
   const isUserAllowed = isSubTabAllowed(user, "user");
 
-  const hasAnyAccess = isSalesAllowed || isChartsAllowed || isCustomerAllowed || isProductAllowed || isSalespersonAllowed || isUserAllowed;
+  const hasAnyAccess = isSalesAllowed || isCustomerAllowed || isProductAllowed || isDeliveryAllowed || isUserAllowed;
 
   const isReportActive = pathname === "/reports";
 
@@ -1284,7 +1334,7 @@ function ReportsDropdown({
       {isOpen && (
         <div className="absolute left-0 mt-2 w-64 rounded-2xl bg-[#0f1712] border border-[#98c9a3]/30 shadow-2xl backdrop-blur-xl p-2 space-y-1 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
           {subOrder.map((key) => {
-            if (key === "sales" && isSalesAllowed) {
+            if ((key === "sales" || key === "charts") && isSalesAllowed) {
               return (
                 <Link
                   key="sales"
@@ -1293,20 +1343,7 @@ function ReportsDropdown({
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-[#e6dfd3] hover:bg-[#18241c] hover:text-[#98c9a3] transition-colors"
                 >
                   <TrendingUp className="w-4 h-4 text-[#98c9a3]" />
-                  <span>{getLabel("sales", "📊 สรุปยอดขาย (Sales Summary)")}</span>
-                </Link>
-              );
-            }
-            if (key === "charts" && isChartsAllowed) {
-              return (
-                <Link
-                  key="charts"
-                  href="/reports?tab=charts"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-[#e6dfd3] hover:bg-[#18241c] hover:text-[#98c9a3] transition-colors"
-                >
-                  <BarChart3 className="w-4 h-4 text-[#98c9a3]" />
-                  <span>{getLabel("charts", "📈 กราฟวิเคราะห์ (Sales Charts)")}</span>
+                  <span>{getLabel("sales", "📊 ภาพรวม & กราฟยอดขาย")}</span>
                 </Link>
               );
             }
@@ -1319,7 +1356,7 @@ function ReportsDropdown({
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-[#e6dfd3] hover:bg-[#18241c] hover:text-[#98c9a3] transition-colors"
                 >
                   <Users className="w-4 h-4 text-[#98c9a3]" />
-                  <span>{getLabel("customer", "👥 สรุปตามลูกค้า (Sales by Customer)")}</span>
+                  <span>{getLabel("customer", "👥 สรุปตามลูกค้า")}</span>
                 </Link>
               );
             }
@@ -1332,20 +1369,20 @@ function ReportsDropdown({
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-[#e6dfd3] hover:bg-[#18241c] hover:text-[#98c9a3] transition-colors"
                 >
                   <Package className="w-4 h-4 text-[#98c9a3]" />
-                  <span>{getLabel("product", "📦 สรุปตามสินค้า (Sales by Product)")}</span>
+                  <span>{getLabel("product", "📦 สรุปตามสินค้า")}</span>
                 </Link>
               );
             }
-            if (key === "salesperson" && isSalespersonAllowed) {
+            if ((key === "delivery" || key === "salesperson") && isDeliveryAllowed) {
               return (
                 <Link
-                  key="salesperson"
-                  href="/reports?tab=salesperson"
+                  key="delivery"
+                  href="/reports?tab=delivery"
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-[#e6dfd3] hover:bg-[#18241c] hover:text-[#98c9a3] transition-colors"
                 >
-                  <UserCheck className="w-4 h-4 text-[#98c9a3]" />
-                  <span>{getLabel("salesperson", "👔 สรุปตามพนักงานขาย (Salesperson)")}</span>
+                  <Truck className="w-4 h-4 text-[#98c9a3]" />
+                  <span>{getLabel("delivery", "🚚 สรุปการจัดส่ง & พนักงานขาย")}</span>
                 </Link>
               );
             }

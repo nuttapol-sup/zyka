@@ -7,6 +7,8 @@ export interface IUser extends Document {
   role: "admin" | "user";
   allowedPages: string[];
   referId?: mongoose.Types.ObjectId | string;
+  lineUserId?: string;
+  canAccessLineReports?: boolean;
   createdAt: Date;
 }
 
@@ -41,6 +43,15 @@ const UserSchema: Schema<IUser> = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Refer",
       default: null,
+    },
+    lineUserId: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    canAccessLineReports: {
+      type: Boolean,
+      default: false,
     },
   },
   {

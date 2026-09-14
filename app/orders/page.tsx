@@ -306,6 +306,7 @@ function SingleStandardDocPage({
 
 interface CustomerItem {
   _id: string;
+  code?: string;
   fullname: string;
   phone?: string;
   address?: string;
@@ -423,6 +424,8 @@ export default function OrdersPage() {
   // Create Order Modal State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
+  const [isCustomerPickerOpen, setIsCustomerPickerOpen] = useState(false);
+  const [customerSearchTerm, setCustomerSearchTerm] = useState("");
   const [selectedSalespersonId, setSelectedSalespersonId] = useState("");
   const [selectedSalespersonName, setSelectedSalespersonName] = useState("");
   const [isSalespersonPickerOpen, setIsSalespersonPickerOpen] = useState(false);
@@ -579,8 +582,22 @@ export default function OrdersPage() {
     );
   });
 
+  const filteredCustomersList = customers.filter((c) => {
+    if (!customerSearchTerm) return true;
+    const term = customerSearchTerm.toLowerCase();
+    return (
+      (c.fullname && c.fullname.toLowerCase().includes(term)) ||
+      (c.code && c.code.toLowerCase().includes(term)) ||
+      (c.phone && c.phone.includes(term)) ||
+      (c.taxId && c.taxId.includes(term)) ||
+      (c.address && c.address.toLowerCase().includes(term))
+    );
+  });
+
   const openCreateModal = () => {
     setSelectedCustomerId(customers[0]?._id || "");
+    setIsCustomerPickerOpen(false);
+    setCustomerSearchTerm("");
     setSelectedSalespersonId("");
     setSelectedSalespersonName("");
     setPoNo("");
@@ -1279,24 +1296,39 @@ export default function OrdersPage() {
               <div className="bg-[#121c15]/60 p-4 sm:p-5 rounded-2xl border border-[#2d4734] space-y-4">
                 {/* Row 1: Customer (50%) & Salesperson (50%) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Customer Dropdown */}
+                  {/* Customer Popup Picker Button */}
                   <div>
-                    <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
-                      เลือกลูกค้า (CUSTOMER) *
+                    <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1 flex items-center gap-1">
+                      <Building className="w-3.5 h-3.5 text-[#98c9a3]" />
+                      <span>เลือกลูกค้า (CUSTOMER) *</span>
                     </label>
-                    <select
-                      required
-                      value={selectedCustomerId}
-                      onChange={(e) => setSelectedCustomerId(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
+                    <button
+                      type="button"
+                      onClick={() => setIsCustomerPickerOpen(true)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] hover:border-[#98c9a3]/60 text-xs flex items-center justify-between text-[#f3efe6] transition-colors shadow-inner group"
                     >
-                      <option value="">-- เลือกลูกค้า --</option>
-                      {customers.map((c) => (
-                        <option key={c._id} value={c._id}>
-                          {c.fullname} {c.phone ? `(โทร: ${c.phone})` : ""}
-                        </option>
-                      ))}
-                    </select>
+                      {(() => {
+                        const selectedCustomer = customers.find((c) => c._id === selectedCustomerId);
+                        if (selectedCustomerId && selectedCustomer) {
+                          return (
+                            <span className="font-bold text-[#98c9a3] flex items-center gap-2 truncate">
+                              <UserCheck className="w-4 h-4 text-[#98c9a3] shrink-0" />
+                              <span className="truncate">{selectedCustomer.fullname} {selectedCustomer.phone ? `(โทร: ${selectedCustomer.phone})` : ""}</span>
+                            </span>
+                          );
+                        }
+                        return (
+                          <span className="text-[#a39b8b] group-hover:text-[#f3efe6] flex items-center gap-2 truncate">
+                            <UserPlus className="w-4 h-4 text-[#98c9a3] shrink-0" />
+                            <span>-- กดเพื่อเลือกลูกค้า (CUSTOMER) --</span>
+                          </span>
+                        );
+                      })()}
+                      <ChevronRight className="w-4 h-4 text-[#a39b8b] shrink-0" />
+                    </button>
+                    <p className="text-[11px] text-[#a39b8b] mt-1.5">
+                      กดเพื่อเปิดป๊อบอัพค้นหาและเลือกลูกค้าดูแลออเดอร์
+                    </p>
 
                     {/* Customer Preview Box */}
                     {selectedCustomerId && (
@@ -1306,7 +1338,10 @@ export default function OrdersPage() {
                           if (!cust) return null;
                           return (
                             <>
-                              <p className="text-[#f3efe6] font-semibold">{cust.fullname}</p>
+                              <p className="text-[#f3efe6] font-semibold flex items-center gap-1.5">
+                                <Building className="w-3.5 h-3.5 text-[#98c9a3]" />
+                                {cust.fullname}
+                              </p>
                               <p>ที่อยู่: {cust.address || "-"}</p>
                               <p>เลขผู้เสียภาษี: {cust.taxId || "-"}</p>
                             </>
@@ -2338,6 +2373,101 @@ export default function OrdersPage() {
               <button
                 type="button"
                 onClick={() => setIsProductPickerOpen(false)}
+                className="px-4 py-2.5 rounded-xl bg-[#121c15] text-[#a39b8b] hover:text-[#f3efe6] text-xs font-semibold"
+              >
+                ปิดหน้าต่าง
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CUSTOMER POPUP PICKER MODAL */}
+      {isCustomerPickerOpen && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
+          <div className="max-w-md w-full glass-earth-card p-6 sm:p-8 rounded-3xl border border-[#98c9a3]/30 space-y-6 relative max-h-[85vh] flex flex-col shadow-2xl">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-[#2d4734] pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#1e3425] border border-[#98c9a3]/30 flex items-center justify-center text-[#98c9a3]">
+                  <Building className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-[#f3efe6]">เลือกลูกค้า (CUSTOMER)</h3>
+                  <p className="text-xs text-[#a39b8b]">ค้นหาและเลือกลูกค้าสำหรับออกคำสั่งซื้อ</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsCustomerPickerOpen(false)}
+                className="p-2 rounded-xl text-[#a39b8b] hover:text-[#f3efe6] hover:bg-[#121c15]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Search input */}
+            <div className="relative">
+              <Search className="w-4 h-4 text-[#a39b8b] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="ค้นหาชื่อลูกค้า, เบอร์โทร, เลขภาษี..."
+                value={customerSearchTerm}
+                onChange={(e) => setCustomerSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] placeholder-[#a39b8b]/50 focus:outline-none focus:border-[#98c9a3]"
+              />
+            </div>
+
+            {/* Customers List */}
+            <div className="flex-1 overflow-y-auto space-y-2 pr-1 divide-y divide-[#2d4734]/40 max-h-[45vh]">
+              {filteredCustomersList.length === 0 ? (
+                <div className="p-6 text-center text-xs text-[#a39b8b]">
+                  ไม่พบข้อมูลลูกค้าในระบบ (สามารถเพิ่มได้ที่เมนู Customers)
+                </div>
+              ) : (
+                filteredCustomersList.map((c) => {
+                  const isSelected = selectedCustomerId === c._id;
+
+                  return (
+                    <div
+                      key={c._id}
+                      onClick={() => {
+                        setSelectedCustomerId(c._id);
+                        setIsCustomerPickerOpen(false);
+                      }}
+                      className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between mt-2 ${
+                        isSelected
+                          ? "bg-[#1e3425] border-[#98c9a3]/50 text-[#98c9a3]"
+                          : "bg-[#121c15] border-[#2d4734] hover:bg-[#18241c] text-[#e6dfd3]"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-[#18241c] border border-[#2d4734] flex items-center justify-center text-[#98c9a3] shrink-0 font-bold text-xs">
+                          {c.fullname.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-[#f3efe6]">{c.fullname}</p>
+                          <span className="text-[10px] text-[#a39b8b] block">
+                            {c.phone ? `โทร: ${c.phone}` : ""} {c.taxId ? `| ภาษี: ${c.taxId}` : ""}
+                          </span>
+                          {c.address && (
+                            <span className="text-[10px] text-[#a39b8b]/80 line-clamp-1">
+                              ที่อยู่: {c.address}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {isSelected && <CheckCircle2 className="w-4 h-4 text-[#98c9a3] shrink-0" />}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="flex justify-end pt-2 border-t border-[#2d4734]">
+              <button
+                type="button"
+                onClick={() => setIsCustomerPickerOpen(false)}
                 className="px-4 py-2.5 rounded-xl bg-[#121c15] text-[#a39b8b] hover:text-[#f3efe6] text-xs font-semibold"
               >
                 ปิดหน้าต่าง

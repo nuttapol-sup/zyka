@@ -40,6 +40,10 @@ const InventorySchema: Schema<IInventory> = new Schema(
 // Compound index for unique product-location-zone stock record
 InventorySchema.index({ productId: 1, locationId: 1, zoneId: 1 }, { unique: true });
 
+if (process.env.NODE_ENV === "development" && mongoose.models.Inventory) {
+  delete mongoose.models.Inventory;
+}
+
 const Inventory: Model<IInventory> =
   mongoose.models.Inventory || mongoose.model<IInventory>("Inventory", InventorySchema);
 

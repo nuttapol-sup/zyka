@@ -4,6 +4,7 @@ export interface IPosition extends Document {
   code?: string;
   name: string;
   description?: string;
+  departmentId?: mongoose.Types.ObjectId;
   status: "active" | "inactive";
   createdAt: Date;
   updatedAt: Date;
@@ -25,6 +26,11 @@ const PositionSchema: Schema<IPosition> = new Schema(
       type: String,
       trim: true,
       default: "",
+    },
+    departmentId: {
+      type: Schema.Types.ObjectId,
+      ref: "Department",
+      required: false,
     },
     status: {
       type: String,

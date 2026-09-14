@@ -37,6 +37,10 @@ import {
   BarChart3,
   Activity,
   Sparkles,
+  MessageSquare,
+  Zap,
+  Clock,
+  Link as LinkIcon,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -56,6 +60,18 @@ interface UserItem {
   role: "admin" | "user";
   allowedPages: string[];
   referId?: any;
+  lineUserId?: string;
+  canAccessLineReports?: boolean;
+}
+
+interface PendingLineUser {
+  _id: string;
+  lineUserId: string;
+  displayName?: string;
+  pictureUrl?: string;
+  lastMessage?: string;
+  status: string;
+  updatedAt: string;
 }
 
 interface PageDef {
@@ -217,20 +233,40 @@ export default function ManagePermissionsPage() {
   const [editRole, setEditRole] = useState<"admin" | "user">("user");
   const [editAllowedPages, setEditAllowedPages] = useState<string[]>([]);
   const [editReferId, setEditReferId] = useState<string>("");
+  const [editLineUserId, setEditLineUserId] = useState<string>("");
+  const [editCanAccessLineReports, setEditCanAccessLineReports] = useState<boolean>(false);
   const [selectedPersonnel, setSelectedPersonnel] = useState<PersonnelOption | null>(null);
   const [modalSaving, setModalSaving] = useState(false);
   const [modalError, setModalError] = useState("");
+
+  // Pending LINE Connection Requests State
+  const [pendingLineUsers, setPendingLineUsers] = useState<PendingLineUser[]>([]);
+  const [selectedUserForPending, setSelectedUserForPending] = useState<Record<string, string>>({});
+  const [linkingPendingId, setLinkingPendingId] = useState<string | null>(null);
 
   // Personnel Selection Sub-Modal State
   const [isPersonnelModalOpen, setIsPersonnelModalOpen] = useState(false);
   const [personnelSearch, setPersonnelSearch] = useState("");
 
+  const fetchPendingLineUsers = async () => {
+    try {
+      const res = await fetch(getApiPath("/api/admin/line-pending"), { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        setPendingLineUsers(data.pendingUsers || []);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const fetchUsers = async () => {
     try {
-      const [usersRes, meRes, personnelRes] = await Promise.all([
+      const [usersRes, meRes, personnelRes, pendingRes] = await Promise.all([
         fetch(getApiPath("/api/admin/users"), { cache: "no-store" }),
         fetch(getApiPath("/api/auth/me"), { cache: "no-store" }),
         fetch(getApiPath("/api/personnel"), { cache: "no-store" }),
+        fetch(getApiPath("/api/admin/line-pending"), { cache: "no-store" }),
       ]);
 
       if (usersRes.ok) {
@@ -245,10 +281,61 @@ export default function ManagePermissionsPage() {
         const pData = await personnelRes.json();
         setPersonnelList(pData.personnel || []);
       }
+      if (pendingRes.ok) {
+        const pendData = await pendingRes.json();
+        setPendingLineUsers(pendData.pendingUsers || []);
+      }
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleQuickLinkLineUser = async (pending: PendingLineUser) => {
+    const targetUserId = selectedUserForPending[pending._id];
+    if (!targetUserId) {
+      alert("กรุณาเลือกผู้ใช้งานที่ต้องการผูกบัญชี LINE");
+      return;
+    }
+
+    setLinkingPendingId(pending._id);
+    try {
+      const res = await fetch(getApiPath("/api/admin/line-pending"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pendingId: pending._id,
+          lineUserId: pending.lineUserId,
+          userId: targetUserId,
+          canAccessLineReports: true,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "ไม่สามารถผูกบัญชีได้");
+
+      const linkedUserObj = users.find((u) => u._id === targetUserId);
+      setSuccessMsg(`⚡ ผูก LINE User ID กับ "${linkedUserObj?.name || "ผู้ใช้"}" สำเร็จแล้ว!`);
+      fetchUsers();
+      setTimeout(() => setSuccessMsg(""), 4000);
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setLinkingPendingId(null);
+    }
+  };
+
+  const handleDismissPendingLineUser = async (pendingId: string) => {
+    try {
+      const res = await fetch(getApiPath(`/api/admin/line-pending?id=${pendingId}`), {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setPendingLineUsers((prev) => prev.filter((p) => p._id !== pendingId));
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -346,6 +433,8 @@ export default function ManagePermissionsPage() {
     setEditPassword("");
     setEditRole(user.role || "user");
     setEditAllowedPages(user.allowedPages || []);
+    setEditLineUserId(user.lineUserId || "");
+    setEditCanAccessLineReports(user.canAccessLineReports || false);
 
     const refId =
       typeof user.referId === "object" && user.referId !== null
@@ -396,6 +485,8 @@ export default function ManagePermissionsPage() {
           role: editRole,
           allowedPages: editAllowedPages,
           referId: editReferId || undefined,
+          lineUserId: editLineUserId || undefined,
+          canAccessLineReports: editCanAccessLineReports,
         }),
       });
 
@@ -542,6 +633,144 @@ export default function ManagePermissionsPage() {
         </div>
       )}
 
+      {/* ⚡ 1-Click Pending LINE Connection Requests */}
+      {pendingLineUsers.length > 0 && (
+        <div className="glass-earth-card p-5 rounded-3xl border border-[#98c9a3]/40 bg-gradient-to-r from-[#18241c] to-[#0f1712] space-y-4 shadow-md animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center justify-between border-b border-[#2d4734] pb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#1e3425] border border-[#98c9a3]/40 flex items-center justify-center text-[#98c9a3]">
+                <MessageSquare className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-[#f3efe6] text-sm">
+                    คำขอผูกบัญชี LINE ล่าสุด (Pending LINE Connection Requests)
+                  </h3>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#98c9a3] text-[#0f1712] font-bold">
+                    {pendingLineUsers.length} คำขอใหม่
+                  </span>
+                </div>
+                <p className="text-[11px] text-[#a39b8b] mt-0.5">
+                  เลือกผู้ใช้งานในระบบ แล้วกดปุ่ม ⚡ ผูกบัญชีได้ทันทีใน 1 คลิก ไม่ต้องก๊อปปี้รหัส
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={fetchPendingLineUsers}
+              className="text-xs text-[#98c9a3] hover:text-[#f3efe6] flex items-center gap-1 font-semibold"
+              title="รีเฟรชคำขอ LINE"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>รีเฟรชรายการ</span>
+            </button>
+          </div>
+
+          <div className="space-y-2.5">
+            {pendingLineUsers.map((pending) => {
+              // Auto-match user by display name if not selected yet
+              const matchedUser = users.find(
+                (u) =>
+                  pending.displayName &&
+                  u.name &&
+                  (u.name.toLowerCase().includes(pending.displayName.toLowerCase()) ||
+                    pending.displayName.toLowerCase().includes(u.name.toLowerCase()))
+              );
+              const selectedValue = selectedUserForPending[pending._id] !== undefined
+                ? selectedUserForPending[pending._id]
+                : (matchedUser ? matchedUser._id : "");
+
+              return (
+                <div
+                  key={pending._id}
+                  className="p-3.5 rounded-2xl bg-[#121c15] border border-[#2d4734] hover:border-[#98c9a3]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    {pending.pictureUrl ? (
+                      <img
+                        src={pending.pictureUrl}
+                        alt={pending.displayName || "LINE Profile"}
+                        className="w-9 h-9 rounded-xl object-cover border border-[#98c9a3]/40 shrink-0"
+                      />
+                    ) : (
+                      <div className="w-9 h-9 rounded-xl bg-[#1e3425] border border-[#98c9a3]/40 flex items-center justify-center text-[#98c9a3] font-bold text-xs shrink-0">
+                        LINE
+                      </div>
+                    )}
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold text-xs text-[#f3efe6]">
+                          {pending.displayName || "LINE User"}
+                        </span>
+                        <span className="font-mono text-[11px] text-[#98c9a3]/80 bg-[#0f1712] px-2 py-0.5 rounded border border-[#2d4734]">
+                          {pending.lineUserId}
+                        </span>
+                        {pending.lastMessage && (
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-[#18241c] text-[#a39b8b] border border-[#2d4734]">
+                            คำขอ: "{pending.lastMessage}"
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-[#a39b8b] mt-0.5 flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-[#a39b8b]/60" />
+                        <span>
+                          ทักเมื่อ: {new Date(pending.updatedAt).toLocaleString("th-TH", { dateStyle: "short", timeStyle: "short" })} น.
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Select User & 1-Click Link Button */}
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={selectedValue}
+                      onChange={(e) =>
+                        setSelectedUserForPending((prev) => ({
+                          ...prev,
+                          [pending._id]: e.target.value,
+                        }))
+                      }
+                      className="bg-[#0f1712] text-[#f3efe6] text-xs px-3 py-2 rounded-xl border border-[#2d4734] focus:outline-none focus:border-[#98c9a3] min-w-[200px]"
+                    >
+                      <option value="">-- เลือกบัญชีผู้ใช้ที่จะผูก --</option>
+                      {users.map((u) => (
+                        <option key={u._id} value={u._id}>
+                          {u.name} (@{u.username}) {u.lineUserId ? "[มี LINE แล้ว]" : ""}
+                        </option>
+                      ))}
+                    </select>
+
+                    <button
+                      onClick={() => {
+                        const target = selectedValue;
+                        if (!target) {
+                          alert("กรุณาเลือกผู้ใช้งานที่ต้องการผูกบัญชี LINE");
+                          return;
+                        }
+                        handleQuickLinkLineUser({ ...pending, _id: pending._id });
+                      }}
+                      disabled={linkingPendingId === pending._id || !selectedValue}
+                      className="btn-earth-primary px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 disabled:opacity-50"
+                    >
+                      <Zap className="w-3.5 h-3.5 fill-[#0f1712]" />
+                      <span>{linkingPendingId === pending._id ? "กำลังผูก..." : "⚡ ผูกบัญชี"}</span>
+                    </button>
+
+                    <button
+                      onClick={() => handleDismissPendingLineUser(pending._id)}
+                      className="p-2 rounded-xl text-[#a39b8b] hover:text-red-400 hover:bg-[#18241c] transition-colors"
+                      title="ยกเลิกคำขอนี้"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Search & Filter */}
       <div className="glass-earth-card p-4 rounded-2xl border border-[#2d4734] flex items-center justify-between">
         <div className="relative max-w-sm w-full">
@@ -634,23 +863,38 @@ export default function ManagePermissionsPage() {
 
                   {/* Summary Badges & Action Buttons */}
                   <div className="flex flex-wrap items-center gap-3 justify-between sm:justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-[#2d4734]">
-                    {/* Permission Count Badges */}
-                    {!isAdmin ? (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs px-2.5 py-1 rounded-xl bg-[#18241c] border border-[#2d4734] text-[#e6dfd3] flex items-center gap-1.5">
-                          <FolderKanban className="w-3.5 h-3.5 text-[#98c9a3]" />
-                          <span>ข้อมูล: <strong className="text-[#98c9a3]">{dataAllowedCount}/{dataGroup.pages.length}</strong></span>
+                    {/* Permission Count Badges & LINE Report Badge */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {!isAdmin ? (
+                        <>
+                          <span className="text-xs px-2.5 py-1 rounded-xl bg-[#18241c] border border-[#2d4734] text-[#e6dfd3] flex items-center gap-1.5">
+                            <FolderKanban className="w-3.5 h-3.5 text-[#98c9a3]" />
+                            <span>ข้อมูล: <strong className="text-[#98c9a3]">{dataAllowedCount}/{dataGroup.pages.length}</strong></span>
+                          </span>
+                          <span className="text-xs px-2.5 py-1 rounded-xl bg-[#18241c] border border-[#2d4734] text-[#e6dfd3] flex items-center gap-1.5">
+                            <FileText className="w-3.5 h-3.5 text-[#98c9a3]" />
+                            <span>รายงาน: <strong className="text-[#98c9a3]">{reportsAllowedCount}/{reportsGroup.pages.length}</strong></span>
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-xs px-3 py-1 rounded-xl bg-[#1e3425] border border-[#98c9a3]/40 text-[#98c9a3] font-bold">
+                          สิทธิ์สูงสุด (ทุกหน้า)
                         </span>
-                        <span className="text-xs px-2.5 py-1 rounded-xl bg-[#18241c] border border-[#2d4734] text-[#e6dfd3] flex items-center gap-1.5">
-                          <FileText className="w-3.5 h-3.5 text-[#98c9a3]" />
-                          <span>รายงาน: <strong className="text-[#98c9a3]">{reportsAllowedCount}/{reportsGroup.pages.length}</strong></span>
+                      )}
+
+                      {/* LINE Report Access Badge */}
+                      {isAdmin || user.canAccessLineReports ? (
+                        <span className="text-xs px-2.5 py-1 rounded-xl bg-[#1e3425] border border-[#98c9a3]/50 text-[#98c9a3] font-semibold flex items-center gap-1.5" title={user.lineUserId ? `LINE ID: ${user.lineUserId}` : "อนุญาตรายงานผ่าน LINE"}>
+                          <MessageSquare className="w-3.5 h-3.5 text-[#98c9a3]" />
+                          <span>LINE Reports</span>
                         </span>
-                      </div>
-                    ) : (
-                      <span className="text-xs px-3 py-1 rounded-xl bg-[#1e3425] border border-[#98c9a3]/40 text-[#98c9a3] font-bold">
-                        สิทธิ์สูงสุด (ทุกหน้า)
-                      </span>
-                    )}
+                      ) : (
+                        <span className="text-xs px-2.5 py-1 rounded-xl bg-[#18241c] border border-[#2d4734] text-[#a39b8b]/60 font-semibold flex items-center gap-1.5" title="ไม่มีสิทธิ์ดูรายงานผ่าน LINE">
+                          <MessageSquare className="w-3.5 h-3.5 text-[#a39b8b]/40" />
+                          <span>No LINE Access</span>
+                        </span>
+                      )}
+                    </div>
 
                     {/* Controls */}
                     <div className="flex items-center gap-2">
@@ -947,6 +1191,53 @@ export default function ManagePermissionsPage() {
                         className="accent-[#98c9a3]"
                       />
                       <span>ADMIN (ผู้ดูแลระบบ)</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* LINE Messaging & Report Permissions */}
+              <div className="p-4 rounded-2xl bg-[#121c15] border border-[#2d4734] space-y-3">
+                <div className="flex items-center gap-2 border-b border-[#2d4734] pb-2">
+                  <MessageSquare className="w-4 h-4 text-[#98c9a3]" />
+                  <span className="text-xs font-bold text-[#f3efe6]">
+                    สิทธิ์การดูรายงานผ่าน LINE (LINE Report Access)
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* LINE User ID */}
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#e6dfd3] mb-1">
+                      LINE User ID (รับได้จากข้อความแจ้งเตือนบน LINE)
+                    </label>
+                    <input
+                      type="text"
+                      value={editLineUserId}
+                      onChange={(e) => setEditLineUserId(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-[#0f1712] border border-[#2d4734] text-xs font-mono text-[#f3efe6] placeholder-[#a39b8b]/40 focus:outline-none focus:border-[#98c9a3]"
+                      placeholder="เช่น U1234567890abcdef..."
+                    />
+                  </div>
+
+                  {/* Can Access LINE Reports Toggle */}
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#e6dfd3] mb-1">
+                      สิทธิ์ขอดูรายงานผ่าน LINE
+                    </label>
+                    <label className="flex items-center gap-2 text-xs text-[#f3efe6] cursor-pointer pt-1">
+                      <input
+                        type="checkbox"
+                        checked={editRole === "admin" || editCanAccessLineReports}
+                        disabled={editRole === "admin"}
+                        onChange={(e) => setEditCanAccessLineReports(e.target.checked)}
+                        className="rounded border-[#2d4734] bg-[#0f1712] text-[#98c9a3] accent-[#98c9a3] w-4 h-4"
+                      />
+                      <span>
+                        {editRole === "admin"
+                          ? "ADMIN ได้รับสิทธิ์โดยอัตโนมัติ"
+                          : "อนุญาตให้ขอดูลายงานยอดขาย & ยอดเก็บเงินผ่าน LINE"}
+                      </span>
                     </label>
                   </div>
                 </div>

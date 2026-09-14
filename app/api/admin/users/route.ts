@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "ต้องใช้สิทธิ์ Admin เท่านั้นในการสร้างผู้ใช้งาน" }, { status: 403 });
     }
 
-    const { name, username, password, role, allowedPages, referId } = await request.json();
+    const { name, username, password, role, allowedPages, referId, lineUserId, canAccessLineReports } = await request.json();
 
     if (!name || !username || !password) {
       return NextResponse.json({ error: "กรุณากรอกข้อมูล Name, Username และ Password ให้ครบถ้วน" }, { status: 400 });
@@ -58,6 +58,8 @@ export async function POST(request: Request) {
       role: role || "user",
       allowedPages: allowedPages || ["/dashboard"],
       referId: referId || null,
+      lineUserId: lineUserId ? lineUserId.trim() : "",
+      canAccessLineReports: Boolean(canAccessLineReports),
     });
 
     const populatedUser = await User.findById(newUser._id)

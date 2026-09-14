@@ -31,6 +31,7 @@ import {
   Sparkles,
   Edit3,
   Briefcase,
+  Truck,
 } from "lucide-react";
 import { getApiPath } from "@/app/utils/apiPath";
 
@@ -73,15 +74,9 @@ const MAIN_ITEMS: Record<string, MenuItem> = {
 const REPORTS_ITEMS: Record<string, MenuItem> = {
   sales: {
     key: "sales",
-    label: "📊 สรุปยอดขาย (Sales Summary)",
-    description: "รายงานสรุปยอดขายสุทธิ การชำระเงิน และการรอเก็บเงิน",
+    label: "📊 ภาพรวม & กราฟยอดขาย (Sales Overview & Charts)",
+    description: "รายงานสรุปยอดขายสุทธิ การชำระเงิน และกราฟวิเคราะห์ยอดขาย",
     icon: <TrendingUp className="w-5 h-5 text-[#98c9a3]" />,
-  },
-  charts: {
-    key: "charts",
-    label: "📈 กราฟวิเคราะห์ (Sales Charts)",
-    description: "กราฟแท่งแนวโน้มยอดขายรายวันและสถิติยอดขาย",
-    icon: <BarChart3 className="w-5 h-5 text-[#98c9a3]" />,
   },
   customer: {
     key: "customer",
@@ -94,6 +89,12 @@ const REPORTS_ITEMS: Record<string, MenuItem> = {
     label: "📦 สรุปตามสินค้า (Sales by Product)",
     description: "รายงานสรุปยอดขายตามรายการสินค้า",
     icon: <Package className="w-5 h-5 text-[#98c9a3]" />,
+  },
+  delivery: {
+    key: "delivery",
+    label: "🚚 สรุปการจัดส่ง & พนักงานขาย (Delivery & Salesperson)",
+    description: "รายงานสรุปการจัดส่ง สถิติทีมจัดส่ง และยอดขายรายพนักงาน",
+    icon: <Truck className="w-5 h-5 text-[#98c9a3]" />,
   },
   user: {
     key: "user",
@@ -221,7 +222,19 @@ export default function ManageMenuOrderPage() {
       if (res.ok) {
         const data = await res.json();
         if (data.menuOrder && Array.isArray(data.menuOrder)) setMenuOrder(data.menuOrder);
-        if (data.reportsSubOrder && Array.isArray(data.reportsSubOrder)) setReportsSubOrder(data.reportsSubOrder);
+        if (data.reportsSubOrder && Array.isArray(data.reportsSubOrder)) {
+          const rList: string[] = [];
+          data.reportsSubOrder.forEach((k: string) => {
+            let key = k;
+            if (key === "charts") key = "sales";
+            if (key === "salesperson") key = "delivery";
+            if (!rList.includes(key) && REPORTS_ITEMS[key]) rList.push(key);
+          });
+          Object.keys(REPORTS_ITEMS).forEach((k) => {
+            if (!rList.includes(k)) rList.push(k);
+          });
+          setReportsSubOrder(rList);
+        }
         if (data.dataRecordsSubOrder && Array.isArray(data.dataRecordsSubOrder)) {
           const list = [...data.dataRecordsSubOrder];
           if (!list.includes("positions")) {

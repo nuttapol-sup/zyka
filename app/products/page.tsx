@@ -28,6 +28,13 @@ interface SubCategoryRef {
   categoryCode: string;
 }
 
+interface UnitItem {
+  _id: string;
+  code: string;
+  name: string;
+  status: string;
+}
+
 interface ProductItem {
   _id: string;
   code: string;
@@ -58,6 +65,9 @@ export default function ProductsPage() {
   const [loadingSubCats, setLoadingSubCats] = useState(false);
   const [subCatSearch, setSubCatSearch] = useState("");
   const [isSubCatModalOpen, setIsSubCatModalOpen] = useState(false);
+
+  // Units List for Modal Dropdown Selection
+  const [units, setUnits] = useState<UnitItem[]>([]);
 
   // Product Form Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -111,9 +121,22 @@ export default function ProductsPage() {
     }
   };
 
+  const fetchUnits = async () => {
+    try {
+      const res = await fetch(getApiPath("/api/units"), { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        setUnits(data.units || []);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
     fetchSubCategories();
+    fetchUnits();
   }, []);
 
   const openCreateModal = () => {
@@ -664,36 +687,40 @@ export default function ProductsPage() {
                 )}
               </div>
 
-              {/* Unit of Measurement (หน่วยนับ) */}
+              {/* Unit of Measurement (หน่วยนับ) Dropdown */}
               <div>
-                <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
-                  หน่วยนับ (Unit of Measurement) *
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    required
-                    value={unit}
-                    onChange={(e) => setUnit(e.target.value)}
-                    className="flex-1 px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
-                    placeholder="เช่น ชิ้น, กล่อง, ขวด, แพ็ค, แผง, ถุง"
-                  />
-                  {/* Quick Unit Presets */}
-                  {["ชิ้น", "กล่อง", "ขวด", "แพ็ค"].map((preset) => (
-                    <button
-                      key={preset}
-                      type="button"
-                      onClick={() => setUnit(preset)}
-                      className={`px-3 py-2.5 rounded-xl text-xs font-semibold border transition-colors ${
-                        unit === preset
-                          ? "bg-[#1e3425] text-[#98c9a3] border-[#98c9a3]/40"
-                          : "bg-[#121c15] text-[#a39b8b] border-[#2d4734] hover:text-[#f3efe6]"
-                      }`}
-                    >
-                      {preset}
-                    </button>
-                  ))}
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-[#e6dfd3] uppercase">
+                    หน่วยนับ (Unit of Measurement) *
+                  </label>
+                  <a
+                    href={getApiPath("/units")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] text-[#98c9a3] hover:underline font-medium"
+                  >
+                    + บันทึกหน่วยนับใหม่
+                  </a>
                 </div>
+                <select
+                  required
+                  value={unit}
+                  onChange={(e) => setUnit(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
+                >
+                  <option value="">-- เลือกหน่วยนับ --</option>
+                  {/* Include current unit if it's not in active list (legacy support) */}
+                  {unit && !units.some((u) => u.name === unit) && (
+                    <option value={unit}>{unit} (หน่วยเดิม)</option>
+                  )}
+                  {units
+                    .filter((u) => u.status === "active" || u.name === unit)
+                    .map((u) => (
+                      <option key={u._id} value={u.name}>
+                        {u.name} (รหัส: {u.code})
+                      </option>
+                    ))}
+                </select>
               </div>
 
               {/* Sub-Category Selection with INLINE BUTTON on the EXACT SAME ROW */}

@@ -1,4 +1,8 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
+import "@/models/Refer";
+import "@/models/Personnel";
+import "@/models/Product";
+import "@/models/StorageLocation";
 
 export interface IOrderItem {
   productId: mongoose.Types.ObjectId | string;
@@ -92,7 +96,7 @@ const OrderSchema: Schema<IOrder> = new Schema(
     customerTaxId: { type: String, trim: true, default: "" },
     salespersonId: {
       type: Schema.Types.ObjectId,
-      ref: "Personnel",
+      ref: "Refer",
     },
     salespersonName: { type: String, trim: true, default: "" },
     poNo: { type: String, trim: true, default: "" },

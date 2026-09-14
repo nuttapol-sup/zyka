@@ -35,7 +35,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "ไม่มีสิทธิ์บันทึกข้อมูลบุคลากร" }, { status: 403 });
     }
 
-    const { prefix, fullname, position, phone, note, status } = await request.json();
+    const { code, prefix, fullname, email, department, position, phone, note, status } = await request.json();
 
     if (!fullname || !position) {
       return NextResponse.json({ error: "กรุณากรอกชื่อ-นามสกุล และตำแหน่ง" }, { status: 400 });
@@ -45,8 +45,11 @@ export async function POST(request: Request) {
 
     const newPersonnel = await Refer.create({
       referType: "1",
+      code: code || "",
       prefix: prefix || "นาย",
       fullname,
+      email: email || "",
+      department: department || "",
       position,
       phone: phone || "",
       note: note || "",

@@ -3,7 +3,7 @@ import { connectDB } from "@/lib/db";
 import Setting from "@/models/Setting";
 
 const DEFAULT_MENU_ORDER = ["dashboard", "reports", "datarecords", "manage"];
-const DEFAULT_REPORTS_ORDER = ["sales", "charts", "customer", "product", "user"];
+const DEFAULT_REPORTS_ORDER = ["sales", "customer", "product", "delivery", "user"];
 const DEFAULT_DATA_RECORDS_ORDER = ["orders", "products", "inventory", "categories", "sub-categories", "locations", "personnel", "customers"];
 const DEFAULT_MANAGE_ORDER = ["create-user", "manage-permissions", "manage-menu-order", "manage-logo", "user-logs"];
 

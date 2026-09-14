@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Order from "@/models/Order";
 import Refer from "@/models/Refer";
+import "@/models/Personnel";
 import Product from "@/models/Product";
 import StorageLocation from "@/models/StorageLocation";
 import Inventory from "@/models/Inventory";

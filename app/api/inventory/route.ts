@@ -30,7 +30,7 @@ export async function GET() {
     // Fetch all active products, locations, and zones
     const products = await Product.find({ status: "active" }).populate("subCategoryId").sort({ seq: 1 });
     const locations = await StorageLocation.find({ status: "active" }).sort({ createdAt: 1 });
-    const zones = await Zone.find({ status: "active" }).sort({ name: 1 });
+    const zones = await Zone.find({ status: "active" }).populate("locationId").sort({ name: 1 });
 
     // Fetch existing inventory balances
     const inventories = await Inventory.find()
@@ -73,6 +73,7 @@ export async function GET() {
       lowStockAlertCount: lowStockAlerts.length,
     });
   } catch (error: any) {
+    console.error("❌ GET /api/inventory Error:", error);
     return NextResponse.json({ error: error.message || "เกิดข้อผิดพลาดในการดึงข้อมูลสต็อกสินค้า" }, { status: 500 });
   }
 }

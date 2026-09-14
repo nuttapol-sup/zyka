@@ -46,8 +46,24 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      {/* Welcome Banner */}
-      <div className="glass-earth-card p-8 rounded-3xl relative overflow-hidden">
+      {/* Print Only Title Header for Executive Dashboard */}
+      <div className="hidden print:block border-b-2 border-black pb-4 mb-6 text-black">
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl font-bold text-black uppercase tracking-wide">รายงานสรุปภาพรวมผู้บริหาร (Executive Dashboard)</h1>
+            <p className="text-xs text-gray-700 mt-1">
+              ระบบการจัดส่ง สต็อกสินค้า และสรุปยอดขายสุทธิ
+            </p>
+          </div>
+          <div className="text-right text-xs text-gray-700 font-mono">
+            <p>วันที่พิมพ์: {new Date().toLocaleDateString("th-TH", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
+            <p>ผู้พิมพ์รายงาน: {user.name} ({user.role})</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Welcome Banner (Web UI Only) */}
+      <div className="glass-earth-card p-8 rounded-3xl relative overflow-hidden print:hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-[#446e50]/20 to-transparent blur-3xl pointer-events-none" />
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">

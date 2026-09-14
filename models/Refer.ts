@@ -2,8 +2,11 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface IRefer extends Document {
   referType: "1" | "2" | "3"; // 1=บุคลากร, 2=ลูกค้าบุคคลทั่วไป, 3=ลูกค้านิติบุคคล
+  code?: string;
   prefix: string;
   fullname: string;
+  email?: string;
+  department?: string;
   position?: string;
   address?: string;
   taxId?: string;
@@ -24,6 +27,11 @@ const ReferSchema: Schema<IRefer> = new Schema(
       default: "1",
       index: true,
     },
+    code: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     prefix: {
       type: String,
       default: "",
@@ -32,6 +40,16 @@ const ReferSchema: Schema<IRefer> = new Schema(
     fullname: {
       type: String,
       required: [true, "กรุณากรอกชื่อ"],
+      trim: true,
+    },
+    email: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    department: {
+      type: String,
+      default: "",
       trim: true,
     },
     position: {
@@ -70,7 +88,10 @@ const ReferSchema: Schema<IRefer> = new Schema(
   }
 );
 
-const Refer: Model<IRefer> =
-  mongoose.models.Refer || mongoose.model<IRefer>("Refer", ReferSchema);
+if (mongoose.models.Refer) {
+  delete mongoose.models.Refer;
+}
+
+const Refer: Model<IRefer> = mongoose.model<IRefer>("Refer", ReferSchema);
 
 export default Refer;

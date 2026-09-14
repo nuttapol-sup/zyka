@@ -4,14 +4,66 @@ import Product from "@/models/Product";
 import Inventory from "@/models/Inventory";
 import StorageLocation from "@/models/StorageLocation";
 import Order from "@/models/Order";
+import User from "@/models/User";
+import LinePendingUser from "@/models/LinePendingUser";
 import {
   getLineCredentials,
   verifyLineSignature,
   replyLineMessage,
+  getLineUserProfile,
 } from "@/lib/line";
+import { generateSalesSummaryText, generateMonthlyPaymentReportText } from "@/lib/line-reports";
+
+async function checkUserLineReportAccess(lineUserId: string): Promise<{ allowed: boolean; user?: any }> {
+  if (!lineUserId) return { allowed: false };
+  await connectDB();
+  const user = await User.findOne({ lineUserId: lineUserId.trim() });
+  if (!user) return { allowed: false };
+  if (user.role === "admin" || user.canAccessLineReports === true) {
+    return { allowed: true, user };
+  }
+  return { allowed: false, user };
+}
+
+async function recordPendingLineUser(lineUserId: string, lastMessage: string, channelAccessToken?: string) {
+  if (!lineUserId) return;
+  try {
+    await connectDB();
+    const cleanId = lineUserId.trim();
+    // Check if already linked to a user
+    const existingUser = await User.findOne({ lineUserId: cleanId });
+    if (existingUser) return; // already linked
+
+    let displayName = "LINE User";
+    let pictureUrl = "";
+
+    if (channelAccessToken) {
+      const profile = await getLineUserProfile(cleanId, channelAccessToken);
+      if (profile) {
+        if (profile.displayName) displayName = profile.displayName;
+        if (profile.pictureUrl) pictureUrl = profile.pictureUrl;
+      }
+    }
+
+    await LinePendingUser.findOneAndUpdate(
+      { lineUserId: cleanId },
+      {
+        lineUserId: cleanId,
+        displayName,
+        pictureUrl,
+        lastMessage: lastMessage.slice(0, 100),
+        status: "pending",
+        updatedAt: new Date(),
+      },
+      { upsert: true, new: true }
+    );
+  } catch (err) {
+    console.error("Failed to record pending LINE user:", err);
+  }
+}
 
 // Ensure models registered
-if (!StorageLocation) {
+if (!StorageLocation || !LinePendingUser) {
   // Ensure schema registered
 }
 
@@ -209,19 +261,85 @@ export async function POST(request: Request) {
           continue;
         }
 
-        // 3. Default Menu Command (Help / Menu / Anything else)
+        const senderLineUserId = event.source?.userId || "";
+
+        // 3. Sales Report Command (e.g. "ยอดขาย", "ยอดขาย สัปดาห์", "ยอดขาย เดือน", "ยอดขาย ปี")
+        if (/^(ยอดขาย|สรุปยอดขาย|รายงานยอดขาย|salesreport)/i.test(text)) {
+          const { allowed, user } = await checkUserLineReportAccess(senderLineUserId);
+          if (!allowed) {
+            await recordPendingLineUser(senderLineUserId, text, channelAccessToken);
+            await replyLineMessage(
+              replyToken,
+              [
+                {
+                  type: "text",
+                  text: `🔒 สิทธิ์การเข้าถึงถูกจำกัด (LINE Report Restricted)\n------------------------\nขออภัย บัญชี LINE ของคุณยังไม่ได้รับการอนุมัติให้ดูรายงานผ่าน LINE\n\n📲 ระบบได้ส่งคำขอไปยัง Admin เรียบร้อยแล้ว!\nAdmin สามารถกด "ผูกบัญชีใน 1 คลิก" บนหน้าเว็บระบบได้ทันที\n\n🆔 LINE User ID ของคุณ:\n${senderLineUserId || "ไม่พบ ID"}`,
+                },
+              ],
+              channelAccessToken
+            );
+            continue;
+          }
+
+          let reportType: "weekly" | "monthly" | "yearly" = "monthly";
+          if (/สัปดาห์|7วัน|week/i.test(text)) reportType = "weekly";
+          else if (/ปี|year/i.test(text)) reportType = "yearly";
+
+          const salesReportText = await generateSalesSummaryText(reportType, user);
+          await replyLineMessage(
+            replyToken,
+            [{ type: "text", text: salesReportText }],
+            channelAccessToken
+          );
+          continue;
+        }
+
+        // 4. Monthly Payment Collection Report Command (e.g. "ยอดเก็บเงิน", "สรุปเก็บเงิน", "เก็บเงิน", "วางบิล")
+        if (/^(ยอดเก็บเงิน|สรุปเก็บเงิน|เก็บเงิน|รายงานเก็บเงิน|paymentreport)/i.test(text)) {
+          const { allowed, user } = await checkUserLineReportAccess(senderLineUserId);
+          if (!allowed) {
+            await recordPendingLineUser(senderLineUserId, text, channelAccessToken);
+            await replyLineMessage(
+              replyToken,
+              [
+                {
+                  type: "text",
+                  text: `🔒 สิทธิ์การเข้าถึงถูกจำกัด (LINE Report Restricted)\n------------------------\nขออภัย บัญชี LINE ของคุณยังไม่ได้รับการอนุมัติให้ดูรายงานผ่าน LINE\n\n📲 ระบบได้ส่งคำขอไปยัง Admin เรียบร้อยแล้ว!\nAdmin สามารถกด "ผูกบัญชีใน 1 คลิก" บนหน้าเว็บระบบได้ทันที\n\n🆔 LINE User ID ของคุณ:\n${senderLineUserId || "ไม่พบ ID"}`,
+                },
+              ],
+              channelAccessToken
+            );
+            continue;
+          }
+
+          const paymentReportText = await generateMonthlyPaymentReportText(user);
+          await replyLineMessage(
+            replyToken,
+            [{ type: "text", text: paymentReportText }],
+            channelAccessToken
+          );
+          continue;
+        }
+
+        // 5. Default Menu Command (Help / Menu / Anything else)
         const defaultMenuText =
           `🌱 Zyka Medic ERP Assistant\n` +
           `========================\n` +
-          `ยินดีต้อนรับสู่ระบบเช็คสต็อก Zyka ERP!\n\n` +
+          `ยินดีต้อนรับสู่ระบบเช็คสต็อกและรายงาน Zyka ERP!\n\n` +
           `💡 คำสั่งที่สามารถพิมพ์ใช้งานได้:\n\n` +
-          `1️⃣ ตรวจสอบสต็อกสินค้า\n` +
+          `1️⃣ สรุปยอดขาย (รายสัปดาห์/เดือน/ปี)\n` +
+          `• พิมพ์: ยอดขาย สัปดาห์\n` +
+          `• พิมพ์: ยอดขาย เดือน\n` +
+          `• พิมพ์: ยอดขาย ปี\n\n` +
+          `2️⃣ สรุปยอดเก็บเงินรายเดือน\n` +
+          `• พิมพ์: ยอดเก็บเงิน\n\n` +
+          `3️⃣ ตรวจสอบสต็อกสินค้า\n` +
           `• พิมพ์: สต็อก [ชื่อ หรือ รหัสสินค้า]\n` +
-          `• ตัวอย่าง: สต็อก พาราเซตามอล หรือ เช็คสต็อก P-001\n\n` +
-          `2️⃣ ติดตามสถานะคำสั่งซื้อ\n` +
+          `• ตัวอย่าง: สต็อก พาราเซตามอล\n\n` +
+          `4️⃣ ติดตามสถานะคำสั่งซื้อ\n` +
           `• พิมพ์: ติดตาม [เลขที่ออเดอร์]\n` +
           `• ตัวอย่าง: ติดตาม ORD-2026-0005\n\n` +
-          `3️⃣ เมนูช่วยเหลือ\n` +
+          `5️⃣ เมนูช่วยเหลือ\n` +
           `• พิมพ์: เมนู`;
 
         await replyLineMessage(

@@ -18,6 +18,7 @@ import {
   X,
   Briefcase,
   Phone,
+  MessageSquare,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -54,6 +55,8 @@ export default function CreateUserPage() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"admin" | "user">("user");
   const [allowedPages, setAllowedPages] = useState<string[]>(["/dashboard"]);
+  const [lineUserId, setLineUserId] = useState("");
+  const [canAccessLineReports, setCanAccessLineReports] = useState(false);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -119,6 +122,8 @@ export default function CreateUserPage() {
           role,
           allowedPages,
           referId: referId || undefined,
+          lineUserId: lineUserId || undefined,
+          canAccessLineReports,
         }),
       });
 
@@ -136,6 +141,8 @@ export default function CreateUserPage() {
       setPassword("");
       setRole("user");
       setAllowedPages(["/dashboard"]);
+      setLineUserId("");
+      setCanAccessLineReports(false);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -339,6 +346,53 @@ export default function CreateUserPage() {
                   <p className="text-[10px] text-[#a39b8b]">เข้าถึงได้ทุกหน้าและจัดการผู้ใช้</p>
                 </div>
               </button>
+            </div>
+          </div>
+
+          {/* LINE Integration & Report Permission */}
+          <div className="p-4 rounded-2xl bg-[#121c15] border border-[#2d4734] space-y-3">
+            <div className="flex items-center gap-2 border-b border-[#2d4734] pb-2">
+              <MessageSquare className="w-4 h-4 text-[#98c9a3]" />
+              <span className="text-xs font-bold text-[#f3efe6]">
+                สิทธิ์การดูรายงานผ่าน LINE (LINE Report Access)
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* LINE User ID */}
+              <div>
+                <label className="block text-[11px] font-semibold text-[#e6dfd3] mb-1">
+                  LINE User ID (ถ้ามี)
+                </label>
+                <input
+                  type="text"
+                  value={lineUserId}
+                  onChange={(e) => setLineUserId(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0f1712] border border-[#2d4734] text-xs font-mono text-[#f3efe6] placeholder-[#a39b8b]/40 focus:outline-none focus:border-[#98c9a3]"
+                  placeholder="เช่น U1234567890abcdef..."
+                />
+              </div>
+
+              {/* Can Access LINE Reports Toggle */}
+              <div>
+                <label className="block text-[11px] font-semibold text-[#e6dfd3] mb-1">
+                  สิทธิ์ขอดูรายงานผ่าน LINE
+                </label>
+                <label className="flex items-center gap-2 text-xs text-[#f3efe6] cursor-pointer pt-2">
+                  <input
+                    type="checkbox"
+                    checked={role === "admin" || canAccessLineReports}
+                    disabled={role === "admin"}
+                    onChange={(e) => setCanAccessLineReports(e.target.checked)}
+                    className="rounded border-[#2d4734] bg-[#0f1712] text-[#98c9a3] accent-[#98c9a3] w-4 h-4"
+                  />
+                  <span>
+                    {role === "admin"
+                      ? "ADMIN ได้รับสิทธิ์โดยอัตโนมัติ"
+                      : "อนุญาตให้ขอดูลายงานยอดขาย & ยอดเก็บเงินผ่าน LINE"}
+                  </span>
+                </label>
+              </div>
             </div>
           </div>
 

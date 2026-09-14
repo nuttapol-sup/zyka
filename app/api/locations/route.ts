@@ -11,11 +11,6 @@ export async function GET() {
       return NextResponse.json({ error: "ยังไม่ได้เข้าสู่ระบบ" }, { status: 401 });
     }
 
-    // Check page permission (admin always allowed)
-    if (session.role !== "admin" && (!session.allowedPages || !session.allowedPages.includes("/locations"))) {
-      return NextResponse.json({ error: "ไม่มีสิทธิ์เข้าถึงข้อมูลสถานที่เก็บสินค้า" }, { status: 403 });
-    }
-
     await connectDB();
     const locations = await StorageLocation.find().sort({ createdAt: -1 });
     return NextResponse.json({ locations });

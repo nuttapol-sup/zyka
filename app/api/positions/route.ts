@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Position from "@/models/Position";
+import "@/models/Department";
 import { getSession } from "@/lib/auth";
 
 // GET /api/positions - Fetch all job positions
@@ -29,7 +30,9 @@ export async function GET(request: Request) {
       query.status = status;
     }
 
-    const positions = await Position.find(query).sort({ createdAt: -1 });
+    const positions = await Position.find(query)
+      .populate("departmentId", "code name status")
+      .sort({ createdAt: -1 });
 
     return NextResponse.json({ positions });
   } catch (error: any) {
@@ -48,7 +51,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "ยังไม่ได้เข้าสู่ระบบ" }, { status: 401 });
     }
 
-    const { code, name, description, status } = await request.json();
+    const { code, name, description, departmentId, status } = await request.json();
 
     if (!name || !name.trim()) {
       return NextResponse.json({ error: "กรุณากรอกชื่อตำแหน่งงาน" }, { status: 400 });
@@ -66,10 +69,13 @@ export async function POST(request: Request) {
       code: code ? code.trim() : "",
       name: name.trim(),
       description: description ? description.trim() : "",
+      departmentId: departmentId || null,
       status: status || "active",
     });
 
-    return NextResponse.json({ message: "เพิ่มตำแหน่งงานใหม่เรียบร้อยแล้ว", position });
+    const populatedPosition = await Position.findById(position._id).populate("departmentId", "code name status");
+
+    return NextResponse.json({ message: "เพิ่มตำแหน่งงานใหม่เรียบร้อยแล้ว", position: populatedPosition });
   } catch (error: any) {
     return NextResponse.json(
       { error: error.message || "เกิดข้อผิดพลาดในการเพิ่มตำแหน่งงาน" },

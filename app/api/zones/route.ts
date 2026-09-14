@@ -12,7 +12,7 @@ export async function GET() {
     }
 
     await connectDB();
-    const zones = await Zone.find().sort({ createdAt: -1 });
+    const zones = await Zone.find().populate("locationId").sort({ createdAt: -1 });
 
     return NextResponse.json({ zones });
   } catch (error: any) {
@@ -38,31 +38,34 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "ไม่มีสิทธิ์เพิ่มโซนสินค้า" }, { status: 403 });
     }
 
-    const { code, name, description, status } = await request.json();
+    const { code, name, locationId, description, status } = await request.json();
 
-    if (!code || !name) {
+    if (!name || !name.trim()) {
       return NextResponse.json(
-        { error: "กรุณากรอกรหัสและชื่อโซนสินค้า" },
+        { error: "กรุณากรอกชื่อโซนสินค้า" },
         { status: 400 }
       );
     }
 
     await connectDB();
 
-    const formattedCode = code.toUpperCase().trim();
+    const formattedCode = code ? code.toUpperCase().trim() : "";
 
-    // Check code duplication
-    const existing = await Zone.findOne({ code: formattedCode });
-    if (existing) {
-      return NextResponse.json(
-        { error: `รหัสโซน "${formattedCode}" มีอยู่ในระบบแล้ว` },
-        { status: 400 }
-      );
+    // Check code duplication if code is provided
+    if (formattedCode) {
+      const existing = await Zone.findOne({ code: formattedCode });
+      if (existing) {
+        return NextResponse.json(
+          { error: `รหัสโซน "${formattedCode}" มีอยู่ในระบบแล้ว` },
+          { status: 400 }
+        );
+      }
     }
 
     const newZone = await Zone.create({
       code: formattedCode,
       name: name.trim(),
+      locationId: locationId || null,
       description: description ? description.trim() : "",
       status: status || "active",
     });

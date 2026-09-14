@@ -6,10 +6,11 @@ import Product from "@/models/Product";
 import Category from "@/models/Category";
 import SubCategory from "@/models/SubCategory";
 import StorageLocation from "@/models/StorageLocation";
+import User from "@/models/User";
 import { getSession } from "@/lib/auth";
 
 // Ensure models are registered for Mongoose population
-if (!Order || !Refer || !Product || !Category || !SubCategory || !StorageLocation) {
+if (!Order || !Refer || !Product || !Category || !SubCategory || !StorageLocation || !User) {
   // Models registered
 }
 
@@ -36,6 +37,8 @@ export async function GET(request: Request) {
     const filterPaymentStatus = searchParams.get("paymentStatus") || "all";
 
     await connectDB();
+
+    const currentUser = session.userId ? await User.findById(session.userId) : null;
 
     const yearParam = searchParams.get("year");
 
@@ -85,6 +88,21 @@ export async function GET(request: Request) {
     const query: any = {
       orderDate: { $gte: start, $lte: end },
     };
+
+    // Filter by Salesperson if user is not admin
+    const isRestrictedSalesperson = currentUser && currentUser.role !== "admin";
+    if (isRestrictedSalesperson) {
+      const spConditions: any[] = [];
+      if (currentUser.referId) {
+        spConditions.push({ salespersonId: currentUser.referId });
+      }
+      if (currentUser.name) {
+        spConditions.push({ salespersonName: currentUser.name });
+      }
+      if (spConditions.length > 0) {
+        query.$or = spConditions;
+      }
+    }
 
     if (filterPaymentStatus !== "all") {
       if (filterPaymentStatus === "PENDING_COLLECTION") {

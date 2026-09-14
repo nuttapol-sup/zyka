@@ -20,8 +20,11 @@ import { getApiPath } from "@/app/utils/apiPath";
 
 interface PersonnelItem {
   _id: string;
+  code?: string;
   prefix: string;
   fullname: string;
+  email?: string;
+  department?: string;
   position: string;
   phone?: string;
   note?: string;
@@ -30,11 +33,26 @@ interface PersonnelItem {
   createdAt: string;
 }
 
+interface DepartmentItem {
+  _id: string;
+  code?: string;
+  name: string;
+  status: string;
+}
+
+interface PositionOption {
+  _id: string;
+  name: string;
+  code?: string;
+  departmentId?: DepartmentItem | string | null;
+}
+
 const PREFIX_OPTIONS = ["นาย", "นาง", "นางสาว", "ดร.", "ผศ.", "พญ.", "นพ.", "อื่นๆ"];
 
 export default function PersonnelPage() {
   const [personnelList, setPersonnelList] = useState<PersonnelItem[]>([]);
-  const [positionsList, setPositionsList] = useState<{ _id: string; name: string; code?: string }[]>([]);
+  const [departmentsList, setDepartmentsList] = useState<DepartmentItem[]>([]);
+  const [positionsList, setPositionsList] = useState<PositionOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -52,8 +70,11 @@ export default function PersonnelPage() {
   const [editingItem, setEditingItem] = useState<PersonnelItem | null>(null);
 
   // Form State
+  const [code, setCode] = useState("");
   const [prefix, setPrefix] = useState("นาย");
   const [fullname, setFullname] = useState("");
+  const [email, setEmail] = useState("");
+  const [department, setDepartment] = useState("");
   const [position, setPosition] = useState("");
   const [phone, setPhone] = useState("");
   const [note, setNote] = useState("");
@@ -62,6 +83,18 @@ export default function PersonnelPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  const fetchDepartments = async () => {
+    try {
+      const res = await fetch(getApiPath("/api/departments?status=active"), { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        setDepartmentsList(data.departments || []);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchPositions = async () => {
     try {
@@ -93,12 +126,16 @@ export default function PersonnelPage() {
   useEffect(() => {
     fetchPersonnel();
     fetchPositions();
+    fetchDepartments();
   }, []);
 
   const openCreateModal = () => {
     setEditingItem(null);
+    setCode("");
     setPrefix("นาย");
     setFullname("");
+    setEmail("");
+    setDepartment("");
     setPosition("");
     setPhone("");
     setNote("");
@@ -109,8 +146,11 @@ export default function PersonnelPage() {
 
   const openEditModal = (item: PersonnelItem) => {
     setEditingItem(item);
+    setCode(item.code || "");
     setPrefix(item.prefix || "นาย");
     setFullname(item.fullname);
+    setEmail(item.email || "");
+    setDepartment(item.department || "");
     setPosition(item.position);
     setPhone(item.phone || "");
     setNote(item.note || "");
@@ -135,8 +175,11 @@ export default function PersonnelPage() {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          code: code.trim(),
           prefix,
           fullname,
+          email: email.trim(),
+          department: department.trim(),
           position,
           phone,
           note,
@@ -179,7 +222,10 @@ export default function PersonnelPage() {
 
   const filteredPersonnel = personnelList.filter((item) => {
     const matchesSearch =
+      (item.code && item.code.toLowerCase().includes(searchTerm.toLowerCase())) ||
       item.fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.email && item.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (item.department && item.department.toLowerCase().includes(searchTerm.toLowerCase())) ||
       item.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (item.phone && item.phone.toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -204,7 +250,7 @@ export default function PersonnelPage() {
               บันทึกข้อมูลบุคลากร (Personnel Records)
             </h1>
             <p className="text-xs text-[#a39b8b]">
-              ระบบจัดเก็บและจัดการข้อมูลรายชื่อบุคลากร คำนำหน้า ตำแหน่ง และข้อมูลการติดต่อ
+              ระบบจัดเก็บและจัดการข้อมูลรายชื่อบุคลากร คำนำหน้า แผนก ตำแหน่ง และข้อมูลการติดต่อ
             </p>
           </div>
         </div>
@@ -287,7 +333,7 @@ export default function PersonnelPage() {
           <Search className="w-4 h-4 text-[#a39b8b] absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="ค้นหาชื่อ-นามสกุล, ตำแหน่ง หรือเบอร์โทร..."
+            placeholder="ค้นหารหัส, ชื่อ-นามสกุล, แผนก, ตำแหน่ง, อีเมล หรือเบอร์โทร..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] placeholder-[#a39b8b]/50 focus:outline-none focus:border-[#98c9a3]"
@@ -323,11 +369,13 @@ export default function PersonnelPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-[#121c15] border-b border-[#2d4734] text-xs font-semibold text-[#a39b8b] uppercase tracking-wider">
+                <tr className="bg-[#121c15] border-b border-[#2d4734] text-xs font-semibold text-[#a39b8b] uppercase tracking-wider whitespace-nowrap">
+                  <th className="py-4 px-6">รหัส</th>
                   <th className="py-4 px-6">ชื่อ-นามสกุล</th>
+                  <th className="py-4 px-6">แผนก</th>
                   <th className="py-4 px-6">ตำแหน่ง</th>
+                  <th className="py-4 px-6">อีเมล</th>
                   <th className="py-4 px-6">เบอร์ติดต่อ</th>
-                  <th className="py-4 px-6">หมายเหตุ</th>
                   <th className="py-4 px-4 text-center">สถานะ</th>
                   <th className="py-4 px-6 text-center">จัดการ</th>
                 </tr>
@@ -338,14 +386,19 @@ export default function PersonnelPage() {
                   .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                   .map((item) => (
                   <tr key={item._id} className="hover:bg-[#18241c]/60 transition-colors">
+                    {/* Employee Code */}
+                    <td className="py-4 px-6 font-mono text-xs font-bold text-[#98c9a3]">
+                      {item.code || "-"}
+                    </td>
+
                     {/* Full Name & Prefix */}
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-[#1e3425] border border-[#98c9a3]/30 flex items-center justify-center text-[#98c9a3] font-bold text-xs">
+                        <div className="w-9 h-9 rounded-full bg-[#1e3425] border border-[#98c9a3]/30 flex items-center justify-center text-[#98c9a3] font-bold text-xs shrink-0">
                           {item.fullname.slice(0, 1)}
                         </div>
                         <div>
-                          <p className="font-bold text-[#f3efe6]">
+                          <p className="font-bold text-[#f3efe6] whitespace-nowrap">
                             <span className="text-[#98c9a3] font-medium mr-1">
                               {item.prefix}
                             </span>
@@ -355,16 +408,26 @@ export default function PersonnelPage() {
                       </div>
                     </td>
 
+                    {/* Department */}
+                    <td className="py-4 px-6 text-xs text-[#e6dfd3] whitespace-nowrap">
+                      {item.department || "-"}
+                    </td>
+
                     {/* Position */}
-                    <td className="py-4 px-6 text-xs text-[#e6dfd3]">
+                    <td className="py-4 px-6 text-xs text-[#e6dfd3] whitespace-nowrap">
                       <div className="flex items-center gap-1.5">
                         <Briefcase className="w-3.5 h-3.5 text-[#98c9a3] shrink-0" />
                         <span>{item.position}</span>
                       </div>
                     </td>
 
+                    {/* Email */}
+                    <td className="py-4 px-6 text-xs text-[#98c9a3] font-mono whitespace-nowrap">
+                      {item.email || "-"}
+                    </td>
+
                     {/* Phone */}
-                    <td className="py-4 px-6 text-xs text-[#a39b8b]">
+                    <td className="py-4 px-6 text-xs text-[#a39b8b] whitespace-nowrap">
                       {item.phone ? (
                         <div className="flex items-center gap-1.5 font-mono">
                           <Phone className="w-3.5 h-3.5 text-[#98c9a3] shrink-0" />
@@ -375,13 +438,8 @@ export default function PersonnelPage() {
                       )}
                     </td>
 
-                    {/* Note */}
-                    <td className="py-4 px-6 text-xs text-[#a39b8b]">
-                      {item.note || "-"}
-                    </td>
-
                     {/* Status */}
-                    <td className="py-4 px-4 text-center">
+                    <td className="py-4 px-4 text-center whitespace-nowrap">
                       {item.status === "active" ? (
                         <span className="px-2.5 py-1 rounded-full bg-[#1e3425] text-[#98c9a3] text-[11px] font-semibold border border-[#98c9a3]/30">
                           ทำงานอยู่
@@ -394,7 +452,7 @@ export default function PersonnelPage() {
                     </td>
 
                     {/* Actions */}
-                    <td className="py-4 px-6 text-center">
+                    <td className="py-4 px-6 text-center whitespace-nowrap">
                       <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => openEditModal(item)}
@@ -467,6 +525,20 @@ export default function PersonnelPage() {
               {/* ซ่อนประเภทบุคลากร ไว้ เก็บค่าเป็น 1 ตามข้อกำหนด */}
               <input type="hidden" name="referType" value="1" />
 
+              {/* Code */}
+              <div>
+                <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
+                  รหัสพนักงาน (Employee Code)
+                </label>
+                <input
+                  type="text"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] font-mono focus:outline-none focus:border-[#98c9a3]"
+                  placeholder="เช่น ZM001"
+                />
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {/* Prefix */}
                 <div>
@@ -503,6 +575,44 @@ export default function PersonnelPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Email */}
+                <div>
+                  <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
+                    อีเมล (Email)
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] font-mono focus:outline-none focus:border-[#98c9a3]"
+                    placeholder="example@gmail.com"
+                  />
+                </div>
+
+                {/* Department */}
+                <div>
+                  <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
+                    แผนก (Department)
+                  </label>
+                  <select
+                    value={department}
+                    onChange={(e) => {
+                      setDepartment(e.target.value);
+                      setPosition("");
+                    }}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
+                  >
+                    <option value="">-- เลือกแผนก (ทุกแผนก) --</option>
+                    {departmentsList.map((d) => (
+                      <option key={d._id} value={d.name}>
+                        {d.name} {d.code ? `(${d.code})` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Position */}
                 <div>
                   <label className="block text-xs font-semibold text-[#e6dfd3] uppercase mb-1">
@@ -515,11 +625,19 @@ export default function PersonnelPage() {
                     className="w-full px-3.5 py-2.5 rounded-xl bg-[#121c15] border border-[#2d4734] text-xs text-[#f3efe6] focus:outline-none focus:border-[#98c9a3]"
                   >
                     <option value="">-- เลือกตำแหน่งงาน --</option>
-                    {positionsList.map((pos) => (
-                      <option key={pos._id} value={pos.name}>
-                        {pos.name} {pos.code ? `(${pos.code})` : ""}
-                      </option>
-                    ))}
+                    {positionsList
+                      .filter((pos) => {
+                        if (!department) return true;
+                        if (!pos.departmentId) return true;
+                        const dName = typeof pos.departmentId === "object" && pos.departmentId ? pos.departmentId.name : "";
+                        const dId = typeof pos.departmentId === "object" && pos.departmentId ? pos.departmentId._id : pos.departmentId;
+                        return dName === department || dId === department;
+                      })
+                      .map((pos) => (
+                        <option key={pos._id} value={pos.name}>
+                          {pos.name} {pos.code ? `(${pos.code})` : ""}{typeof pos.departmentId === "object" && pos.departmentId ? ` [${pos.departmentId.name}]` : ""}
+                        </option>
+                      ))}
                   </select>
                 </div>
 

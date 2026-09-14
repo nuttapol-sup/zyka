@@ -79,6 +79,7 @@ export default function Pagination({
             <option value={25}>25 รายการ/หน้า</option>
             <option value={50}>50 รายการ/หน้า</option>
             <option value={100}>100 รายการ/หน้า</option>
+            <option value={1000}>แสดงทั้งหมด (All)</option>
           </select>
         </div>
 
