@@ -575,7 +575,72 @@ html.light button[class*="bg-red-700"] * {
   stroke: #ffffff !important;
 }
 
+/* Comprehensive Manage Menu Pages Overrides (/admin/* Pages: Manage Logo, Manage Line, User Logs, Permissions, Menu Order, Create User) */
+html.light div[class*="bg-[#121c15]"],
+html.light div[class*="bg-[#0f1712]"],
+html.light div[class*="bg-black/40"] {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #1e293b !important;
+}
+
+html.light input[class*="bg-black/40"],
+html.light input[class*="bg-[#121c15]"],
+html.light textarea[class*="bg-[#121c15]"] {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html.light input[readOnly] {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+/* Admin Badge Pills & LINE Integration Tags */
+html.light span[class*="bg-[#00b900]/20"],
+html.light span[class*="bg-[#446e50]/40"],
+html.light span[class*="bg-[#2a4332]/50"] {
+  background-color: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+  color: #047857 !important;
+}
+
+/* Manual Report Push Buttons & Action Cards in Manage Line / User Logs */
+html.light button[class*="bg-[#1e3425]"],
+html.light button[class*="bg-[#121c15]"] {
+  background-color: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+  color: #047857 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+}
+
+html.light button[class*="bg-[#1e3425]"] *,
+html.light button[class*="bg-[#121c15]"] * {
+  color: #047857 !important;
+  stroke: #047857 !important;
+}
+
+html.light button[class*="bg-[#1e3425]"]:hover,
+html.light button[class*="bg-[#121c15]"]:hover {
+  background-color: #dcfce7 !important;
+  border-color: #86efac !important;
+  color: #14532d !important;
+}
+
+/* Live Preview Navbar Box inside Manage Logo Page */
+html.light div[class*="bg-[#0f1712]"] span[class*="text-[#f3efe6]"],
+html.light div[class*="bg-[#0f1712]"] h2,
+html.light div[class*="bg-[#0f1712]"] p,
+html.light div[class*="bg-[#121c15]"] span,
+html.light div[class*="bg-[#121c15]"] label,
+html.light div[class*="bg-[#121c15] font-bold"] {
+  color: #1e293b !important;
+}
+
 /* PDF Print Styles Optimization */
+
 @media print {
   * {
     -webkit-print-color-adjust: exact !important;
