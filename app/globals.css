@@ -184,17 +184,17 @@ html.light div[class*="bg-[#1c2d22]"] {
 }
 
 /* Light Mode Text Overrides */
-html.light .text-[#f3efe6],
-html.light .text-[#f3f4f6],
-html.light .text-[#e6dfd3] {
+html.light .text-\[\#f3efe6\],
+html.light .text-\[\#f3f4f6\],
+html.light .text-\[\#e6dfd3\] {
   color: #111827 !important;
 }
 
-html.light .text-[#a39b8b] {
+html.light .text-\[\#a39b8b\] {
   color: #4b5563 !important;
 }
 
-html.light .text-[#98c9a3] {
+html.light .text-\[\#98c9a3\] {
   color: #1e5c33 !important;
 }
 
@@ -258,9 +258,8 @@ html.light span[class*="bg-[#446e50]"] {
 }
 
 /* Light Mode Mobile Drawer & Modals */
-html.light div[class*="bg-[#0f1712]/9"],
-html.light div[class*="bg-[#121c15]/9"] {
-  background-color: rgba(255, 255, 255, 0.98) !important;
+html.light div[class*="bg-[#0f1712]"],
+html.light div[class*="bg-[#121c15]"] {
   border-color: #e2e8f0 !important;
   color: #111827 !important;
 }
