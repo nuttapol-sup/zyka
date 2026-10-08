@@ -503,19 +503,30 @@ html.light td button[class*="bg-[#1e3425]"]:hover {
   color: #14532d !important;
 }
 
-/* Secondary Table Action Buttons (Movement Stock In/Out) */
+/* Secondary Table Action Buttons (Movement / Adjust Stock / Stock In/Out) */
 html.light td button[class*="bg-[#3f2e21]"],
-html.light td a[class*="bg-[#3f2e21]"] {
+html.light td button[class*="bg-[#2a251b]"],
+html.light td button[class*="bg-[#3d3425]"],
+html.light td button[class*="bg-[#1f190e]"],
+html.light td a[class*="bg-[#3f2e21]"],
+html.light td a[class*="bg-[#2a251b]"] {
   background-color: #fff7ed !important;
   border: 1px solid #fed7aa !important;
   color: #c2410c !important;
 }
-html.light td button[class*="bg-[#3f2e21]"] * {
+
+html.light td button[class*="bg-[#3f2e21]"] *,
+html.light td button[class*="bg-[#2a251b]"] *,
+html.light td button[class*="bg-[#3d3425]"] * {
   color: #c2410c !important;
   stroke: #c2410c !important;
 }
-html.light td button[class*="bg-[#3f2e21]"]:hover {
+
+html.light td button[class*="bg-[#3f2e21]"]:hover,
+html.light td button[class*="bg-[#2a251b]"]:hover,
+html.light td button[class*="bg-[#3d3425]"]:hover {
   background-color: #ffedd5 !important;
+  border-color: #fdba74 !important;
 }
 
 /* PDF Print Styles Optimization */
