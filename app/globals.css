@@ -181,7 +181,7 @@ html.light nav button:hover {
   color: #059669 !important;
 }
 
-/* Force All Dark Background Containers, Buttons, Badges, Tabs across ALL Pages to Soft White/Light */
+/* Force All Dark Background Containers, Buttons, Badges, Tabs, and Selected Cards to Light Theme */
 html.light *[class*="bg-[#121c15]"],
 html.light *[class*="bg-[#0f1712]"],
 html.light *[class*="bg-[#18241c]"],
@@ -191,7 +191,10 @@ html.light *[class*="bg-[#0f172a]"],
 html.light *[class*="bg-[#111827]"],
 html.light *[class*="bg-[#1f3025]"],
 html.light *[class*="bg-[#25382b]"],
-html.light *[class*="bg-[#1e2d21]"] {
+html.light *[class*="bg-[#1e2d21]"],
+html.light *[class*="bg-[#273e2e]"],
+html.light *[class*="bg-[#2a4332]"],
+html.light *[class*="bg-[#365741]"] {
   background-color: #ffffff !important;
   border-color: #e2e8f0 !important;
   color: #1e293b !important;
@@ -202,11 +205,54 @@ html.light *[class*="bg-[#0f1712]"] *,
 html.light *[class*="bg-[#18241c]"] *,
 html.light *[class*="bg-[#1a2b1f]"] *,
 html.light *[class*="bg-[#1c2d22]"] *,
-html.light *[class*="bg-[#1f3025]"] * {
+html.light *[class*="bg-[#1f3025]"] *,
+html.light *[class*="bg-[#273e2e]"] * {
   color: #1e293b !important;
 }
 
-/* Filter Pills & Oval Status Buttons in Orders / Products / Inventory Page (e.g. "รอวางบิล", "ชำระเงินแล้ว") */
+/* Page Icon Containers (Create User Icon, Role Icons, Page Icons) */
+html.light div[class*="bg-[#18241c]"],
+html.light div[class*="bg-[#121c15]"],
+html.light div[class*="bg-[#0f1712]"] {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #059669 !important;
+}
+
+html.light div[class*="bg-[#18241c]"] svg,
+html.light div[class*="bg-[#121c15]"] svg,
+html.light div[class*="bg-[#0f1712]"] svg {
+  color: #059669 !important;
+  stroke: #059669 !important;
+}
+
+/* Selected Allowed Page Cards & Selected Role Cards (e.g. Dashboard, Admin Role) */
+html.light div[class*="bg-[#273e2e]"],
+html.light label[class*="bg-[#273e2e]"],
+html.light label[class*="bg-[#18241c]"][class*="border-[#98c9a3]"],
+html.light div[class*="border-[#98c9a3]"],
+html.light label[class*="border-[#98c9a3]"] {
+  background-color: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+  color: #047857 !important;
+}
+
+html.light div[class*="bg-[#273e2e]"] *,
+html.light label[class*="bg-[#273e2e]"] *,
+html.light label[class*="border-[#98c9a3]"] * {
+  color: #047857 !important;
+}
+
+/* URL Badges inside Cards (e.g. /dashboard, /orders) */
+html.light span[class*="bg-[#18241c]"],
+html.light span[class*="bg-[#121c15]"],
+html.light code[class*="bg-[#18241c]"] {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+/* Filter Pills & Status Buttons */
 html.light button[class*="bg-[#121c15]"],
 html.light button[class*="bg-[#18241c]"],
 html.light button[class*="bg-[#0f1712]"],
@@ -224,7 +270,7 @@ html.light button[class*="bg-[#18241c]"]:hover {
   color: #0f172a !important;
 }
 
-/* Selected Active Filter Pill (e.g. "ทั้งหมด") */
+/* Active Selected Filter Pill */
 html.light button[class*="bg-[#273e2e]"],
 html.light button[class*="bg-[#446e50]"],
 html.light button[class*="bg-[#588b67]"] {
@@ -237,7 +283,7 @@ html.light button[class*="bg-[#446e50]"] * {
   color: #14532d !important;
 }
 
-/* Metric Small Square Icons (Orders Count, Shipping Count, Pending Count, Revenue) */
+/* Metric Small Square Icons */
 html.light *[class*="bg-[#3f2e21]"] {
   background-color: #fff7ed !important;
   border-color: #fed7aa !important;
@@ -256,23 +302,7 @@ html.light *[class*="bg-[#2a303c]"] * {
   color: #7e22ce !important;
 }
 
-/* Soft Green Sub-boxes & Badges */
-html.light *[class*="bg-[#1e3425]"],
-html.light *[class*="bg-[#274330]"],
-html.light *[class*="bg-[#2a4332]"],
-html.light *[class*="bg-[#365741]"] {
-  background-color: #f0fdf4 !important;
-  border-color: #bbf7d0 !important;
-  color: #047857 !important;
-}
-
-html.light *[class*="bg-[#1e3425]"] *,
-html.light *[class*="bg-[#274330]"] *,
-html.light *[class*="bg-[#2a4332]"] * {
-  color: #047857 !important;
-}
-
-/* Primary Action Buttons ("+ สร้างคำสั่งซื้อใหม่", "+ เพิ่มสินค้า") */
+/* Primary Action Buttons ("+ สร้างผู้ใช้", "+ สร้างสั่งซื้อ") */
 html.light .btn-earth-primary,
 html.light button[class*="bg-[#2f523a]"],
 html.light button[class*="bg-[#059669]"],
