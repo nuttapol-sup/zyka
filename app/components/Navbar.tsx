@@ -39,6 +39,7 @@ import {
   Truck,
 } from "lucide-react";
 import { getApiPath } from "@/app/utils/apiPath";
+import ThemeToggle from "@/app/components/ThemeToggle";
 
 interface UserProfile {
   id?: string;
@@ -395,6 +396,7 @@ export default function Navbar() {
 
           {/* Right: Desktop User Profile Status OR Mobile Toggle Button */}
           <div className="flex items-center gap-3 shrink-0">
+            <ThemeToggle />
             {/* Desktop User Status & Logout */}
             {user && (
               <div className="hidden md:flex items-center gap-3">
