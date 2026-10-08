@@ -217,7 +217,12 @@ html.light *[class*="bg-[#111827]"],
 html.light *[class*="bg-[#1f3025]"],
 html.light *[class*="bg-[#25382b]"],
 html.light *[class*="bg-[#1e2d21]"],
+html.light *[class*="bg-[#1e3425]"],
+html.light *[class*="bg-[#172b1d]"],
+html.light *[class*="bg-[#1e3024]"],
+html.light *[class*="bg-[#1a2e21]"],
 html.light *[class*="bg-[#273e2e]"],
+html.light *[class*="bg-[#284532]"],
 html.light *[class*="bg-[#2a4332]"],
 html.light *[class*="bg-[#365741]"] {
   background-color: #ffffff !important;
@@ -231,22 +236,25 @@ html.light *[class*="bg-[#18241c]"] *,
 html.light *[class*="bg-[#1a2b1f]"] *,
 html.light *[class*="bg-[#1c2d22]"] *,
 html.light *[class*="bg-[#1f3025]"] *,
+html.light *[class*="bg-[#1e3425]"] *,
 html.light *[class*="bg-[#273e2e]"] * {
   color: #1e293b !important;
 }
 
-/* Page Icon Containers (Create User Icon, Role Icons, Page Icons) */
+/* Page Icon Containers & Avatars (Create User Icon, Role Icons, Page Icons) */
 html.light div[class*="bg-[#18241c]"],
 html.light div[class*="bg-[#121c15]"],
-html.light div[class*="bg-[#0f1712]"] {
-  background-color: #f1f5f9 !important;
-  border-color: #cbd5e1 !important;
+html.light div[class*="bg-[#0f1712]"],
+html.light div[class*="bg-[#446e50]"] {
+  background-color: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
   color: #059669 !important;
 }
 
 html.light div[class*="bg-[#18241c]"] svg,
 html.light div[class*="bg-[#121c15]"] svg,
-html.light div[class*="bg-[#0f1712]"] svg {
+html.light div[class*="bg-[#0f1712]"] svg,
+html.light div[class*="bg-[#446e50]"] svg {
   color: #059669 !important;
   stroke: #059669 !important;
 }
@@ -268,14 +276,46 @@ html.light label[class*="border-[#98c9a3]"] * {
   color: #047857 !important;
 }
 
-/* URL Badges inside Cards (e.g. /dashboard, /orders) */
+/* Permission Badges (e.g. สิทธิ์สูงสุด (ทุกหน้า), LINE Reports) */
+html.light span[class*="bg-[#1e3425]"],
+html.light span[class*="bg-[#1f3025]"],
+html.light span[class*="bg-[#273e2e]"],
+html.light span[class*="bg-[#284532]"],
+html.light span[class*="bg-[#2a4332]"],
+html.light span[class*="bg-[#446e50]"],
+html.light span[class*="bg-[#172b1d]"] {
+  background-color: #ecfdf5 !important;
+  border: 1px solid #a7f3d0 !important;
+  color: #047857 !important;
+}
+
+html.light span[class*="bg-[#1e3425]"] *,
+html.light span[class*="bg-[#1f3025]"] *,
+html.light span[class*="bg-[#273e2e]"] *,
+html.light span[class*="bg-[#284532]"] *,
+html.light span[class*="bg-[#2a4332]"] *,
+html.light span[class*="bg-[#446e50]"] * {
+  color: #047857 !important;
+  stroke: #047857 !important;
+}
+
+/* Neutral Info Badges & Count Pills (e.g. ข้อมูล: 1/9, รายงาน: 0/6, No LINE Access) */
 html.light span[class*="bg-[#18241c]"],
 html.light span[class*="bg-[#121c15]"],
+html.light span[class*="bg-[#0f1712]"],
+html.light span[class*="bg-[#141b16]"],
 html.light code[class*="bg-[#18241c]"] {
   background-color: #f1f5f9 !important;
-  border-color: #cbd5e1 !important;
-  color: #334155 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #475569 !important;
 }
+
+html.light span[class*="bg-[#18241c]"] *,
+html.light span[class*="bg-[#121c15]"] * {
+  color: #475569 !important;
+  stroke: #475569 !important;
+}
+
 
 /* Filter Pills & Status Buttons */
 html.light button[class*="bg-[#121c15]"],
