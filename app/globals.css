@@ -327,11 +327,13 @@ html.light *[class*="bg-[#2a303c]"] * {
   color: #7e22ce !important;
 }
 
-/* Primary Action Buttons */
+/* Primary Action Buttons & Print / Export PDF Buttons */
 html.light .btn-earth-primary,
 html.light button[class*="bg-[#2f523a]"],
 html.light button[class*="bg-[#059669]"],
-html.light a[class*="bg-[#2f523a]"] {
+html.light a[class*="bg-[#2f523a]"],
+html.light button[title*="พิมพ์"],
+html.light button[title*="PDF"] {
   background-color: #059669 !important;
   background-image: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
   color: #ffffff !important;
@@ -340,14 +342,40 @@ html.light a[class*="bg-[#2f523a]"] {
 }
 
 html.light .btn-earth-primary *,
-html.light button[class*="bg-[#2f523a]"] * {
+html.light button[class*="bg-[#2f523a]"] *,
+html.light button[title*="พิมพ์"] *,
+html.light button[title*="PDF"] * {
   color: #ffffff !important;
 }
 
 html.light .btn-earth-primary:hover,
-html.light button[class*="bg-[#2f523a]"]:hover {
+html.light button[class*="bg-[#2f523a]"]:hover,
+html.light button[title*="พิมพ์"]:hover,
+html.light button[title*="PDF"]:hover {
   background-image: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
   box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35) !important;
+}
+
+/* Secondary Action Buttons & Fetch Data Buttons (e.g. ดึงข้อมูลบุคลากร) */
+html.light button[class*="bg-[#1e3425]"],
+html.light button[class*="bg-[#274330]"],
+html.light a[class*="bg-[#1e3425]"] {
+  background-color: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+  color: #047857 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+html.light button[class*="bg-[#1e3425]"] *,
+html.light button[class*="bg-[#274330]"] * {
+  color: #047857 !important;
+}
+
+html.light button[class*="bg-[#1e3425]"]:hover,
+html.light button[class*="bg-[#274330]"]:hover {
+  background-color: #dcfce7 !important;
+  border-color: #86efac !important;
+  color: #14532d !important;
 }
 
 /* Main Cards & Containers */
