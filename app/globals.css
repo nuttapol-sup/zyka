@@ -82,7 +82,7 @@ body {
 }
 
 /* ==========================================================================
-   Light Mode Theme Overrides (Executive High-Contrast Readability)
+   Light Mode Theme Overrides (Executive Modern Luxury - Emerald & Alabaster Silk)
    ========================================================================== */
 html.light {
   color-scheme: light;
@@ -90,12 +90,13 @@ html.light {
 
 html.light body,
 body.light {
-  background-color: #f1f5f9 !important;
+  background-color: #f6f8f6 !important;
   color: #0f172a !important;
-  background-image: none !important;
+  background-image: radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.04) 0%, transparent 60%) !important;
 }
 
-/* 1. Global High Contrast Text Rule for Light Mode */
+/* 1. Global High-Contrast Premium Typography */
+html.light body *,
 html.light p,
 html.light span,
 html.light label,
@@ -113,7 +114,7 @@ html.light th {
   color: #1e293b;
 }
 
-/* Stronger Headings and Bold Text */
+/* Headings & Emphasized Text */
 html.light h1,
 html.light h2,
 html.light h3,
@@ -128,9 +129,23 @@ html.light .font-semibold {
   color: #0f172a !important;
 }
 
-/* Light mode scrollbar */
+/* Muted / Subtitle Text Override */
+html.light [class*="text-[#a39b8b]"],
+html.light [class*="text-slate-400"],
+html.light [class*="text-gray-400"],
+html.light [class*="text-zinc-400"],
+html.light [class*="text-[#e6dfd3]"] {
+  color: #475569 !important;
+}
+
+/* Accent Green Text */
+html.light [class*="text-[#98c9a3]"] {
+  color: #059669 !important;
+}
+
+/* 2. Light Mode Scrollbar */
 html.light ::-webkit-scrollbar-track {
-  background: #f1f5f9 !important;
+  background: #f6f8f6 !important;
 }
 html.light ::-webkit-scrollbar-thumb {
   background: #cbd5e1 !important;
@@ -140,183 +155,227 @@ html.light ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8 !important;
 }
 
-/* 2. Light Mode Glass Header & Navbar */
+/* 3. Executive Luxury Navbar & Header */
 html.light nav,
 html.light .glass-earth-header {
   background: #ffffff !important;
-  border-bottom: 1px solid #cbd5e1 !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03) !important;
 }
 
-html.light nav a,
-html.light nav button,
-html.light nav span {
-  color: #0f172a !important;
-}
-
-html.light nav a:hover,
-html.light nav button:hover {
-  color: #15803d !important;
-}
-
-/* 3. Light Mode Cards & Containers */
-html.light .glass-earth-card {
-  background: #ffffff !important;
-  border: 1px solid #cbd5e1 !important;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06) !important;
-  color: #0f172a !important;
-}
-
-html.light .glass-earth-card-hover:hover {
-  border-color: #166534 !important;
-  box-shadow: 0 8px 24px rgba(22, 101, 52, 0.12) !important;
-}
-
-/* 4. Light Mode Buttons */
-html.light .btn-earth-primary {
-  background: #15803d !important;
-  color: #ffffff !important;
-  border: 1px solid #166534 !important;
-  box-shadow: 0 2px 8px rgba(21, 128, 61, 0.25) !important;
-}
-html.light .btn-earth-primary * {
-  color: #ffffff !important;
-}
-html.light .btn-earth-primary:hover {
-  background: #166534 !important;
-  box-shadow: 0 4px 12px rgba(22, 101, 52, 0.35) !important;
-}
-
-/* 5. Light Mode Gradient Headlines */
+/* Navbar Brand & Logo Gradient */
 html.light .text-gradient-earth {
-  background: linear-gradient(135deg, #0f172a 0%, #15803d 100%) !important;
+  background: linear-gradient(135deg, #065f46 0%, #059669 100%) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
 }
 
-/* 6. Light Mode Background Overrides for Sub-containers & Card Inner Boxes */
+/* Standard Navbar Links & Buttons */
+html.light nav a,
+html.light nav button {
+  color: #334155 !important;
+}
+
+html.light nav a:hover,
+html.light nav button:hover {
+  color: #047857 !important;
+}
+
+/* Active Nav Links */
+html.light nav a[class*="bg-[#273e2e]"],
+html.light nav a[class*="bg-[#18241c]"] {
+  background-color: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+  color: #047857 !important;
+}
+html.light nav a[class*="bg-[#273e2e]"] *,
+html.light nav a[class*="bg-[#18241c]"] * {
+  color: #047857 !important;
+}
+
+/* Navbar Right Controls - Completely Replace Pitch Black Blobs with Clean Luxury Boxes! */
+html.light div[class*="bg-[#18241c]"],
+html.light button[class*="bg-[#18241c]"],
+html.light a[class*="bg-[#18241c]"] {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+html.light div[class*="bg-[#18241c]"] *,
+html.light button[class*="bg-[#18241c]"] *,
+html.light a[class*="bg-[#18241c]"] * {
+  color: #1e293b !important;
+}
+
+html.light div[class*="bg-[#2a4332]"],
+html.light div[class*="bg-[#365741]"] {
+  background-color: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+  color: #047857 !important;
+}
+
+html.light div[class*="bg-[#2a4332]"] *,
+html.light div[class*="bg-[#365741]"] * {
+  color: #047857 !important;
+}
+
+/* Theme Toggle Button in Light Mode */
+html.light button[title*="โหมด"] {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #1e293b !important;
+}
+html.light button[title*="โหมด"]:hover {
+  background-color: #e2e8f0 !important;
+}
+
+/* 4. Luxury Cards & Main Containers */
+html.light .glass-earth-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 8px 24px -4px rgba(0, 0, 0, 0.04) !important;
+  color: #0f172a !important;
+  border-radius: 1rem !important;
+}
+
+html.light .glass-earth-card-hover:hover {
+  border-color: #a7f3d0 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 12px 28px -4px rgba(16, 185, 129, 0.08) !important;
+}
+
+/* Sub-containers & Inner Boxes (Eliminating Dark Gray/Black inner boxes) */
 html.light div[class*="bg-[#121c15]"],
 html.light div[class*="bg-[#0f1712]"],
-html.light div[class*="bg-[#18241c]"],
 html.light div[class*="bg-[#1a2b1f]"],
 html.light div[class*="bg-[#1c2d22]"],
 html.light section[class*="bg-[#121c15]"],
 html.light form[class*="bg-[#121c15]"] {
   background-color: #f8fafc !important;
-  border-color: #cbd5e1 !important;
+  border-color: #e2e8f0 !important;
   color: #0f172a !important;
 }
 
+/* Soft Green Sub-boxes */
 html.light div[class*="bg-[#1e3425]"],
 html.light div[class*="bg-[#274330]"],
 html.light div[class*="bg-[#1f3025]"] {
   background-color: #f0fdf4 !important;
-  border-color: #bbf7d0 !important;
-  color: #14532d !important;
+  border-color: #d1fae5 !important;
+  color: #065f46 !important;
 }
 
+html.light div[class*="bg-[#1e3425]"] *,
+html.light div[class*="bg-[#274330]"] *,
+html.light div[class*="bg-[#1f3025]"] * {
+  color: #065f46 !important;
+}
+
+/* Yellow / Warning Sub-boxes */
 html.light div[class*="bg-[#1e2d21]"] {
   background-color: #fefce8 !important;
   border-color: #fef08a !important;
   color: #713f12 !important;
 }
 
-/* 7. Override Inline Tailwind Color Classes for Light Mode */
-html.light [class*="text-[#f3efe6]"],
-html.light [class*="text-[#f3f4f6]"],
-html.light [class*="text-[#e6dfd3]"],
-html.light [class*="text-[#a39b8b]"],
-html.light [class*="text-[#98c9a3]"],
-html.light [class*="text-[#e6dfd3]/60"],
-html.light [class*="text-[#f3efe6]/70"],
-html.light [class*="text-[#98c9a3]/80"],
-html.light [class*="text-slate-400"],
-html.light [class*="text-gray-400"],
-html.light [class*="text-zinc-400"] {
+/* 5. Primary Buttons (Print / Save / Action) */
+html.light .btn-earth-primary,
+html.light button[class*="bg-[#2f523a]"],
+html.light button[class*="bg-[#446e50]"],
+html.light a[class*="bg-[#2f523a]"] {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid #047857 !important;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25) !important;
+}
+
+html.light .btn-earth-primary *,
+html.light button[class*="bg-[#2f523a]"] *,
+html.light button[class*="bg-[#446e50]"] * {
+  color: #ffffff !important;
+}
+
+html.light .btn-earth-primary:hover,
+html.light button[class*="bg-[#2f523a]"]:hover {
+  background: linear-gradient(135deg, #047857 0%, #065f46 100%) !important;
+  box-shadow: 0 6px 16px rgba(5, 150, 105, 0.35) !important;
+}
+
+/* 6. Badges & Tags */
+html.light span[class*="bg-[#18241c]"],
+html.light span[class*="bg-[#121c15]"] {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
   color: #334155 !important;
 }
 
-/* Force Green Accent Colors to Dark Green in Light Mode for Contrast */
-html.light .text-amber-400,
-html.light [class*="text-amber-400"] {
-  color: #d97706 !important;
-}
-html.light .text-amber-300,
-html.light [class*="text-amber-300"] {
-  color: #b45309 !important;
-}
-
-/* 8. Light Mode Badges, Tags, Icons */
-html.light span[class*="bg-[#18241c]"],
-html.light span[class*="bg-[#121c15]"],
-html.light span[class*="bg-[#2a4332]"] {
-  background-color: #f1f5f9 !important;
-  border-color: #cbd5e1 !important;
-  color: #0f172a !important;
-}
-
 html.light span[class*="bg-[#1e3425]"],
-html.light span[class*="bg-[#446e50]"] {
-  background-color: #dcfce7 !important;
-  border-color: #86efac !important;
-  color: #14532d !important;
+html.light span[class*="bg-[#446e50]"],
+html.light span[class*="bg-[#2a4332]"] {
+  background-color: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+  color: #047857 !important;
 }
 
-/* 9. Light Mode Dropdowns & Modals */
-html.light div[class*="bg-[#18241c]"],
-html.light div[class*="bg-[#0f1712]"] {
-  background-color: #ffffff !important;
-  border-color: #cbd5e1 !important;
-  color: #0f172a !important;
+/* 7. Dropdowns, Menus & Modals */
+html.light div[class*="border-[#2d4734]"],
+html.light div[class*="border-[#98c9a3]"] {
+  border-color: #e2e8f0 !important;
 }
 
 html.light div[class*="hover:bg-[#1e3025]"]:hover,
 html.light a[class*="hover:bg-[#1e3025]"]:hover,
 html.light button[class*="hover:bg-[#1e3025]"]:hover {
   background-color: #f0fdf4 !important;
-  color: #15803d !important;
+  color: #047857 !important;
 }
 
-/* 10. Light Mode Form Controls */
+/* 8. Form Inputs & Selects */
 html.light input,
 html.light select,
 html.light textarea {
   background-color: #ffffff !important;
   color: #0f172a !important;
-  border-color: #94a3b8 !important;
+  border-color: #cbd5e1 !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
 }
 
 html.light input::placeholder,
 html.light textarea::placeholder {
-  color: #64748b !important;
+  color: #94a3b8 !important;
 }
 
 html.light input:focus,
 html.light select:focus,
 html.light textarea:focus {
-  border-color: #15803d !important;
-  box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.2) !important;
+  border-color: #059669 !important;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15) !important;
 }
 
-/* 11. Light Mode Tables */
+/* 9. Tables (Clean Luxury Table Styling) */
 html.light table {
   color: #0f172a !important;
 }
 
 html.light th {
-  background-color: #e2e8f0 !important;
-  color: #0f172a !important;
-  border-color: #cbd5e1 !important;
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  border-bottom: 2px solid #e2e8f0 !important;
   font-weight: 700 !important;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
 }
 
 html.light td {
-  border-color: #e2e8f0 !important;
+  border-bottom: 1px solid #f1f5f9 !important;
   color: #1e293b !important;
 }
 
 html.light tr:hover td {
-  background-color: #f1f5f9 !important;
+  background-color: #f8fafc !important;
 }
 
 /* PDF Print Styles Optimization */
