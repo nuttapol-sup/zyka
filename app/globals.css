@@ -82,7 +82,7 @@ body {
 }
 
 /* ==========================================================================
-   Light Mode Theme Overrides (Executive Modern Luxury - Emerald & Alabaster Silk)
+   Light Mode Soft & Bright Executive Theme (Pure Light Pastel & White)
    ========================================================================== */
 html.light {
   color-scheme: light;
@@ -90,7 +90,7 @@ html.light {
 
 html.light body,
 body.light {
-  background-color: #f6f8f6 !important;
+  background-color: #f8faf9 !important;
   color: #0f172a !important;
   background-image: radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.04) 0%, transparent 60%) !important;
 }
@@ -129,7 +129,7 @@ html.light .font-semibold {
   color: #0f172a !important;
 }
 
-/* Muted / Subtitle Text Override */
+/* Subtitle & Muted Text Override */
 html.light [class*="text-[#a39b8b]"],
 html.light [class*="text-slate-400"],
 html.light [class*="text-gray-400"],
@@ -145,7 +145,7 @@ html.light [class*="text-[#98c9a3]"] {
 
 /* 2. Light Mode Scrollbar */
 html.light ::-webkit-scrollbar-track {
-  background: #f6f8f6 !important;
+  background: #f8faf9 !important;
 }
 html.light ::-webkit-scrollbar-thumb {
   background: #cbd5e1 !important;
@@ -178,64 +178,128 @@ html.light nav button {
 
 html.light nav a:hover,
 html.light nav button:hover {
-  color: #047857 !important;
+  color: #059669 !important;
 }
 
-/* Active Nav Links */
-html.light nav a[class*="bg-[#273e2e]"],
-html.light nav a[class*="bg-[#18241c]"] {
-  background-color: #ecfdf5 !important;
-  border-color: #a7f3d0 !important;
-  color: #047857 !important;
-}
-html.light nav a[class*="bg-[#273e2e]"] *,
-html.light nav a[class*="bg-[#18241c]"] * {
-  color: #047857 !important;
-}
-
-/* Navbar Right Controls - Completely Replace Pitch Black Blobs with Clean Luxury Boxes! */
-html.light div[class*="bg-[#18241c]"],
-html.light button[class*="bg-[#18241c]"],
-html.light a[class*="bg-[#18241c]"] {
+/* Force All Dark Background Containers, Buttons, Badges, Tabs across ALL Pages to Soft White/Light */
+html.light *[class*="bg-[#121c15]"],
+html.light *[class*="bg-[#0f1712]"],
+html.light *[class*="bg-[#18241c]"],
+html.light *[class*="bg-[#1a2b1f]"],
+html.light *[class*="bg-[#1c2d22]"],
+html.light *[class*="bg-[#0f172a]"],
+html.light *[class*="bg-[#111827]"],
+html.light *[class*="bg-[#1f3025]"],
+html.light *[class*="bg-[#25382b]"],
+html.light *[class*="bg-[#1e2d21]"] {
   background-color: #ffffff !important;
-  border-color: #cbd5e1 !important;
-  color: #0f172a !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
-}
-
-html.light div[class*="bg-[#18241c]"] *,
-html.light button[class*="bg-[#18241c]"] *,
-html.light a[class*="bg-[#18241c]"] * {
+  border-color: #e2e8f0 !important;
   color: #1e293b !important;
 }
 
-html.light div[class*="bg-[#2a4332]"],
-html.light div[class*="bg-[#365741]"] {
-  background-color: #ecfdf5 !important;
-  border-color: #a7f3d0 !important;
-  color: #047857 !important;
+html.light *[class*="bg-[#121c15]"] *,
+html.light *[class*="bg-[#0f1712]"] *,
+html.light *[class*="bg-[#18241c]"] *,
+html.light *[class*="bg-[#1a2b1f]"] *,
+html.light *[class*="bg-[#1c2d22]"] *,
+html.light *[class*="bg-[#1f3025]"] * {
+  color: #1e293b !important;
 }
 
-html.light div[class*="bg-[#2a4332]"] *,
-html.light div[class*="bg-[#365741]"] * {
-  color: #047857 !important;
-}
-
-/* Theme Toggle Button in Light Mode */
-html.light button[title*="โหมด"] {
+/* Filter Pills & Oval Status Buttons in Orders / Products / Inventory Page (e.g. "รอวางบิล", "ชำระเงินแล้ว") */
+html.light button[class*="bg-[#121c15]"],
+html.light button[class*="bg-[#18241c]"],
+html.light button[class*="bg-[#0f1712]"],
+html.light a[class*="bg-[#121c15]"],
+html.light a[class*="bg-[#18241c]"] {
   background-color: #f1f5f9 !important;
-  border-color: #cbd5e1 !important;
-  color: #1e293b !important;
-}
-html.light button[title*="โหมด"]:hover {
-  background-color: #e2e8f0 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
 }
 
-/* 4. Luxury Cards & Main Containers */
+html.light button[class*="bg-[#121c15]"]:hover,
+html.light button[class*="bg-[#18241c]"]:hover {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* Selected Active Filter Pill (e.g. "ทั้งหมด") */
+html.light button[class*="bg-[#273e2e]"],
+html.light button[class*="bg-[#446e50]"],
+html.light button[class*="bg-[#588b67]"] {
+  background-color: #dcfce7 !important;
+  border: 1px solid #86efac !important;
+  color: #14532d !important;
+}
+html.light button[class*="bg-[#273e2e]"] *,
+html.light button[class*="bg-[#446e50]"] * {
+  color: #14532d !important;
+}
+
+/* Metric Small Square Icons (Orders Count, Shipping Count, Pending Count, Revenue) */
+html.light *[class*="bg-[#3f2e21]"] {
+  background-color: #fff7ed !important;
+  border-color: #fed7aa !important;
+  color: #c2410c !important;
+}
+html.light *[class*="bg-[#3f2e21]"] * {
+  color: #c2410c !important;
+}
+
+html.light *[class*="bg-[#2a303c]"] {
+  background-color: #faf5ff !important;
+  border-color: #e9d5ff !important;
+  color: #7e22ce !important;
+}
+html.light *[class*="bg-[#2a303c]"] * {
+  color: #7e22ce !important;
+}
+
+/* Soft Green Sub-boxes & Badges */
+html.light *[class*="bg-[#1e3425]"],
+html.light *[class*="bg-[#274330]"],
+html.light *[class*="bg-[#2a4332]"],
+html.light *[class*="bg-[#365741]"] {
+  background-color: #f0fdf4 !important;
+  border-color: #bbf7d0 !important;
+  color: #047857 !important;
+}
+
+html.light *[class*="bg-[#1e3425]"] *,
+html.light *[class*="bg-[#274330]"] *,
+html.light *[class*="bg-[#2a4332]"] * {
+  color: #047857 !important;
+}
+
+/* Primary Action Buttons ("+ สร้างคำสั่งซื้อใหม่", "+ เพิ่มสินค้า") */
+html.light .btn-earth-primary,
+html.light button[class*="bg-[#2f523a]"],
+html.light button[class*="bg-[#059669]"],
+html.light a[class*="bg-[#2f523a]"] {
+  background-color: #059669 !important;
+  background-image: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid #059669 !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
+}
+
+html.light .btn-earth-primary *,
+html.light button[class*="bg-[#2f523a]"] * {
+  color: #ffffff !important;
+}
+
+html.light .btn-earth-primary:hover,
+html.light button[class*="bg-[#2f523a]"]:hover {
+  background-image: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35) !important;
+}
+
+/* Main Cards & Containers */
 html.light .glass-earth-card {
   background: #ffffff !important;
   border: 1px solid #e2e8f0 !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 8px 24px -4px rgba(0, 0, 0, 0.04) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 4px 16px rgba(0, 0, 0, 0.04) !important;
   color: #0f172a !important;
   border-radius: 1rem !important;
 }
@@ -245,93 +309,7 @@ html.light .glass-earth-card-hover:hover {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 12px 28px -4px rgba(16, 185, 129, 0.08) !important;
 }
 
-/* Sub-containers & Inner Boxes (Eliminating Dark Gray/Black inner boxes) */
-html.light div[class*="bg-[#121c15]"],
-html.light div[class*="bg-[#0f1712]"],
-html.light div[class*="bg-[#1a2b1f]"],
-html.light div[class*="bg-[#1c2d22]"],
-html.light section[class*="bg-[#121c15]"],
-html.light form[class*="bg-[#121c15]"] {
-  background-color: #f8fafc !important;
-  border-color: #e2e8f0 !important;
-  color: #0f172a !important;
-}
-
-/* Soft Green Sub-boxes */
-html.light div[class*="bg-[#1e3425]"],
-html.light div[class*="bg-[#274330]"],
-html.light div[class*="bg-[#1f3025]"] {
-  background-color: #f0fdf4 !important;
-  border-color: #d1fae5 !important;
-  color: #065f46 !important;
-}
-
-html.light div[class*="bg-[#1e3425]"] *,
-html.light div[class*="bg-[#274330]"] *,
-html.light div[class*="bg-[#1f3025]"] * {
-  color: #065f46 !important;
-}
-
-/* Yellow / Warning Sub-boxes */
-html.light div[class*="bg-[#1e2d21]"] {
-  background-color: #fefce8 !important;
-  border-color: #fef08a !important;
-  color: #713f12 !important;
-}
-
-/* 5. Primary Buttons (Print / Save / Action) */
-html.light .btn-earth-primary,
-html.light button[class*="bg-[#2f523a]"],
-html.light button[class*="bg-[#446e50]"],
-html.light a[class*="bg-[#2f523a]"] {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
-  color: #ffffff !important;
-  border: 1px solid #047857 !important;
-  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25) !important;
-}
-
-html.light .btn-earth-primary *,
-html.light button[class*="bg-[#2f523a]"] *,
-html.light button[class*="bg-[#446e50]"] * {
-  color: #ffffff !important;
-}
-
-html.light .btn-earth-primary:hover,
-html.light button[class*="bg-[#2f523a]"]:hover {
-  background: linear-gradient(135deg, #047857 0%, #065f46 100%) !important;
-  box-shadow: 0 6px 16px rgba(5, 150, 105, 0.35) !important;
-}
-
-/* 6. Badges & Tags */
-html.light span[class*="bg-[#18241c]"],
-html.light span[class*="bg-[#121c15]"] {
-  background-color: #f1f5f9 !important;
-  border-color: #cbd5e1 !important;
-  color: #334155 !important;
-}
-
-html.light span[class*="bg-[#1e3425]"],
-html.light span[class*="bg-[#446e50]"],
-html.light span[class*="bg-[#2a4332]"] {
-  background-color: #ecfdf5 !important;
-  border-color: #a7f3d0 !important;
-  color: #047857 !important;
-}
-
-/* 7. Dropdowns, Menus & Modals */
-html.light div[class*="border-[#2d4734]"],
-html.light div[class*="border-[#98c9a3]"] {
-  border-color: #e2e8f0 !important;
-}
-
-html.light div[class*="hover:bg-[#1e3025]"]:hover,
-html.light a[class*="hover:bg-[#1e3025]"]:hover,
-html.light button[class*="hover:bg-[#1e3025]"]:hover {
-  background-color: #f0fdf4 !important;
-  color: #047857 !important;
-}
-
-/* 8. Form Inputs & Selects */
+/* Form Inputs, Selects & Modals */
 html.light input,
 html.light select,
 html.light textarea {
@@ -354,7 +332,7 @@ html.light textarea:focus {
   box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15) !important;
 }
 
-/* 9. Tables (Clean Luxury Table Styling) */
+/* Clean Tables */
 html.light table {
   color: #0f172a !important;
 }
