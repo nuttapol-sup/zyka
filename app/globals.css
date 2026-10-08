@@ -163,11 +163,16 @@ html.light .glass-earth-header {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03) !important;
 }
 
-/* Navbar Brand & Logo Gradient */
+/* Logo & Brand Elements */
 html.light .text-gradient-earth {
   background: linear-gradient(135deg, #065f46 0%, #059669 100%) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
+}
+
+html.light div[class*="from-[#446e50]"] {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  border-color: #a7f3d0 !important;
 }
 
 /* Standard Navbar Links & Buttons */
@@ -181,7 +186,27 @@ html.light nav button:hover {
   color: #059669 !important;
 }
 
-/* Force All Dark Background Containers, Buttons, Badges, Tabs, and Selected Cards to Light Theme */
+/* Dropdown Menus in Light Mode (Data Records, Reports, Manage) */
+html.light nav div[class*="bg-[#0f1712]"],
+html.light nav div[class*="bg-[#18241c]"],
+html.light nav div[class*="bg-[#121c15]"] {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08) !important;
+}
+
+html.light nav div[class*="bg-[#0f1712]"] a,
+html.light nav div[class*="bg-[#18241c]"] a {
+  color: #334155 !important;
+}
+
+html.light nav div[class*="bg-[#0f1712]"] a:hover,
+html.light nav div[class*="bg-[#18241c]"] a:hover {
+  background-color: #f0fdf4 !important;
+  color: #047857 !important;
+}
+
+/* Force All Dark Background Containers, Buttons, Badges, Tabs across ALL Pages to Soft White/Light */
 html.light *[class*="bg-[#121c15]"],
 html.light *[class*="bg-[#0f1712]"],
 html.light *[class*="bg-[#18241c]"],
@@ -226,7 +251,7 @@ html.light div[class*="bg-[#0f1712]"] svg {
   stroke: #059669 !important;
 }
 
-/* Selected Allowed Page Cards & Selected Role Cards (e.g. Dashboard, Admin Role) */
+/* Selected Allowed Page Cards & Selected Role Cards */
 html.light div[class*="bg-[#273e2e]"],
 html.light label[class*="bg-[#273e2e]"],
 html.light label[class*="bg-[#18241c]"][class*="border-[#98c9a3]"],
@@ -302,7 +327,7 @@ html.light *[class*="bg-[#2a303c]"] * {
   color: #7e22ce !important;
 }
 
-/* Primary Action Buttons ("+ สร้างผู้ใช้", "+ สร้างสั่งซื้อ") */
+/* Primary Action Buttons */
 html.light .btn-earth-primary,
 html.light button[class*="bg-[#2f523a]"],
 html.light button[class*="bg-[#059669]"],
