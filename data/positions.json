@@ -1,0 +1,115 @@
+[
+  {
+    "_id": "6a94e17d5ea8ae902ba66eb3",
+    "code": "",
+    "name": "ผู้ดูแลระบบ",
+    "description": "",
+    "status": "active",
+    "createdAt": "2026-08-31T02:05:49.475Z",
+    "updatedAt": "2026-08-31T02:05:49.475Z",
+    "__v": 0,
+    "departmentId": "6aa117e4e6c457d1614bb7ba"
+  },
+  {
+    "_id": "6aa114238f0775edf12a22c5",
+    "code": "",
+    "name": "ประธานกรรมการบริษัท",
+    "description": "",
+    "status": "active",
+    "createdAt": "2026-09-09T08:09:07.409Z",
+    "updatedAt": "2026-09-09T08:09:07.409Z",
+    "__v": 0,
+    "departmentId": "6aa117e4e6c457d1614bb7b6"
+  },
+  {
+    "_id": "6aa114858f0775edf12a22cc",
+    "code": "",
+    "name": "ธุรการ",
+    "description": "",
+    "status": "active",
+    "createdAt": "2026-09-09T08:10:45.412Z",
+    "updatedAt": "2026-09-09T08:10:45.412Z",
+    "__v": 0,
+    "departmentId": "6aa117e4e6c457d1614bb7bd"
+  },
+  {
+    "_id": "6aa11560b9bfd5fb10388826",
+    "code": "",
+    "name": "ผู้จัดการแผนกบัญชีและการเงิน",
+    "description": "",
+    "status": "active",
+    "createdAt": "2026-09-09T08:14:24.170Z",
+    "updatedAt": "2026-09-09T08:14:24.170Z",
+    "departmentId": "6aa117e4e6c457d1614bb7be"
+  },
+  {
+    "_id": "6aa11560b9bfd5fb10388827",
+    "code": "",
+    "name": "ผู้จัดการแผนกจัดซื้อต่างประเทศ",
+    "description": "",
+    "status": "active",
+    "createdAt": "2026-09-09T08:14:24.173Z",
+    "updatedAt": "2026-09-09T08:14:24.173Z",
+    "departmentId": "6aa117e4e6c457d1614bb7b8"
+  },
+  {
+    "_id": "6aa11560b9bfd5fb10388828",
+    "code": "",
+    "name": "รองผู้จัดการแผนกจัดซื้อต่างประเทศ",
+    "description": "",
+    "status": "active",
+    "createdAt": "2026-09-09T08:14:24.174Z",
+    "updatedAt": "2026-09-09T08:14:24.174Z",
+    "departmentId": "6aa117e4e6c457d1614bb7b8"
+  },
+  {
+    "_id": "6aa11560b9bfd5fb10388829",
+    "code": "",
+    "name": "หัวหน้าฝ่ายจัดซื้อ",
+    "description": "",
+    "status": "active",
+    "createdAt": "2026-09-09T08:14:24.175Z",
+    "updatedAt": "2026-09-09T08:14:24.175Z",
+    "departmentId": "6aa117e4e6c457d1614bb7b8"
+  },
+  {
+    "_id": "6aa11560b9bfd5fb1038882a",
+    "code": "",
+    "name": "ขาย",
+    "description": "",
+    "status": "active",
+    "createdAt": "2026-09-09T08:14:24.177Z",
+    "updatedAt": "2026-09-09T08:14:24.177Z",
+    "departmentId": "6aa117e4e6c457d1614bb7b9"
+  },
+  {
+    "_id": "6aa11560b9bfd5fb1038882b",
+    "code": "",
+    "name": "ผลิต",
+    "description": "",
+    "status": "active",
+    "createdAt": "2026-09-09T08:14:24.179Z",
+    "updatedAt": "2026-09-09T08:14:24.179Z",
+    "departmentId": "6aa117e4e6c457d1614bb7bc"
+  },
+  {
+    "_id": "6aa11560b9bfd5fb1038882c",
+    "code": "",
+    "name": "ผู้จัดการคลังสินค้า",
+    "description": "",
+    "status": "active",
+    "createdAt": "2026-09-09T08:14:24.180Z",
+    "updatedAt": "2026-09-09T08:14:24.180Z",
+    "departmentId": "6aa117e4e6c457d1614bb7bb"
+  },
+  {
+    "_id": "6aa11560b9bfd5fb1038882d",
+    "code": "",
+    "name": "บัญชีและการเงิน",
+    "description": "",
+    "status": "active",
+    "createdAt": "2026-09-09T08:14:24.181Z",
+    "updatedAt": "2026-09-09T08:14:24.181Z",
+    "departmentId": "6aa117e4e6c457d1614bb7be"
+  }
+]

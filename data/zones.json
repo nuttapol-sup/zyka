@@ -1,0 +1,101 @@
+[
+  {
+    "_id": "6aa112778f0775edf12a22bc",
+    "code": "",
+    "name": "A (ฝั่งถนน)",
+    "locationId": "6a759727e5a489a5b9b1c19e",
+    "description": "",
+    "status": "active",
+    "createdAt": "2026-09-09T08:01:59.501Z",
+    "updatedAt": "2026-09-09T08:01:59.501Z",
+    "__v": 0
+  },
+  {
+    "_id": "6aa112838f0775edf12a22bd",
+    "code": "",
+    "name": "B (ตรงกลาง)",
+    "locationId": "6a759727e5a489a5b9b1c19e",
+    "description": "",
+    "status": "active",
+    "createdAt": "2026-09-09T08:02:11.646Z",
+    "updatedAt": "2026-09-09T08:02:11.646Z",
+    "__v": 0
+  },
+  {
+    "_id": "6aa1128f8f0775edf12a22be",
+    "code": "",
+    "name": "C (ฝั่งบ้าน)",
+    "locationId": "6a759727e5a489a5b9b1c19e",
+    "description": "",
+    "status": "active",
+    "createdAt": "2026-09-09T08:02:23.126Z",
+    "updatedAt": "2026-09-09T08:02:23.126Z",
+    "__v": 0
+  },
+  {
+    "_id": "6aa112dc8f0775edf12a22bf",
+    "code": "",
+    "name": "A1 (Office ชั้น 1)",
+    "locationId": "6a759694a8435af9c283431e",
+    "description": "",
+    "status": "active",
+    "createdAt": "2026-09-09T08:03:40.397Z",
+    "updatedAt": "2026-09-09T08:03:40.397Z",
+    "__v": 0
+  },
+  {
+    "_id": "6aa112e38f0775edf12a22c0",
+    "code": "",
+    "name": "A2 (Office ชั้น 2)",
+    "locationId": "6a759694a8435af9c283431e",
+    "description": "",
+    "status": "active",
+    "createdAt": "2026-09-09T08:03:47.565Z",
+    "updatedAt": "2026-09-09T08:03:47.565Z",
+    "__v": 0
+  },
+  {
+    "_id": "6aa113178f0775edf12a22c1",
+    "code": "",
+    "name": "B (โกดังข้าง Office)",
+    "locationId": "6a759694a8435af9c283431e",
+    "description": "",
+    "status": "active",
+    "createdAt": "2026-09-09T08:04:39.038Z",
+    "updatedAt": "2026-09-09T08:04:39.038Z",
+    "__v": 0
+  },
+  {
+    "_id": "6aa113218f0775edf12a22c2",
+    "code": "",
+    "name": "C (โกดังหลังบ้าน ฝั่งติดรั้ว)",
+    "locationId": "6a759694a8435af9c283431e",
+    "description": "",
+    "status": "active",
+    "createdAt": "2026-09-09T08:04:49.935Z",
+    "updatedAt": "2026-09-09T08:04:49.935Z",
+    "__v": 0
+  },
+  {
+    "_id": "6aa1134c8f0775edf12a22c3",
+    "code": "",
+    "name": "D (โกดังหลังหลังบ้าน ฝั่งบ้าน)",
+    "locationId": "6a759694a8435af9c283431e",
+    "description": "",
+    "status": "active",
+    "createdAt": "2026-09-09T08:05:32.607Z",
+    "updatedAt": "2026-09-09T08:05:32.607Z",
+    "__v": 0
+  },
+  {
+    "_id": "6aa1137c8f0775edf12a22c4",
+    "code": "",
+    "name": "E  (บ้าน)",
+    "locationId": "6a759694a8435af9c283431e",
+    "description": "",
+    "status": "active",
+    "createdAt": "2026-09-09T08:06:20.402Z",
+    "updatedAt": "2026-09-09T08:06:20.402Z",
+    "__v": 0
+  }
+]
