@@ -299,22 +299,49 @@ html.light span[class*="bg-[#446e50]"] * {
   stroke: #047857 !important;
 }
 
-/* Neutral Info Badges & Count Pills (e.g. ข้อมูล: 1/9, รายงาน: 0/6, No LINE Access) */
+/* Neutral Info Badges & Count Pills (e.g. ข้อมูล: 1/9, รายงาน: 0/6, No LINE Access, นิติบุคคล) */
 html.light span[class*="bg-[#18241c]"],
 html.light span[class*="bg-[#121c15]"],
 html.light span[class*="bg-[#0f1712]"],
 html.light span[class*="bg-[#141b16]"],
+html.light span[class*="bg-[#24221e]"],
 html.light code[class*="bg-[#18241c]"] {
   background-color: #f1f5f9 !important;
   border: 1px solid #cbd5e1 !important;
-  color: #475569 !important;
+  color: #334155 !important;
 }
 
 html.light span[class*="bg-[#18241c]"] *,
-html.light span[class*="bg-[#121c15]"] * {
-  color: #475569 !important;
-  stroke: #475569 !important;
+html.light span[class*="bg-[#121c15]"] *,
+html.light span[class*="bg-[#24221e]"] * {
+  color: #334155 !important;
+  stroke: #334155 !important;
 }
+
+/* Inactive / Muted Status Badges (e.g. ปิดใช้งาน) */
+html.light span[class*="bg-[#2a221e]"] {
+  background-color: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #64748b !important;
+}
+
+html.light span[class*="bg-[#2a221e]"] * {
+  color: #64748b !important;
+  stroke: #64748b !important;
+}
+
+/* Danger / Out of Stock Badges */
+html.light span[class*="bg-[#321e1e]"] {
+  background-color: #fef2f2 !important;
+  border: 1px solid #fecaca !important;
+  color: #dc2626 !important;
+}
+
+html.light span[class*="bg-[#321e1e]"] * {
+  color: #dc2626 !important;
+  stroke: #dc2626 !important;
+}
+
 
 
 /* Filter Pills & Status Buttons */
@@ -575,7 +602,12 @@ html.light a[class*="bg-red"],
 html.light div[class*="bg-red"],
 html.light button[title*="ลบ"],
 html.light button[title*="Delete"],
-html.light button[title*="Remove"] {
+html.light button[title*="Remove"],
+html.light td button[title*="ลบ"],
+html.light td button[title*="Delete"],
+html.light td button[title*="Remove"],
+html.light td button[class*="text-red"],
+html.light td button[class*="hover:bg-red"] {
   background-color: #fef2f2 !important;
   border: 1px solid #fecaca !important;
   color: #dc2626 !important;
@@ -585,7 +617,11 @@ html.light button[title*="Remove"] {
 html.light button[class*="bg-red"] *,
 html.light a[class*="bg-red"] *,
 html.light button[title*="ลบ"] *,
-html.light button[title*="Delete"] * {
+html.light button[title*="Delete"] *,
+html.light td button[title*="ลบ"] *,
+html.light td button[title*="Delete"] *,
+html.light td button[class*="text-red"] *,
+html.light td button[class*="hover:bg-red"] * {
   color: #dc2626 !important;
   stroke: #dc2626 !important;
 }
@@ -593,11 +629,15 @@ html.light button[title*="Delete"] * {
 html.light button[class*="bg-red"]:hover,
 html.light a[class*="bg-red"]:hover,
 html.light button[title*="ลบ"]:hover,
-html.light button[title*="Delete"]:hover {
+html.light button[title*="Delete"]:hover,
+html.light td button[title*="ลบ"]:hover,
+html.light td button[title*="Delete"]:hover,
+html.light td button[class*="text-red"]:hover {
   background-color: #fee2e2 !important;
   border-color: #fca5a5 !important;
   color: #b91c1c !important;
 }
+
 
 /* Primary Solid Red Confirm Delete Buttons in Modals (e.g. ยืนยันการลบ) */
 html.light button[class*="bg-red-600"],
